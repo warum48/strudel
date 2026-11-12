@@ -255,18 +255,36 @@ Chromium, вставляет файл, жмёт eval и печатает: ест
 
 ## Если git не может записать index
 
-В этой папке (`~/Local Docs`) `git add` иногда падает с
-`unable to unlink '.git/index.lock': Operation not permitted` →
-`fatal: unable to write new index file`: git пишет lock, но не может его
-переименовать/удалить. Обходится индексом в /tmp:
+В этой папке (`~/Local Docs`) git умеет **создавать** lock-файлы, но не может их
+**удалить**: `unable to unlink '.git/index.lock': Operation not permitted`. Сам `rm`
+из шелла тот же файл удаляет без проблем, то есть это не права, а то, как git
+делает unlink.
+
+Отсюда два следствия, оба выглядели как «в репозитории уже крутится другой git»:
+
+- `git status` тоже пишет `.git/index.lock` (обновляет stat-инфо) и оставляет его
+  после себя → следующая команда падает с `File exists`;
+- `git commit` оставляет `.git/HEAD.lock` и `.git/refs/heads/master.lock`, после
+  чего репозиторий «залочен» навсегда, хотя никакого процесса нет.
+
+Лечится так:
 
 ```bash
+# 1. чтение — без lock-ов вообще
+GIT_OPTIONAL_LOCKS=0 git status
+GIT_OPTIONAL_LOCKS=0 git log --oneline
+
+# 2. запись — индекс в /tmp + сначала убрать все протухшие lock-и
+find .git -name "*.lock" -delete
 cp .git/index /tmp/idx
 GIT_INDEX_FILE=/tmp/idx git add -A
-cp /tmp/idx .git/index
+GIT_INDEX_FILE=/tmp/idx git commit -F msg.txt
+cp /tmp/idx .git/index          # вернуть индекс на место
 ```
 
 `cp` перезаписывает файл по содержимому, без unlink/rename — поэтому проходит.
+Признак, что дело именно в этом: в ошибке `File exists`, а `ls .git/*.lock`
+показывает файл, которого «не должно быть».
 
 ## Почему `patch-strudel.mjs`
 
