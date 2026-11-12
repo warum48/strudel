@@ -8,6 +8,7 @@
     "verify": "node tools/verify.mjs",
     "doubles": "node tools/doubles.mjs",
     "tension": "node tools/tension.mjs",
+    "gains": "node tools/gains.mjs",
     "live": "node tools/live.mjs",
     "postinstall": "node tools/patch-strudel.mjs"
   },

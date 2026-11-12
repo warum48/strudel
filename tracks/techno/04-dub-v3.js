@@ -407,6 +407,14 @@ $: stack(
   .lpf(masterCut).lpq(masterRes).hpf(masterHpf)
 
 // КЛИКИ И ГЛИТЧИ — раздавленный клэп
+// стутер, который НЕ затирает громкость: stut() внутри делает
+// pat.gain(pow(feedback, i)), и первая копия всегда играет на 1.0 мимо
+// clickVol — слой не глушится. Здесь тот же ритм, но gain умножается.
+const stutGain = (times, fb, step) => (x) =>
+  x.echoWith(times, step, (p, i) =>
+    p.withValue((v) => ({ ...v, gain: (v.gain ?? 1) * Math.pow(fb, i) })),
+  )
+
 $: stack(
      s("cp ~ ~ cp ~ ~ cp ~").gain(clickVol.mul(m0)),
      s("cp ~ ~ ~ ~ cp ~ ~").gain(clickVol.mul(m1).mul(0.7)),
@@ -415,7 +423,7 @@ $: stack(
   .crush(clickCrush)
   .decay(0.02).sustain(0)
   .degradeBy(clickRate)
-  .sometimesBy(clickStut, (x) => x.stut(4, 0.55, 0.03125))
+  .sometimesBy(clickStut, stutGain(4, 0.55, 0.03125))
   .pan(rand.mul(1.6).sub(0.8))
   .lpf(clickCut).lpq(4)
   .room(verb).roomsize(verbSize)

@@ -128,6 +128,23 @@ function lintSliders(code) {
   return { count: decls.length, nonLiteral, unused };
 }
 
+// stut()/echo() внутри делают `pat.gain(pow(feedback, i))`, то есть
+// ПЕРЕЗАПИСЫВАЮТ gain, а не умножают. Если gain выставлен раньше в цепочке,
+// слайдер громкости перестаёт работать: первая копия всегда идёт на 1.0,
+// остальные на 0.55/0.30/0.17 — мимо ручки. Отсюда «громкость в ноль,
+// а щелчки слышно». echoWith с withValue — это как раз лечение, его не трогаем.
+function lintStutAfterGain(code) {
+  return code
+    .split(/^\$: /m)
+    .slice(1)
+    .filter((block) => {
+      const gainAt = block.lastIndexOf('.gain(');
+      const stutAt = block.search(/\.(stut|echo)\(/);
+      return gainAt >= 0 && stutAt >= 0 && stutAt > gainAt;
+    })
+    .map((block) => block.split('\n')[0].trim().slice(0, 46));
+}
+
 function run(file) {
   const code = fs.readFileSync(file, 'utf8');
   const lines = code.split('\n');
@@ -222,6 +239,12 @@ for (const file of files) {
     // тоже поломка, а не стиль: в браузере эта дорожка молчит
     failed = true;
     console.log(`  ✗ строки в переменных без m(): ${strVars.join(', ')} — в браузере это тишина`);
+  }
+
+  const stut = lintStutAfterGain(res.code);
+  if (stut.length) {
+    console.log(`  ⚠ stut/echo после gain затирает громкость: ${stut.join(' | ')}`);
+    console.log('     первая копия стутера играет на 1.0 мимо слайдера — см. tools/gains.mjs');
   }
 }
 
