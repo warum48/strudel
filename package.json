@@ -1,0 +1,18 @@
+{
+  "name": "strudel-tracks",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Live-coding tracks for strudel.cc + a headless checker that runs the real Strudel engine in node",
+  "scripts": {
+    "verify": "node tools/verify.mjs",
+    "doubles": "node tools/doubles.mjs",
+    "tension": "node tools/tension.mjs",
+    "live": "node tools/live.mjs",
+    "postinstall": "node tools/patch-strudel.mjs"
+  },
+  "dependencies": {
+    "@strudel/core": "^1.2.6",
+    "@strudel/mini": "^1.2.6"
+  }
+}
