@@ -67,8 +67,12 @@ if (!names.length) {
   console.error('в треке нет ни одной phrase([...])');
   process.exit(2);
 }
-if (!names.includes('PAD_A') || !names.includes('PAD_B')) {
-  console.error('нужны PAD_A и PAD_B — иначе непонятно, с чем сравнивать');
+// Один пэд — тоже норма: у трека может быть одна укладка, а не две.
+// Тогда PAD_A и PAD_B указывают на одну и ту же фразу, и режимы A/B дают
+// одинаковый результат (это не ошибка, просто нечего переключать).
+const SINGLE_PAD = !names.includes('PAD_A') && !names.includes('PAD_B') && names.includes('PAD');
+if (!SINGLE_PAD && (!names.includes('PAD_A') || !names.includes('PAD_B'))) {
+  console.error('нужны PAD_A и PAD_B (или один PAD) — иначе непонятно, с чем сравнивать');
   process.exit(2);
 }
 
@@ -93,7 +97,9 @@ const uniq = (arr) => {
   });
 };
 
-const PAD = { A: phraseBars('PAD_A'), B: phraseBars('PAD_B') };
+const PAD = SINGLE_PAD
+  ? { A: phraseBars('PAD'), B: phraseBars('PAD') }
+  : { A: phraseBars('PAD_A'), B: phraseBars('PAD_B') };
 const padNotes = (b, which) => notesIn(PAD[which][b % PAD[which].length]);
 
 function modesOf(name) {
@@ -107,33 +113,61 @@ function modesOf(name) {
 const gcd = (a, b) => (b ? gcd(b, a % b) : a);
 const lcm = (a, b) => (a * b) / gcd(a, b);
 const bars = names
-  .filter((n) => n !== 'PAD_A' && n !== 'PAD_B')
+  .filter((n) => n !== 'PAD_A' && n !== 'PAD_B' && !(SINGLE_PAD && n === 'PAD'))
   .map((n) => phraseBars(n).length)
   .reduce((acc, l) => lcm(acc, l), ROOTS.length);
 const BARS = Math.min(bars, 240);
 
+// ── намеренный диссонанс ─────────────────────────────────────────
+// Маркер `// @dark` в треке разрешает ТРИТОНЫ в ЯКОРНЫХ фразах — тех, чья
+// длина кратна числу корней. Логика простая: если фраза всегда садится на
+// известный такт, тритон в ней — решение автора, а не авария. У дрейфующей
+// фразы (7, 5, 12 тактов против 8) тритон всплывает каждый цикл в новом
+// месте — вот это грязь, и она остаётся ошибкой.
+// Малая секунда (ровно 1 полутон в одном регистре) остаётся ошибкой всегда:
+// это не «тьма», это каша, и намеренной она почти никогда не бывает.
+const DARK = /^[ \t]*\/\/[ \t]*@dark\b/m.test(src);
+const anchored = (len) => len % ROOTS.length === 0;
+
 let problems = 0;
+let deliberateTotal = 0;
+const allDeliberate = [];
 console.log(`корни: ${ROOTS.join(' ')}  (${ROOTS.length} такт.)`);
-console.log(`проверяю ${BARS} тактов (полный дрейф всех фраз)\n`);
+console.log(`проверяю ${BARS} тактов (полный дрейф всех фраз)`);
+if (DARK) console.log('режим @dark: тритоны в якорных фразах считаются намеренными');
+console.log('');
 
 for (const name of names) {
-  if (name === 'PAD_A' || name === 'PAD_B') continue;
+  if (name === 'PAD_A' || name === 'PAD_B' || (SINGLE_PAD && name === 'PAD')) continue;
   const barsOf = phraseBars(name);
   if (!barsOf) continue;
   const modes = modesOf(name);
+  const allowTri = DARK && anchored(barsOf.length);
   const hits = [];
+  const deliberate = [];
 
   for (let b = 0; b < BARS; b++) {
     const root = ROOTS[b % ROOTS.length];
     for (const { n, o } of uniq(notesIn(barsOf[b % barsOf.length]))) {
       if (((pc(n) - pc(root) + 12) % 12) === 6) {
-        hits.push(`  такт ${b + 1}: ${n}${o} — тритон к корню ${root}`);
+        // позиция внутри цикла, а не абсолютный такт: иначе один и тот же
+        // намеренный тритон считается заново каждый цикл (120 «мест» там,
+        // где их три)
+        (allowTri ? deliberate : hits).push(
+          allowTri
+            ? `  такт ${(b % ROOTS.length) + 1}/${ROOTS.length}: ${n}${o} — тритон к корню ${root}`
+            : `  такт ${b + 1}: ${n}${o} — тритон к корню ${root}`,
+        );
       }
       for (const which of modes) {
         for (const p of uniq(padNotes(b, which))) {
           const d = Math.abs(midi(n, o) - midi(p.n, p.o));
           if (d % 12 === 6) {
-            hits.push(`  такт ${b + 1}: ${n}${o} vs ${p.n}${p.o} — тритон (режим ${which})`);
+            (allowTri ? deliberate : hits).push(
+              allowTri
+                ? `  такт ${(b % ROOTS.length) + 1}/${ROOTS.length}: ${n}${o} vs ${p.n}${p.o} — тритон (режим ${which})`
+                : `  такт ${b + 1}: ${n}${o} vs ${p.n}${p.o} — тритон (режим ${which})`,
+            );
           } else if (d === 1) {
             hits.push(`  такт ${b + 1}: ${n}${o} vs ${p.n}${p.o} — малая секунда (режим ${which})`);
           }
@@ -143,15 +177,27 @@ for (const name of names) {
   }
 
   const label = `${name} (${barsOf.length} такт., режим ${modes.join('+')})`;
+  const uniqDel = uniq(deliberate);
   if (!hits.length) {
-    console.log(`✓ ${label}`);
+    console.log(`✓ ${label}${uniqDel.length ? `  ⚠ намеренных тритонов: ${uniqDel.length}` : ''}`);
   } else {
     problems += hits.length;
     console.log(`✗ ${label}`);
     console.log(uniq(hits).slice(0, 12).join('\n'));
     if (uniq(hits).length > 12) console.log(`  … ещё ${uniq(hits).length - 12}`);
   }
+  deliberateTotal += uniqDel.length;
+  for (const d of uniqDel) allDeliberate.push(name + d);
 }
 
-console.log(problems ? `\nвсего мест с трением: ${problems}` : '\nтрения нет');
+console.log(
+  problems
+    ? `\nвсего мест с трением: ${problems}`
+    : `\nтрения нет${deliberateTotal ? ` (намеренных тритонов: ${deliberateTotal})` : ''}`,
+);
+if (allDeliberate.length) {
+  console.log('\nнамеренные (якорные фразы, @dark):');
+  for (const d of allDeliberate.slice(0, 6)) console.log('  ' + d.trim());
+  if (allDeliberate.length > 6) console.log(`  … ещё ${allDeliberate.length - 6}`);
+}
 process.exit(problems ? 1 : 0);

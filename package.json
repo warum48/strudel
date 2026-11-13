@@ -9,6 +9,10 @@
     "doubles": "node tools/doubles.mjs",
     "tension": "node tools/tension.mjs",
     "gains": "node tools/gains.mjs",
+    "modes": "node tools/modes.mjs",
+    "latch": "node tools/latch.mjs",
+    "cpu": "node tools/cpu.mjs",
+    "web": "node tools/serve.mjs",
     "live": "node tools/live.mjs",
     "postinstall": "node tools/patch-strudel.mjs"
   },

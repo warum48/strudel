@@ -127,10 +127,61 @@ if (typeof document !== 'undefined' && !document.getElementById('slider-w')) {
 
 ## Что можно починить у себя
 
-Ничего в треках: баг в редакторе, а не в паттернах. Единственная защита —
-правила выше. Обходного синтаксиса нет: длина строки значения меняется у любого
-дробного слайдера (`0` → `0.55`), а `slider()` не умеет фиксированную длину
-записи. Ширину самого виджета менять можно — это отдельная история, выше.
+Синтаксисом — ничего: длина строки значения меняется у любого дробного слайдера
+(`0` → `0.55`), а `slider()` не умеет фиксированную длину записи.
+
+**А вот из самого трека — можно, и это работает.** Виджет хранит состояние не
+только в себе: `from`, `originalFrom` и `originalValue` лежат прямо на
+`<input>`, а запись в документ считается как
+`to = slider.from + slider.originalValue.length`. Значит достаточно, чтобы
+`originalValue` всегда совпадал с тем, что реально написано в коде — и портить
+станет нечего.
+
+```js
+if (typeof document !== 'undefined' && !window.__sliderSync) {
+  const syncSliders = () => {
+    const m = window.strudelMirror
+    if (!m || !m.editor) return
+    const doc = m.editor.state.doc
+    for (const el of document.querySelectorAll('.cm-slider input')) {
+      if (typeof el.from !== 'number') continue
+      const t = doc.sliceString(el.from, el.from + 24).match(/^-?\d+(?:\.\d+)?/)
+      if (!t) continue
+      if (el.originalValue !== t[0]) el.originalValue = t[0]  // длина для замены
+      if (Number(el.value) !== Number(t[0])) el.value = t[0]  // сам ползунок
+    }
+  }
+  window.__sliderSync = setInterval(syncSliders, 200)
+  document.addEventListener('scroll', () => requestAnimationFrame(syncSliders), true)
+  document.addEventListener('pointerdown', syncSliders, true)
+}
+```
+
+Три точки запуска, каждая по делу:
+
+- `pointerdown` — за мгновение до драга, чтобы длина замены была верной;
+- `scroll` + `rAF` — CodeMirror пересоздаёт DOM за вьюпортом, новый узел
+  приходит со старым значением; чиним в следующем кадре;
+- `setInterval` — страховка на случай, если пере-рендер случился без скролла.
+
+В документ заплатка НЕ пишет: звук и так идёт через `postMessage`, а id слайдера
+считается от `originalFrom`, который мы не трогаем. То есть она чинит только
+показания ползунка и длину замены — ровно две вещи, которые врут.
+
+Проверено вживую (`npm run live`) на одном и том же сценарии «драг → уехать из
+вьюпорта → вернуться → драг ещё раз»:
+
+| файл | в коде | ползунок | итог |
+|---|---|---|---|
+| `05-deep-dub.js` (без заплатки) | `2` | `0` | РАССИНХРОН |
+| `06-deep-dub-v2.js` (с заплаткой) | `3` | `3` | ок |
+
+Отдельным тестом на длинном файле: без заплатки второй драг даёт `0.62` вместо
+`0.6` (заменились 3 символа из 4); с заплаткой — `0.6`.
+
+Ограничение: заплатка живёт, пока страница не перезагружена, и работает только
+в редакторе strudel.cc (`window.strudelMirror`). В `@strudel/web` её нет — там
+и слайдеров таких нет.
 
 ## Отчёт в апстрим
 

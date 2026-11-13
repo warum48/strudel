@@ -66,6 +66,20 @@ const sig = (p, cyc) =>
       return `${Math.round(Number(h.whole.begin) * 16 * 1e6) / 1e6}:${sName}${variant}${note}`;
     });
 
+// то же, но только реально слышимое: событие с gain = 0 — это выключенная
+// ветка режима или заглушённый гейтом филл. Для карты наложений такие
+// события нельзя считать ударом, иначе ловятся фантомы (в 06 призрак
+// снейра и филл совпадают по позиции, но никогда не звучат в одном такте).
+const sigAudible = (p, cyc) =>
+  p.queryArc(cyc, cyc + 1)
+    .filter((h) => h.hasOnset() && Number(h.value.gain ?? 1) > 0.001)
+    .map((h) => {
+      const sName = h.value.s ?? h.value.note ?? h.value.n ?? '?';
+      const variant = h.value.s && h.value.n !== undefined ? ':v' + h.value.n : '';
+      const note = h.value.note ? ':' + h.value.note : '';
+      return `${Math.round(Number(h.whole.begin) * 16 * 1e6) / 1e6}:${sName}${variant}${note}`;
+    });
+
 console.log(`\n${path.basename(file)}  — дорожек: ${pats.length}`);
 pats.forEach((p, i) => {
   const a = sig(p, 0);
@@ -80,7 +94,7 @@ pats.forEach((p, i) => {
 console.log('\n── наложения по сэмплам (позиция:сэмпл → дорожки) ──');
 const map = new Map();
 pats.forEach((p, i) => {
-  for (const s of sig(p, 0)) {
+  for (const s of sigAudible(p, 0)) {
     if (!map.has(s)) map.set(s, []);
     map.get(s).push(i);
   }
