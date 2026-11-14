@@ -55,16 +55,24 @@ tracks/
                       контрабас со слайдом, свинг и Rhodes-компинг
     15-house-rave.js  120 BPM jazz house / rave: четыре в пол, джазовые
                       Fmaj9–Dm9–C6/9, рифы clav/acid/hoover, ручка rave
+    16-minimal-dub.js 120 BPM minimal dub techno: Am9→Bbmaj9, muted 4/4,
+                      offbeat stab + dub delay, sub ≤80, без мелодий
   dnb/
     01-atmospheric-jungle.js 174 BPM LTJ Bukem / Aphrodite: Amen + chop,
                       Dm9–Gm9–Bb–A7sus, deep sub / Reese / mentasm
     02-dark-techstep.js 172 BPM dark jungle / techstep / IDM: Apache +
                       breaks165, FM grinder, тритоны, dist + glitch
+    02-dark-techstep-v2.js v2 02: длинный grinder (long/drift/stutter)
+                      и настоящий chop/granular 4/8/16 с ручками
+  breakcore/
+    01-rinse.js       174 BPM rinse / note-off: сцены (mode), банк брейков,
+                      крупность нарезки, grit + 4 momentary-пэда
 web/
   index.html        панель: шапка (транспорт, режимы, out) + ДВА столбца
-                    (микшер / тонкие настройки) + настоящий редактор справа
+                    (микшер / тонкие настройки) + ПЭДЫ + редактор справа
   panel.js          @strudel/codemirror: StrudelMirror + свои ручки поверх его
-                    виджетов; раскладка берётся из дерева instruments
+                    виджетов; раскладка берётся из дерева instruments;
+                    `// @pads` рисует momentary-пэды (клавиши 1–4)
 docs/
   switchangel-recipes.md  рецепты Switch Angel: glide, acid, accent, DX, fill — читать
                       ПЕРЕД новым треком
@@ -383,6 +391,29 @@ worklet'ов на такт (31/31/31/27 в секунду при 180 BPM), `gain
 22/30/19/22 worklet'ов на такт (11/15/10/11 в секунду), `doubles` — наложений
 нет, `live` — eval ок, паттерн играет.
 
+`16-minimal-dub.js` — **anti-pop minimal dub techno**: 120 BPM, 13 дорожек,
+47 слайдеров. Один стаб, один саб, приглушённый кик, длинный дилей и много
+воздуха; никаких дропов, мелодий и sidechain-пумпа.
+
+- **Гармония**: 4 такта Am9 → 4 такта Bbmaj9 (bII). Никакой 1–2–4–5 и
+  доминантовых разрешений; bII с 9-й — тот самый сочный сдвиг на полтона.
+  В аккордах нет пары `e–bb` (тритона), поэтому стаб и бас не дают грязи.
+- **Стаб — главный звук**: один короткий аккорд на «и» первой доли, дальше
+  `delay` 0.375 цикла, `feedback` 0.55, фильтрованные повторы, реверб.
+  Пэд (WARM/AIR) — только фон, не аккомпанемент.
+- **Правила проекта**: весь бас ≤80 Гц (max на слайдере), кик глухой
+  (`lpf` 260), нет мелодий, нет 303, нет снейра на 2/4, нет райзеров/дропов.
+- **Режимы**: 0 DUB / 1 STRIP / 2 PRESSURE / 3 CLICK; меняются только
+  хэты/rim/click/шейкер, кик и саб остаются. `harmony` 0 WARM / 1 AIR.
+- **Текстуры**: crackle-хайс, розовый «воздух», `wind` из Dirt-Samples;
+  клики — только в STRIP/CLICK. Всё движение — фильтр и feedback на 8–32
+  такта, а не новые секции.
+
+Проверки 16: 13 дорожек / 27 ударов / 47 слайдеров, `modes` — хэты 16/0/16/0,
+`latch` — такт 8, `gains` — тихо, `tension` — трения нет, `cpu` — 6/6/6/6
+worklet'ов на такт (3/с), `doubles` — наложений нет, `live` — eval ок,
+паттерн играет; кнопка SAMPLES — 45 файлов, `SAMPLES ✓`.
+
 `dnb/01-atmospheric-jungle.js` — **новый трек, новая подпапка**: 174 BPM,
 атмосферный jungle / liquid dnb в духе LTJ Bukem + jump-up-режим в духе
 Aphrodite. Собран по внешним источникам, а не по прошлым трекам.
@@ -441,6 +472,31 @@ jungle/techstep с IDM-слоем. Другие брейки, другой ба�
 кику, `latch` — такт 8, `gains` — тихо, `tension` — трения нет (62 намеренных
 тритона), `cpu` — 26/44/47/57 worklet'ов на такт (19/32/34/41 в секунду),
 `doubles` — наложений нет, `live` — eval ок, паттерн играет.
+
+`dnb/02-dark-techstep-v2.js` — **v2 трека 02, v1 не тронут**. Та же основа,
+но бас и фактура другие.
+
+- **Grinder переписан.** Длинные ноты, долгая атака (по умолчанию 0.8 с) и
+  три варианта саунд-дизайна, переключатель `grind`:
+  0 LONG (sustain, медленный срез, без рандома), 1 DRIFT (FM/срез плывут,
+  иногда октава, jitter), 2 STUTTER (ply/degrade + bitcrush). Для каждого
+  `mode` своя фраза: VOID / JUNGLE / TECHSTEP / GLITCH.
+- **Granular/chop.** В v1 был только `slice` (перестановка кусков). В v2
+  добавлен настоящий `chop` — Funky Drummer режется на 4/8/16 кусков
+  (переключатель `grain`) и играет их подряд. Настройки в панели:
+  `cut/hpf/crush/speed/rev/jitter/drop/room`.
+- **DOWNLOAD SAMPLES в шапке панели.** Кнопка собирает `samples(...)` текущего
+  трека (плюс uzu-drumkit), берёт только реально используемые ключи из
+  `s("...")` и прогоняет файлы через `wa.loadBuffer`, то есть в кэш движка.
+  Статус: `0 / N`, `all N loaded`, `done · N errors`; на смене трека
+  сбрасывается. Проверено в браузере: techno/15 — 27 файлов, dnb/02-v2 —
+  98 файлов, обе загрузки зелёные.
+
+Проверки v2: 30 дорожек / 29 ударов / 120 слайдеров, `modes` — 8/12/16/20 по
+кику, `latch` — такт 8, `gains` — тихо, `tension` — трения нет (112
+намеренных тритонов), `cpu` — 17/45/48/58 worklet'ов на такт
+(12/32/34/42 в секунду), `doubles` — наложений нет, `live` — eval ок,
+паттерн играет; кнопка SAMPLES протестирована end-to-end.
 
 ### Веб-панель (`npm run web`) — микшер, тонкие настройки, настоящий редактор
 

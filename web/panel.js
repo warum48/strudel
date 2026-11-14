@@ -74,6 +74,101 @@ const setStatus = (t, err) => {
   statusEl.className = err ? 'err' : '';
 };
 
+// ── sample downloader ─────────────────────────────────────────────
+// "Download all samples" = only the sample maps the current track
+// declares in `samples(...)`, and only the keys it actually uses in
+// `s(...)`. Dirt-Samples is huge; downloading the whole JSON library
+// would be hundreds of MB for no reason. Each file goes through
+// wa.loadBuffer, so it lands in the engine's decoded-buffer cache.
+let sampleBusy = false;
+
+async function downloadAllSamples() {
+  if (sampleBusy) return;
+  const btn = $('samples');
+  const out = $('sampleStatus');
+  sampleBusy = true;
+  btn.disabled = true;
+  btn.textContent = 'SAMPLES…';
+  out.textContent = 'scanning…';
+
+  try {
+    const raw = globalThis.strudelMirror?.editor?.state?.doc?.toString?.() ?? code ?? '';
+    // comments in the track header also mention `samples('github:...')`;
+    // strip whole-line comments before looking for real calls.
+    const src = raw.replace(/^\s*\/\/.*$/gm, '');
+    // uzu-drumkit is already preloaded by the panel; include it so tracks
+    // using bd/sd/hh/... also get real files, not just the JSON map.
+    const mapUrls = [...new Set([
+      'https://strudel.b-cdn.net/uzu-drumkit.json',
+      ...[...src.matchAll(/\bsamples\(\s*['"]([^'"]+)['"]/g)].map((m) => m[1]),
+    ])];
+    // key → [absolute urls] across all maps the track declares.
+    const maps = new Map();
+    for (const u of mapUrls) {
+      try {
+        const [json, base] = await wa.fetchSampleMap(u);
+        const b = String(base || '').endsWith('/') ? String(base) : String(base || '') + '/';
+        for (const [key, v] of Object.entries(json || {})) {
+          if (key === '_base') continue;
+          const files = Array.isArray(v) ? v : typeof v === 'string' ? [v] : null;
+          if (!files || !files.length) continue;
+          maps.set(key, files.map((f) => b + f));
+        }
+      } catch (e) {
+        console.warn('sample map failed', u, e);
+      }
+    }
+
+    // sample keys used by the track: latin tokens inside s("..."), then
+    // keep only those that exist in a loaded map (sine/sawtooth/etc. drop out).
+    const used = new Set();
+    for (const m of src.matchAll(/\bs\(\s*['"]([^'"]+)['"]\s*\)/g)) {
+      for (const token of m[1].match(/[a-zA-Z][a-zA-Z0-9_]*/g) ?? []) {
+        if (maps.has(token)) used.add(token);
+      }
+    }
+    if (!used.size) {
+      out.textContent = 'no matching sample keys';
+      btn.textContent = 'SAMPLES';
+      return;
+    }
+
+    const urls = [];
+    for (const key of used) {
+      for (const url of maps.get(key) ?? []) {
+        if (!urls.includes(url)) urls.push(url);
+      }
+    }
+
+    let done = 0;
+    let failed = 0;
+    out.textContent = `0 / ${urls.length}`;
+    for (const url of urls) {
+      try {
+        if (typeof wa.loadBuffer === 'function') {
+          await wa.loadBuffer(url, wa.getAudioContext(), 'download', 0);
+        } else {
+          await fetch(url).then((r) => r.arrayBuffer());
+        }
+      } catch {
+        failed++;
+      }
+      done++;
+      out.textContent = `${done} / ${urls.length}${failed ? ` · ${failed} err` : ''}`;
+    }
+    out.textContent = failed ? `done · ${failed} errors` : `all ${done} loaded`;
+    btn.textContent = failed ? 'SAMPLES ⚠' : 'SAMPLES ✓';
+  } catch (e) {
+    out.textContent = e.message;
+    btn.textContent = 'SAMPLES';
+  } finally {
+    sampleBusy = false;
+    btn.disabled = false;
+  }
+}
+
+$('samples')?.addEventListener('click', downloadAllSamples);
+
 // ── 1. bridge between knobs and widgets ───────────────────────────
 const values = {}; // id → value, the pattern signal reads from here
 
@@ -339,6 +434,20 @@ function scanSwitchCaps(src) {
 }
 let switchCaps = {};
 
+// PADS — momentary control. A top-level slider named in `// @pads a,b,c` is NOT
+// a switch: press/hold writes max (1), release writes min (0). The track gates a
+// one-bar fill layer by that slider, so holding loops the fill and releasing
+// stops it — no timers, no bar quantization, the code stays the only state.
+// Keys 1..n mirror the buttons and are ignored while typing in the editor.
+function scanPadNames(src) {
+  const line = /^[ \t]*\/\/[ \t]*@pads[ \t]+(.+)$/m.exec(src);
+  if (!line) return new Set();
+  return new Set(line[1].trim().split(/[\s,]+/).filter(Boolean));
+}
+let padNames = new Set();
+const padButtons = new Map(); // index → { k, b }
+const heldKeys = new Set();
+
 
 const fmt = (x) => {
   const n = Number(x);
@@ -356,6 +465,7 @@ function buildKnobs() {
   const { sites, names } = scanSliders(src);
   labels = names;
   switchCaps = scanSwitchCaps(src);
+  padNames = scanPadNames(src);
   const ws = mirror.widgets.filter((w) => w.type === 'slider').sort((a, b) => a.from - b.from);
   if (sites.length !== ws.length) {
     console.warn(`panel: ${sites.length} slider( в тексте против ${ws.length} виджетов`);
@@ -390,10 +500,12 @@ function render() {
 
   const globals = [];
   const switches = [];
+  const pads = [];
   const groups = new Map(); // group → Map(instrument → knobs[])
   for (const k of knobs) {
     if (k.path.length === 0) {
-      (isSwitch(k) ? switches : globals).push(k);
+      if (padNames.has(k.name)) pads.push(k);
+      else (isSwitch(k) ? switches : globals).push(k);
       continue;
     }
     if (k.path.length < 3) continue; // ключ-обёртка без параметра
@@ -406,6 +518,7 @@ function render() {
 
   renderGlobals(globals);
   renderSwitches(switches);
+  renderPads(pads);
   renderMixer(groups);
   renderTone(groups);
 
@@ -453,6 +566,75 @@ function renderSwitches(list) {
     btns.forEach((b, i) => b.classList.toggle('on', vals[i] === cur));
     root.appendChild(box);
   }
+}
+
+// ПЭДЫ: кнопка = мгновенное значение. pointerdown → max, pointerup/cancel/
+// leave/blur → min. Значение идёт тем же setKnob, поэтому код и звук не врут,
+// а нажатая кнопка подсвечивается. Пока пэд держат — слой играет (трек гейтит
+// им одно-тактовый филл), отпустили — слой исчез.
+function renderPads(list) {
+  const root = $('pads');
+  root.innerHTML = '';
+  padButtons.clear();
+  if (!list.length) return;
+  const cap = document.createElement('span');
+  cap.className = 'cap';
+  cap.textContent = 'Pads — hold';
+  root.appendChild(cap);
+  list.forEach((k, i) => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'pad';
+    const word = k.name.replace(/^pad/, '') || k.name;
+    b.innerHTML = `${cap_(word)}<span class="k">${i + 1}</span>`;
+    b.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      try { b.setPointerCapture(e.pointerId); } catch {}
+      pressPadAt(i, true);
+    });
+    for (const ev of ['pointerup', 'pointercancel', 'pointerleave', 'blur']) {
+      b.addEventListener(ev, () => pressPadAt(i, false));
+    }
+    padButtons.set(i, { k, b });
+    root.appendChild(b);
+    b.classList.toggle('on', Number(k.value) > (k.min + k.max) / 2);
+  });
+}
+
+const cap_ = (s) => s.charAt(0).toUpperCase() + s.slice(1);
+
+function pressPadAt(i, on) {
+  const p = padButtons.get(i);
+  if (!p) return;
+  const v = on ? p.k.max : p.k.min;
+  p.k.value = v;
+  setKnob(p.k, v);
+  p.b.classList.toggle('on', on);
+}
+
+function bindPadKeys() {
+  const typing = () => {
+    const ae = document.activeElement;
+    return !!(ae && (ae.closest?.('.cm-editor') || /INPUT|TEXTAREA|SELECT/.test(ae.tagName || '')));
+  };
+  document.addEventListener('keydown', (e) => {
+    if (e.metaKey || e.ctrlKey || e.altKey || typing()) return;
+    const i = Number(e.key) - 1;
+    if (!Number.isInteger(i) || i < 0 || i > 8 || !padButtons.has(i)) return;
+    e.preventDefault();
+    if (e.repeat) return;
+    heldKeys.add(i);
+    pressPadAt(i, true);
+  });
+  document.addEventListener('keyup', (e) => {
+    const i = Number(e.key) - 1;
+    if (!Number.isInteger(i) || !heldKeys.delete(i)) return;
+    pressPadAt(i, false);
+  });
+  window.addEventListener('blur', () => {
+    for (const i of heldKeys) pressPadAt(i, false);
+    heldKeys.clear();
+  });
 }
 
 // МИКШЕР: ровно `vol` каждого инструмента, в порядке дерева.
@@ -781,6 +963,11 @@ async function loadTrack(p) {
   code = src;
   mirror.setCode(src);
   showTrackInfo(p, src);
+  // a different track uses different maps: reset the sample button/status
+  const sBtn = $('samples');
+  const sOut = $('sampleStatus');
+  if (sBtn) { sBtn.textContent = 'SAMPLES'; sBtn.disabled = false; }
+  if (sOut) sOut.textContent = '';
   history.replaceState(null, '', '#' + p);
   // даём CodeMirror разложить документ: evaluate() читает this.code, который
   // обновляет его же слушатель изменений
@@ -911,6 +1098,7 @@ $('root').addEventListener(
   true,
 );
 
+bindPadKeys();
 audioReady = boot().catch((e) => {
   console.error(e);
   setStatus(e.message, true);

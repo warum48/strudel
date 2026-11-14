@@ -60,6 +60,16 @@
   .sw .cap { color: var(--dim); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; }
   .sw button { padding: 2px 7px; font-size: 11px; background: transparent; }
   .sw button.on { background: var(--accent); color: #0d0f0c; }
+  /* загрузка сэмплов: кнопка в шапке + компактный статус */
+  #sampleStatus {
+    color: var(--warn);
+    font-size: 11px;
+    white-space: nowrap;
+    max-width: 240px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  #samples:disabled { opacity: 0.55; cursor: progress; }
   /* панелька переключателей — отдельным блоком между Global и микшером */
   #switches {
     flex: none;
@@ -71,6 +81,30 @@
     border-bottom: 1px solid var(--line);
     background: #11140f;
   }
+  /* ── PADS — momentary: держишь — играет, отпустил — ушло ── */
+  #pads {
+    flex: none;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 12px;
+    border-bottom: 1px solid var(--line);
+    background: #11140f;
+  }
+  #pads:empty { display: none; }
+  #pads .cap { color: var(--dim); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; width: 100%; }
+  #pads button.pad {
+    flex: 1 1 auto;
+    min-width: 62px;
+    padding: 8px 6px;
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  #pads button.pad .k { color: var(--dim); font-weight: 400; margin-left: 5px; }
+  #pads button.pad.on { background: var(--warn); border-color: var(--warn); color: #0d0f0c; font-weight: 700; }
+  #pads button.pad.on .k { color: #0d0f0c; }
   main { flex: 1; display: grid; grid-template-columns: var(--mix-w) var(--tone-w) 1fr; min-height: 0; }
   /* два столбца сайдбара: микшер (громкости) и тонкие настройки */
   #mixer, #tone {
@@ -240,6 +274,8 @@
   <select id="theme" title="editor color theme"></select>
   <button id="play" class="ghost">PLAY</button>
   <button id="stop" class="ghost">STOP</button>
+  <button id="samples" class="ghost" title="download and decode every sample used by this track">SAMPLES</button>
+  <span id="sampleStatus"></span>
 </header>
 
 <main>
@@ -258,6 +294,7 @@
       <div class="rows" id="globalRows"></div>
     </div>
     <div id="switches"></div>
+    <div id="pads"></div>
     <div id="mixlist"></div>
   </aside>
 
