@@ -14,6 +14,8 @@ import path from 'node:path';
 import vm from 'node:vm';
 import * as core from '@strudel/core';
 import * as mini from '@strudel/mini';
+import './viz-stub.mjs';
+import { loudVolumes } from './loud.mjs';
 
 mini.miniAllStrings();
 
@@ -53,7 +55,8 @@ const ctx = {
   setcpm: () => {}, setcps: () => {}, console,
 };
 vm.createContext(ctx);
-vm.runInContext(wrapLabels(code), ctx, { filename: path.basename(file) });
+// с поднятыми громкостями (см. tools/loud.mjs), иначе гейт выкинет все hap'ы
+vm.runInContext(wrapLabels(loudVolumes(code)), ctx, { filename: path.basename(file) });
 
 const sig = (p, cyc) =>
   p.queryArc(cyc, cyc + 1).filter((h) => h.hasOnset())
@@ -90,8 +93,10 @@ pats.forEach((p, i) => {
   console.log(`  такт 1: ${b.join(' ') || '(тишина)'}`);
 });
 
-// один и тот же сэмпл в одной и той же позиции от РАЗНЫХ дорожек = наложение
-console.log('\n── наложения по сэмплам (позиция:сэмпл → дорожки) ──');
+// один и тот же звук в одной позиции от РАЗНЫХ дорожек: стек или дубль.
+// Дубль слышно как удар дважды (одна и та же короткая атака), стек — как один
+// более толстый звук; отличать приходится ушами, инструмент только показывает.
+console.log('\n── совпадения по позиции (позиция:звук → дорожки) ──');
 const map = new Map();
 pats.forEach((p, i) => {
   for (const s of sigAudible(p, 0)) {

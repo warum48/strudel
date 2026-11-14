@@ -16,6 +16,7 @@ import path from 'node:path';
 import vm from 'node:vm';
 import * as core from '@strudel/core';
 import * as mini from '@strudel/mini';
+import './viz-stub.mjs';
 
 mini.miniAllStrings();
 
@@ -91,9 +92,13 @@ function load(file, zeroVolumes) {
   // Глушим ТОЛЬКО громкости (*Vol). Если занулить всё подряд, вместе с ними
   // умрёт и вероятность стутера — и баг «stut затирает gain» спрячется.
   if (zeroVolumes) {
-    code = code.replace(/const\s+(\w*[Vv]ol\w*)\s*=\s*slider\(\s*[^,\n]+/g, (m, name) =>
-      m.replace(/slider\(\s*[^,\n]+/, 'slider(0'),
-    );
+    // оба стиля: `const kickVol = slider(...)` (10, 11) и `vol: slider(...)`
+    // в дереве instruments (12)
+    code = code
+      .replace(/const\s+(\w*[Vv]ol\w*)\s*=\s*slider\(\s*[^,\n]+/g, (m) =>
+        m.replace(/slider\(\s*[^,\n]+/, 'slider(0'),
+      )
+      .replace(/\bvol:\s*slider\(\s*[^,\n]+/g, (m) => m.replace(/slider\(\s*[^,\n]+/, 'slider(0'));
   }
   const pats = [];
   const ctx = {

@@ -11,6 +11,8 @@ import path from 'node:path';
 import vm from 'node:vm';
 import * as core from '@strudel/core';
 import * as mini from '@strudel/mini';
+import './viz-stub.mjs';
+import { loudVolumes } from './loud.mjs';
 
 mini.miniAllStrings(); // без этого строки не парсятся как мини-нотация
 
@@ -118,14 +120,19 @@ function lintStringVars(code) {
 //    он откатывается к тексту кода и «уходит в ноль»;
 //  - слайдер объявлен, но нигде не читается → мёртвая ручка в пульте.
 function lintSliders(code) {
-  const decls = [...code.matchAll(/^const\s+(\w+)\s*=\s*slider\(([^,\n]*)/gm)];
-  const nonLiteral = decls
-    .filter(([, , first]) => !/^\s*-?\d+(?:\.\d+)?\s*$/.test(first))
-    .map(([, name, first]) => `${name}(${first.trim()})`);
-  const unused = decls
+  // плоский стиль (10, 11): const kickVol = slider(...)
+  const flat = [...code.matchAll(/^const\s+(\w+)\s*=\s*slider\(([^,\n]*)/gm)];
+  // дерево (12): vol: slider(...) внутри instruments
+  const tree = [...code.matchAll(/^(\s+)(\w+):\s*slider\(([^,\n]*)/gm)];
+  const isNum = (t) => /^\s*-?\d+(?:\.\d+)?\s*$/.test(t);
+  const nonLiteral = [
+    ...flat.filter(([, , first]) => !isNum(first)).map(([, name, first]) => `${name}(${first.trim()})`),
+    ...tree.filter(([, , , first]) => !isNum(first)).map(([, , name, first]) => `${name}(${first.trim()})`),
+  ];
+  const unused = flat
     .map(([, name]) => name)
     .filter((name) => (code.match(new RegExp('\\b' + name + '\\b', 'g')) || []).length < 2);
-  return { count: decls.length, nonLiteral, unused };
+  return { count: flat.length + tree.length, nonLiteral, unused };
 }
 
 // stut()/echo() внутри делают `pat.gain(pow(feedback, i))`, то есть
@@ -162,7 +169,9 @@ function run(file) {
     console,
   };
   vm.createContext(ctx);
-  vm.runInContext(wrapLabels(code), ctx, { filename: path.basename(file) });
+  // подписи и линты считаем по ИСХОДНОМУ тексту, а играем с поднятыми
+  // громкостями: иначе гейт `.filter(audible)` выкинет всё (см. tools/loud.mjs)
+  vm.runInContext(wrapLabels(loudVolumes(code)), ctx, { filename: path.basename(file) });
   return { pats, lines, code };
 }
 
@@ -229,15 +238,18 @@ for (const file of files) {
   });
   console.log(`  итого ${res.pats.length} дорожек, ${total} ударов за такт`);
 
-  // Один сэмпл в одной и той же позиции от РАЗНЫХ дорожек — это слышно как
-  // удар дважды (так в 01-berlin бочка и румбл обе били bd в 0, 4, 8, 12).
+  // Один звук в одной и той же позиции от РАЗНЫХ дорожек. Это может быть дубль
+  // (так в 01-berlin бочка и румбл обе били bd в 0, 4, 8, 12), а может быть
+  // стек по замыслу: в 11 на доле 0 сходятся ТЕЛО БОЧКИ + 808 + ИМПАКТ (f1),
+  // ЭЙСИД + РИЗ (sawtooth f2), ТАРЕЛКА + РАЙЗЕР (white). Поэтому ⚠ не значит
+  // «сломано» — подробный разбор даёт `npm run doubles`.
   const clashes = [...hitMap].filter(([, set]) => set.size > 1);
   if (clashes.length) {
     const list = clashes
       .slice(0, 5)
       .map(([key, set]) => `${key} (#${[...set].join(', #')})`)
       .join(', ');
-    console.log(`  ⚠ один сэмпл в одной позиции от разных дорожек: ${list}`);
+    console.log(`  ⚠ в одной позиции сходятся дорожки (стек или дубль): ${list}`);
   }
 
   const sl = lintSliders(res.code);

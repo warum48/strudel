@@ -12,6 +12,8 @@ import path from 'node:path';
 import vm from 'node:vm';
 import * as core from '@strudel/core';
 import * as mini from '@strudel/mini';
+import './viz-stub.mjs';
+import { loudVolumes } from './loud.mjs';
 
 mini.miniAllStrings();
 
@@ -71,13 +73,9 @@ function labelLine(lines, n) {
   return 0;
 }
 
-// Громкости поднимаем принудительно: в этих треках по умолчанию звучит только
-// атмосфера, и у стабов с мелодиями gain = 0 в обеих половинах — они бы просто
-// не попали в отчёт. Нам важен факт переключения, а не то, поднята ручка.
-const loud = raw.replace(
-  /const\s+(\w*[Vv]ol\w*)\s*=\s*slider\(\s*[^,\n]+/g,
-  (m) => m.replace(/slider\(\s*[^,\n]+/, 'slider(0.8'),
-);
+// Громкости поднимаем принудительно (см. tools/loud.mjs): иначе гейт
+// `.filter(audible)` выкинет все hap'ы и в отчёте будет пусто.
+const loud = loudVolumes(raw);
 
 const code = loud.replace(
   /const\s+harmony\s*=\s*slider\([^)]*\)/,

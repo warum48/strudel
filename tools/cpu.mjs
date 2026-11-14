@@ -26,6 +26,8 @@ import fs from 'node:fs';
 import vm from 'node:vm';
 import * as core from '@strudel/core';
 import * as mini from '@strudel/mini';
+import './viz-stub.mjs';
+import { loudVolumes } from './loud.mjs';
 mini.miniAllStrings();
 
 const file = process.argv[2];
@@ -55,10 +57,9 @@ function wrapLabels(code) {
 const KEYS = ['shape', 'crush', 'coarse', 'distort'];
 const BARS = 8;
 
-const loud = raw.replace(
-  /const\s+(\w*[Vv]ol\w*)\s*=\s*slider\(\s*[^,\n]+/g,
-  (m) => m.replace(/slider\(\s*[^,\n]+/, 'slider(0.8'),
-);
+// Громкости поднимаем (см. tools/loud.mjs): с гейтом `.filter(audible)` на
+// нулях не остаётся ни одного события, и «сколько worklet'ов на такт» было бы 0.
+const loud = loudVolumes(raw);
 
 function run(modeValue) {
   const pats = [];

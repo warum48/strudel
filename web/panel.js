@@ -1,30 +1,45 @@
-// Панель + НАСТОЯЩИЙ редактор. Слева ручки и эквалайзер, справа тот же
-// CodeMirror, что на strudel.cc — с виджетами-ползунками, подсветкой и Ctrl+Enter.
+// Panel + REAL editor. Left: MIXER (volumes only), middle: TONE (everything
+// else, collapsible groups), right: the same CodeMirror strudel.cc runs.
 //
-// Как это устроено (и почему именно так):
+// How it is put together (and why exactly like this):
 //
-// 1. РЕДАКТОР — это `@strudel/codemirror` (StrudelMirror), тот самый пакет,
-//    из которого собран strudel.cc. Он сам строит repl, сам рисует виджеты и
-//    сам делает eval. Своей копии кода у панели нет: она смотрит в тот же
-//    документ, что и редактор.
+// 1. EDITOR is `@strudel/codemirror` (StrudelMirror), the very package strudel.cc
+//    is built from. It builds the repl, draws widgets and evals on its own. The
+//    panel keeps no copy of the code: it looks at the same document.
 //
-// 2. РУЧКИ — не отдельные сигналы, а ПУЛЬТ от настоящих ползунков. Двигаешь
-//    ручку слева → панель делает ровно то же, что делает виджет под пальцем:
-//    меняет число в документе и шлёт `postMessage {type:'cm-slider', id, value}`.
-//    Отсюда два следствия: звук меняется сразу (без перезапуска) и код справа
-//    не врёт — в нём стоит то же число, что на ручке.
+// 2. KNOBS are a remote control for the real widgets. Move a knob → the panel does
+//    exactly what a widget under your finger does: changes the number in the
+//    document and posts `{type:'cm-slider', id, value}`. Two consequences: sound
+//    changes immediately (no restart) and the code never lies. And back: drag a
+//    widget in the editor and the knob follows.
 //
-// 3. sliderWithID — СВОЙ. Транспайлер превращает `slider(...)` в
-//    `sliderWithID(id, value, min, max)`. Штатный живёт в @strudel/codemirror и
-//    возвращает `ref` из другого инстанса @strudel/core (esm.sh грузит пакеты
-//    раздельно) — паттерн такой ref не понимает и звук умирает с
-//    «t is not a function» / «is not a function». Поэтому берём `ref` из того же
-//    core, что и паттерн, а значения храним сами.
+// 3. THE TREE IS THE LAYOUT. The track declares its sliders inside
+//    `const instruments = { drums: { kick: { name: 'Kick', vol: slider(...) } } }`.
+//    We parse that literal out of the document (see scanSliders) and get
+//    group → instrument → param for free, plus the display names from `name:`.
+//    Hence:
+//      * `vol` of any instrument → left column (MIXER);
+//      * every other param → middle column (TONE), inside two collapsible
+//        levels (group, instrument);
+//      * top-level `verb` / `duck` → the Global block above the mixer, together
+//        with the panel's own master gain (`#out`, after the engine);
+//      * any top-level slider with min 0 and step 1 → the switch panel between
+//        Global and the mixer (mode / harmony / acidMode …), button captions
+//        from the track's `// @switches` line.
+//    No hand-written name tables: add a key to the tree and it shows up in the
+//    right column, with its own label, by itself.
 //
-// 4. ЭКВАЛАЙЗЕР — настоящие BiquadFilter на мастере: выход движка
-//    (`output.destinationGain`) отцепляется от колонок и заводится на нашу цепь
-//    низ → середина → верх → мастер-гейн → анализатор → колонки. Поэтому EQ
-//    слышен сразу, он не в паттерне, он после движка.
+// 4. sliderWithID is OURS. The transpiler rewrites `slider(...)` into
+//    `sliderWithID(id, value, min, max)`. The stock one lives in
+//    @strudel/codemirror and returns `ref` from another @strudel/core instance
+//    (esm.sh loads packages separately) — the pattern does not understand such a
+//    ref and audio dies with `t is not a function`. So we take `ref` from the same
+//    core the pattern uses and keep the values ourselves.
+//
+// 5. MASTER CHAIN is real BiquadFilters on the master: the engine output
+//    (`output.destinationGain`) is disconnected from the speakers and routed into
+//    our chain low → mid → high → master gain → analyser → speakers. The EQ knobs
+//    are hidden for now (see `bindEq`), the filters stay at 0 dB.
 
 const EXT =
   '?external=@strudel/core,@strudel/mini,@strudel/tonal,@strudel/webaudio,@strudel/transpiler,@strudel/draw';
@@ -34,10 +49,23 @@ const core = await import('https://esm.sh/@strudel/core@1.2.6');
 const mini = await import('https://esm.sh/@strudel/mini@1.2.6');
 const tonal = await import('https://esm.sh/@strudel/tonal@1.2.6');
 const wa = await import('https://esm.sh/@strudel/webaudio@1.3.0');
-const draw = await import('https://esm.sh/@strudel/draw@1.2.6');
+// тот же инстанс, что грузит @strudel/codemirror: иначе cleanupDraw() из нашей
+// копии не остановит анимации, которые запустила его копия
+const draw = await import('https://esm.sh/@strudel/draw@1.2.6?external=@strudel/core');
 const { transpiler } = await import('https://esm.sh/@strudel/transpiler@1.2.6');
 
-const TRACK = '/tracks/techno/11-slowtrap-v2.js';
+// Трек не зашит: меню в шапке собирается из /api/tracks (tools/serve.mjs
+// читает папку tracks/), поэтому новый файл появляется в списке сам.
+// Хэш в адресе (#/tracks/techno/13-gabber-v3.js) — чтобы ссылку можно было
+// дать другому и открыть тот же трек.
+const DEFAULT_TRACK = '/tracks/techno/12-slowtrap-v3.js';
+let track = DEFAULT_TRACK;
+
+const trackName = (p) => p.replace(/^\/tracks\//, '').replace(/\.js$/, '');
+const trackTitle = (p) => {
+  const base = trackName(p).split('/').pop() ?? p;
+  return base.replace(/^\d+-/, '').replace(/-/g, ' ');
+};
 
 const $ = (id) => document.getElementById(id);
 const statusEl = $('status');
@@ -46,8 +74,8 @@ const setStatus = (t, err) => {
   statusEl.className = err ? 'err' : '';
 };
 
-// ── 1. мост между ручками и виджетами ─────────────────────────────
-const values = {}; // id → значение, из него читает сигнал паттерна
+// ── 1. bridge between knobs and widgets ───────────────────────────
+const values = {}; // id → value, the pattern signal reads from here
 
 const sliderWithID = (id, value) => {
   values[id] = value;
@@ -56,7 +84,7 @@ const sliderWithID = (id, value) => {
 };
 const slider = (value) => core.pure(value);
 
-// виджет шлёт сюда, когда его тянут мышкой в редакторе
+// a widget posts here when you drag it in the editor
 window.addEventListener('message', (e) => {
   const d = e.data;
   if (!d || d.type !== 'cm-slider') return;
@@ -69,7 +97,7 @@ window.addEventListener('message', (e) => {
   }
 });
 
-// ── 2. мастер-цепь: EQ + анализатор ───────────────────────────────
+// ── 2. master chain: EQ + analyser ────────────────────────────────
 let ctx;
 let masterGain;
 let analyser;
@@ -93,15 +121,21 @@ function buildMasterChain() {
   masterGain.connect(analyser);
   analyser.connect(ctx.destination);
 
-  // звук движка → наша цепь (до этого destinationGain шёл прямо в колонки)
+  // engine output → our chain (before this destinationGain went straight to speakers)
   out.destinationGain.disconnect();
   out.destinationGain.connect(eqIn);
 
   eq = { low, mid, high };
   globalThis.__panel = { ctx, eq, masterGain, analyser, get knobs() { return knobs; } };
-  bindEq();
+  bindMaster();
+  // bindEq();  ← вернуть вместе с блоком MASTER EQ в index.html
 }
 
+// ── EQ СКРЫТ, НЕ УДАЛЁН ───────────────────────────────────────────
+// Ручки убраны из разметки (см. комментарий в index.html), поэтому вызов
+// bindEq() в buildMasterChain() закомментирован. Сама функция и фильтры
+// на месте: раскомментировать блок в HTML + одну строку выше — и EQ вернётся.
+// eslint-disable-next-line no-unused-vars
 function bindEq() {
   const bands = [
     ['eqLow', 'eqLowV', 'low'],
@@ -110,36 +144,39 @@ function bindEq() {
   ];
   for (const [id, vid, key] of bands) {
     const input = $(id);
-    const out = $(vid);
+    const outEl = $(vid);
+    if (!input) continue;
     const apply = () => {
       const db = Number(input.value);
       if (eq) eq[key].gain.setTargetAtTime(db, ctx.currentTime, 0.02);
-      out.textContent = `${db.toFixed(1)} dB`;
+      outEl.textContent = `${db.toFixed(1)} dB`;
     };
     input.addEventListener('input', apply);
     apply();
   }
+}
 
-  const m = $('master');
-  const mv = $('masterV');
-  const applyMaster = () => {
+function bindMaster() {
+  const m = $('out');
+  const mv = $('outV');
+  const apply = () => {
     const g = Number(m.value);
     if (masterGain) masterGain.gain.setTargetAtTime(g, ctx.currentTime, 0.02);
     mv.textContent = g.toFixed(2);
   };
-  m.addEventListener('input', applyMaster);
-  applyMaster();
+  m.addEventListener('input', apply);
+  apply();
 }
 
-// ── 3. спектр ─────────────────────────────────────────────────────
+// ── 3. spectrum ───────────────────────────────────────────────────
+// Канвас 440×132 в разметке, CSS 220×66: рисуем в двойном разрешении, браузер
+// сжимает — так полосы не мылятся. Угол фиксированный, см. #scope в CSS.
 function drawSpectrum() {
   const cv = $('scope');
   const g = cv.getContext('2d');
   const w = cv.width;
   const h = cv.height;
   g.clearRect(0, 0, w, h);
-  g.fillStyle = '#0a0c09';
-  g.fillRect(0, 0, w, h);
   if (!analyser) {
     requestAnimationFrame(drawSpectrum);
     return;
@@ -150,9 +187,9 @@ function drawSpectrum() {
 
   const nyquist = ctx.sampleRate / 2;
   const bins = data.length;
-  const bars = 96;
+  const bars = 72;
   for (let i = 0; i < bars; i++) {
-    const f0 = 20 * Math.pow(1000, i / bars); // 20 → 20000 Гц
+    const f0 = 20 * Math.pow(1000, i / bars); // 20 → 20000 Hz
     const f1 = 20 * Math.pow(1000, (i + 1) / bars);
     const b0 = Math.floor((f0 / nyquist) * bins);
     const b1 = Math.max(b0 + 1, Math.floor((f1 / nyquist) * bins));
@@ -161,7 +198,7 @@ function drawSpectrum() {
     const bh = (v / 255) * (h - 6);
     const x = (i / bars) * w;
     const bw = w / bars - 1.5;
-    g.fillStyle = i < 24 ? '#b3d80d' : i < 60 ? '#8fb90c' : '#5c7a08';
+    g.fillStyle = i < 18 ? '#b3d80d' : i < 45 ? '#8fb90c' : '#5c7a08';
     g.fillRect(x, h - bh, bw, bh);
   }
   g.strokeStyle = '#1d211a';
@@ -172,132 +209,318 @@ function drawSpectrum() {
   requestAnimationFrame(drawSpectrum);
 }
 
-// ── 4. ручки из виджетов ──────────────────────────────────────────
-// Имена ручек нигде не перечислены руками: панель берёт их из виджетов, а группу
-// получает, отрезав хвост-суффикс (`kickVol` → `kick`). Поэтому новый слайдер в
-// треке появляется в панели сам — достаточно, чтобы его имя кончалось на один из
-// суффиксов ниже. Не кончилось — ручка всё равно будет, но отдельной группой
-// (так когда-то вылез `kickDist` рядом с «БОЧКОЙ»), поэтому список суффиксов
-// держим полным, а не минимальным.
-const SUFFIX = [
-  'Feedback', 'Chorus', 'Vowel', 'Glide', 'Shape', 'Drive', 'Dist', 'Decay',
-  'Delay', 'Crush', 'Bend', 'Speed', 'Depth', 'Phase', 'Pitch', 'Size', 'Time',
-  'Tune', 'Body', 'Drop', 'Rate', 'Mix', 'Echo', 'Hpf', 'Cut', 'Res', 'Env',
-  'Lfo', 'Det', 'Send', 'Level', 'Wet', 'Width', 'Accent', 'Spread', 'Freq',
-  'Vol', 'Q',
-];
+// ── 4. read the tree out of the document ──────────────────────────
+// Ручки не перечисляются руками: панель берёт их из самого трека. Единственное,
+// что нужно, — знать, ГДЕ стоит каждый `slider(` и в какой ключ он вложен.
+// Поэтому идём по тексту посимвольно, пропуская комментарии и строки (в шапке
+// трека слово `slider(` встречается в прозе — наивный поиск сбил бы нумерацию),
+// и держим стек ключей по глубине фигурных скобок.
+//
+// Здесь же собираются ПОДПИСИ: `name: 'Kick'` в дереве — это не ручка, а имя
+// для панели. Раньше они лежали таблицей в этом файле (INST_LABEL), и это была
+// последняя ручная связка «код ↔ панель»: добавил инструмент в трек — пошёл
+// дописывать словарь. Теперь имя живёт рядом с инструментом, а панель только
+// читает. Нет имени — подпись делается из ключа (`bodyLevel` → `body level`).
+function scanSliders(src) {
+  const sites = [];
+  const names = {}; // 'drums.kick' → 'Kick'
+  const keys = []; // keys[depth] — последний ключ на этом уровне вложенности
+  let depth = 0;
+  let i = 0;
+  const n = src.length;
+  const isWord = (c) => /[A-Za-z0-9_$]/.test(c);
+  const pathAt = (d) => keys.slice(1, d + 1).filter(Boolean).join('.');
 
-const LABEL = {
-  kick: 'БОЧКА', body: 'ТЕЛО БОЧКИ', eight: '808', acid: 'ЭЙСИД', ghost: 'ЭЙСИД-ОТВЕТ',
-  reese: 'РИЗ', chip: '8-БИТ', chip2: '8-БИТ БЛИП', ladder: 'ЛЕСТНИЦА', stat: 'СТАТТЕР',
-  mel: 'МЕЛОДИЯ', voc: 'ВОКОДЕР', pad: 'ПЭД', stab: 'СТАБ', snare: 'СНЕЙР', clap: 'КЛЭП',
-  hat: 'ХЭТЫ', ohat: 'ОТКРЫТЫЕ ХЭТЫ', rim: 'RIM', shaker: 'ШЕЙКЕР', tick: 'ТИКИ',
-  crash: 'ТАРЕЛКА', riser: 'РАЙЗЕР', swell: 'СВЕЛЛ', impact: 'ИМПАКТ', blip: 'БЛИПЫ',
-  grit: 'ПЫЛЬ', tape: 'ЛЕНТА', air: 'ВОЗДУХ', drone: 'ДРОН', vinyl: 'ПЕСОК',
-  verb: 'РЕВЕРБ', duck: 'САЙДЧЕЙН', mode: 'РЕЖИМ', harmony: 'ГАРМОНИЯ',
-};
-
-const ORDER = [
-  'mode', 'harmony', 'kick', 'body', 'eight', 'reese', 'acid', 'ghost', 'snare',
-  'clap', 'hat', 'ohat', 'rim', 'shaker', 'tick', 'crash', 'chip', 'chip2',
-  'ladder', 'stat', 'mel', 'voc', 'pad', 'stab', 'blip', 'grit', 'tape',
-  'riser', 'swell', 'impact', 'air', 'drone', 'vinyl', 'verb', 'duck',
-];
-
-const groupOf = (name) => {
-  for (const s of SUFFIX) {
-    if (name.length > s.length && name.endsWith(s)) return name.slice(0, -s.length);
+  while (i < n) {
+    const c = src[i];
+    if (c === '/' && src[i + 1] === '/') {
+      const e = src.indexOf('\n', i);
+      i = e < 0 ? n : e + 1;
+      continue;
+    }
+    if (c === '/' && src[i + 1] === '*') {
+      const e = src.indexOf('*/', i + 2);
+      i = e < 0 ? n : e + 2;
+      continue;
+    }
+    if (c === '"' || c === "'" || c === '`') {
+      i++;
+      while (i < n) {
+        if (src[i] === '\\') { i += 2; continue; }
+        if (src[i] === c) { i++; break; }
+        i++;
+      }
+      continue;
+    }
+    if (c === '{') {
+      depth++;
+      keys[depth] = null;
+      i++;
+      continue;
+    }
+    if (c === '}') {
+      keys[depth] = null;
+      depth = Math.max(0, depth - 1);
+      i++;
+      continue;
+    }
+    if (c === '[' || c === ']' || c === '(' || c === ')') {
+      i++;
+      continue;
+    }
+    if (isWord(c)) {
+      let j = i + 1;
+      while (j < n && isWord(src[j])) j++;
+      const word = src.slice(i, j);
+      // `word:` — это ключ объекта (не `word::`, не тернарник)
+      let k = j;
+      while (k < n && (src[k] === ' ' || src[k] === '\t')) k++;
+      if (src[k] === ':' && src[k + 1] !== ':') {
+        // `name: 'Kick'` — подпись объекта, в котором стоит. Путь берём ДО
+        // того, как перезапишем keys[depth] словом `name`.
+        if (word === 'name') {
+          let q = k + 1;
+          while (q < n && /\s/.test(src[q])) q++;
+          const quote = src[q];
+          if (quote === "'" || quote === '"' || quote === '`') {
+            let e = q + 1;
+            let out = '';
+            while (e < n && src[e] !== quote) {
+              if (src[e] === '\\') { out += src[e + 1] ?? ''; e += 2; continue; }
+              out += src[e];
+              e++;
+            }
+            names[pathAt(depth)] = out;
+            i = e + 1;
+            continue;
+          }
+        }
+        keys[depth] = word;
+        i = k + 1;
+        continue;
+      }
+      if (word === 'slider' && src[j] === '(') {
+        sites.push({ pos: i, path: keys.slice(1, depth + 1).filter(Boolean) });
+      }
+      i = j;
+      continue;
+    }
+    i++;
   }
-  return name;
-};
+  return { sites, names };
+}
 
-const rank = (name) => (name.endsWith('Vol') ? 0 : name.endsWith('Cut') ? 1 : 2);
+// Подписи. Приоритет: `name:` из трека → человеческая форма ключа.
+const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
+const pretty = (key) => key.replace(/([a-z0-9])([A-Z])/g, '$1 $2').toLowerCase();
+let labels = {}; // 'drums.kick' → 'Kick', заполняется в buildKnobs
+
+const groupLabel = (g) => labels[g] || cap(g);
+const instLabel = (g, inst) => labels[`${g}.${inst}`] || cap(inst);
+const paramLabel = (name) => pretty(name);
+
+
+// ПЕРЕКЛЮЧАТЕЛИ — не список имён, а признак структуры: глобальная ручка
+// (вне дерева), min 0 и шаг 1 — значит это выбор режима, а не громкость.
+// Подписи кнопок берутся из строки-маркера в треке:
+//   // @switches mode=stomp,gabber,break,half,roll harmony=fifths,minor
+// Нет строки — кнопки называются цифрами, но всё равно рисуются.
+const isSwitch = (k) => k.path.length === 0 && k.step === 1 && k.min === 0;
+
+function scanSwitchCaps(src) {
+  const caps = {};
+  const line = /^[ \t]*\/\/[ \t]*@switches[ \t]+(.+)$/m.exec(src);
+  if (!line) return caps;
+  for (const part of line[1].trim().split(/\s+/)) {
+    const [name, list] = part.split('=');
+    if (name && list) caps[name] = list.split(',');
+  }
+  return caps;
+}
+let switchCaps = {};
+
+
 const fmt = (x) => {
   const n = Number(x);
-  return Math.abs(n) >= 100 ? String(Math.round(n)) : String(Number(n.toFixed(3)));
+  if (!Number.isFinite(n)) return String(x);
+  if (Math.abs(n) >= 100) return String(Math.round(n));
+  return String(Number(n.toFixed(4)));
 };
 
-let knobs = []; // { name, anchor, min, max, step, value }
-const knobByAnchor = new Map(); // id виджета → { input, out }
+let knobs = []; // { idx, path, name, anchor, min, max, step, value }
+const knobByAnchor = new Map(); // widget id → { input, out }
+const openState = new Map(); // 'group' / 'group.inst' → свёрнуто ли
 
 function buildKnobs() {
-  const doc = mirror.editor.state.doc;
+  const src = mirror.editor.state.doc.toString();
+  const { sites, names } = scanSliders(src);
+  labels = names;
+  switchCaps = scanSwitchCaps(src);
+  const ws = mirror.widgets.filter((w) => w.type === 'slider').sort((a, b) => a.from - b.from);
+  if (sites.length !== ws.length) {
+    console.warn(`panel: ${sites.length} slider( в тексте против ${ws.length} виджетов`);
+  }
   knobs = [];
-  for (const w of mirror.widgets) {
-    if (w.type !== 'slider') continue;
-    // виджет стоит ровно на числе, поэтому имя ищем слева от него
-    const before = doc.sliceString(Math.max(0, w.from - 90), w.from);
-    const m = /const\s+(\w+)\s*=\s*slider\(\s*$/.exec(before);
+  const n = Math.min(sites.length, ws.length);
+  for (let i = 0; i < n; i++) {
+    const w = ws[i];
+    const path = sites[i].path;
+    let name = path.length ? path[path.length - 1] : '';
+    if (!name) {
+      const before = src.slice(Math.max(0, sites[i].pos - 48), sites[i].pos);
+      const m = /const\s+(\w+)\s*=\s*$/.exec(before);
+      name = m ? m[1] : `slider_${i}`;
+    }
     knobs.push({
-      name: m ? m[1] : `slider_${w.from}`,
-      anchor: w.from, // id, который транспортёр выдал при eval
+      idx: i,
+      path,
+      name,
+      anchor: w.from,
       min: w.min,
       max: w.max,
       step: w.step,
       value: Number(w.value),
     });
   }
-  renderKnobs();
+  render();
 }
 
-function renderKnobs() {
-  const groups = new Map();
-  for (const k of knobs) {
-    const g = groupOf(k.name);
-    if (!groups.has(g)) groups.set(g, []);
-    groups.get(g).push(k);
-  }
-
-  const keys = [...groups.keys()].sort((a, b) => {
-    const ia = ORDER.indexOf(a);
-    const ib = ORDER.indexOf(b);
-    if (ia !== -1 || ib !== -1) return (ia === -1 ? 999 : ia) - (ib === -1 ? 999 : ib);
-    return a.localeCompare(b);
-  });
-
-  const root = $('knobs');
-  root.innerHTML = '';
+function render() {
   knobByAnchor.clear();
 
-  for (const g of keys) {
-    const items = groups.get(g).sort((a, b) => rank(a.name) - rank(b.name) || a.name.localeCompare(b.name));
-    const box = document.createElement('section');
-    box.className = 'group';
-    const h = document.createElement('h3');
-    h.textContent = LABEL[g] ?? g.toUpperCase();
-    box.appendChild(h);
-    const rows = document.createElement('div');
-    rows.className = 'rows';
-
-    // громкость и срез — одной колонкой, срез ровно под громкостью:
-    // та же привычка, что в коде трека
-    const done = new Set();
-    for (const k of items) {
-      if (done.has(k.name)) continue;
-      done.add(k.name);
-      const cell = document.createElement('div');
-      cell.className = 'cell';
-      cell.appendChild(makeRow(k));
-      if (k.name.endsWith('Vol')) {
-        const cut = items.find((x) => x.name === k.name.slice(0, -3) + 'Cut');
-        if (cut) {
-          done.add(cut.name);
-          cell.appendChild(makeRow(cut));
-        }
-      }
-      rows.appendChild(cell);
+  const globals = [];
+  const switches = [];
+  const groups = new Map(); // group → Map(instrument → knobs[])
+  for (const k of knobs) {
+    if (k.path.length === 0) {
+      (isSwitch(k) ? switches : globals).push(k);
+      continue;
     }
-    box.appendChild(rows);
+    if (k.path.length < 3) continue; // ключ-обёртка без параметра
+    const [g, inst] = k.path;
+    if (!groups.has(g)) groups.set(g, new Map());
+    const m = groups.get(g);
+    if (!m.has(inst)) m.set(inst, []);
+    m.get(inst).push(k);
+  }
+
+  renderGlobals(globals);
+  renderSwitches(switches);
+  renderMixer(groups);
+  renderTone(groups);
+
+  $('mixCount').textContent = `${[...groups.values()].reduce((a, m) => a + m.size, 0)} inst`;
+  $('toneCount').textContent = `${groups.size} groups`;
+}
+
+function renderGlobals(list) {
+  const root = $('globalRows');
+  root.innerHTML = '';
+  for (const k of list) root.appendChild(makeRow(k));
+  // блок не скрываем никогда: в нём живёт мастер-громкость (см. index.html)
+}
+
+// Переключатели — не ползунки: у mode 4 положения, у harmony 2. Рисуем кнопки,
+// значение всё равно пишется в документ тем же setKnob.
+function renderSwitches(list) {
+  const root = $('switches');
+  root.innerHTML = '';
+  for (const k of list) {
+    const box = document.createElement('span');
+    box.className = 'sw';
+    const cap = document.createElement('span');
+    cap.className = 'cap';
+    cap.textContent = k.name;
+    box.appendChild(cap);
+    const vals = [];
+    for (let v = k.min; v <= k.max + 1e-9; v += 1) vals.push(v);
+    const caps = switchCaps[k.name] || [];
+    const btns = [];
+    vals.forEach((v, i) => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.textContent = String(v);
+      b.title = caps[i] || `${k.name} ${v}`;
+      b.addEventListener('click', () => {
+        k.value = v;
+        setKnob(k, v);
+        for (const other of btns) other.classList.toggle('on', other === b);
+      });
+      btns.push(b);
+      box.appendChild(b);
+    });
+    const cur = Math.round(k.value);
+    btns.forEach((b, i) => b.classList.toggle('on', vals[i] === cur));
     root.appendChild(box);
   }
 }
 
-function makeRow(k) {
+// МИКШЕР: ровно `vol` каждого инструмента, в порядке дерева.
+function renderMixer(groups) {
+  const root = $('mixlist');
+  root.innerHTML = '';
+  const rows = document.createElement('div');
+  rows.className = 'rows';
+  for (const [g, insts] of groups) {
+    for (const [inst, params] of insts) {
+      const vol = params.find((p) => p.path[2] === 'vol');
+      if (!vol) continue;
+      const row = makeRow(vol, instLabel(g, inst));
+      row.classList.add('is-vol');
+      rows.appendChild(row);
+    }
+  }
+  root.appendChild(rows);
+}
+
+// ТОНКИЕ НАСТРОЙКИ: всё, кроме vol. Два уровня сворачивания — группа и
+// инструмент; состояние запоминается между eval'ами (openState).
+function renderTone(groups) {
+  const root = $('tonelist');
+  root.innerHTML = '';
+  for (const [g, insts] of groups) {
+    const gParams = [...insts.values()].reduce((a, p) => a + p.filter((x) => x.path[2] !== 'vol').length, 0);
+    if (!gParams) continue;
+
+    const gd = document.createElement('details');
+    gd.className = 'grp';
+    gd.open = openState.get(g) ?? true;
+    gd.addEventListener('toggle', () => openState.set(g, gd.open));
+    const gs = document.createElement('summary');
+    gs.innerHTML = `<span>${groupLabel(g)}</span><span class="n">${gParams}</span>`;
+    gd.appendChild(gs);
+    const gbody = document.createElement('div');
+    gbody.className = 'body';
+
+    for (const [inst, params] of insts) {
+      const own = params.filter((p) => p.path[2] !== 'vol');
+      if (!own.length) continue;
+      const key = `${g}.${inst}`;
+      const id = document.createElement('details');
+      id.className = 'inst';
+      id.open = openState.get(key) ?? true;
+      id.addEventListener('toggle', () => openState.set(key, id.open));
+      const is = document.createElement('summary');
+      is.innerHTML = `<span>${instLabel(g, inst)}</span><span class="n">${own.length}</span>`;
+      id.appendChild(is);
+      const body = document.createElement('div');
+      body.className = 'rows';
+      for (const p of own) body.appendChild(makeRow(p, paramLabel(p.name)));
+      id.appendChild(body);
+      gbody.appendChild(id);
+    }
+
+    gd.appendChild(gbody);
+    root.appendChild(gd);
+  }
+}
+
+function makeRow(k, label) {
   const row = document.createElement('div');
-  row.className = 'row' + (k.name.endsWith('Vol') ? ' is-vol' : '') + (k.name.endsWith('Cut') ? ' is-cut' : '');
-  const label = document.createElement('label');
-  label.textContent = k.name;
-  label.title = k.name;
+  row.className = 'row' + (k.name === 'vol' ? ' is-vol' : '') + (k.name === 'cut' ? ' is-cut' : '');
+  const lab = document.createElement('label');
+  lab.textContent = label || k.name;
+  lab.title = k.path.length ? k.path.join('.') : k.name;
   const input = document.createElement('input');
   input.type = 'range';
   input.min = k.min;
@@ -312,82 +535,294 @@ function makeRow(k) {
     out.textContent = fmt(v);
     setKnob(k, v);
   });
-  row.append(label, input, out);
+  row.append(lab, input, out);
   knobByAnchor.set('slider_' + k.anchor, { input, out });
   return row;
 }
 
-// Ручка = тот же драг, что мышкой по виджету: число в документ + сообщение
-// движку. Позицию числа ищем в ТЕКУЩЕМ документе — после правки числа всё,
-// что справа, сдвигается, и запомненный `from` устаревает.
+// A knob is the same drag a widget gets: the number into the document + a message
+// to the engine. Позицию числа НЕ запоминаем: после любой правки всё правее
+// сдвигается, а id виджета (`slider_<offset>`) живёт до следующего eval.
+// Поэтому каждый раз заново сканируем документ и берём k.idx-й вызов slider(.
 function setKnob(k, v) {
-  const text = mirror.editor.state.doc.toString();
-  const re = new RegExp('const\\s+' + k.name + '\\s*=\\s*slider\\(\\s*(-?\\d+(?:\\.\\d+)?)');
-  const m = re.exec(text);
-  if (m) {
-    const numFrom = m.index + m[0].length - m[1].length;
-    mirror.editor.dispatch({
-      changes: { from: numFrom, to: numFrom + m[1].length, insert: fmt(v) },
-    });
+  const src = mirror.editor.state.doc.toString();
+  const site = scanSliders(src).sites[k.idx];
+  if (site) {
+    const head = /^slider\(\s*(-?\d+(?:\.\d+)?)/.exec(src.slice(site.pos, site.pos + 40));
+    if (head) {
+      const from = site.pos + head[0].length - head[1].length;
+      mirror.editor.dispatch({ changes: { from, to: from + head[1].length, insert: fmt(v) } });
+    }
   }
-  window.postMessage({ type: 'cm-slider', id: 'slider_' + k.anchor, value: Number(v) }, '*');
+  window.postMessage({ type: 'cm-slider', id: 'slider_' + k.anchor, value: Number(v) }, null);
 }
 
-// ── 5. редактор и запуск ──────────────────────────────────────────
+// ── 5. editor theme and visualizer ────────────────────────────────
+// cm.themes — 39 color schemes from strudel.cc itself; activateTheme writes the
+// theme into `:root` as `--background/--foreground/--caret/...` variables. Our own
+// variables are --bg/--panel/--text/--accent, they do not collide, so the panel
+// keeps its lime accent whatever theme the code wears.
+function fillThemes() {
+  const sel = $('theme');
+  for (const name of Object.keys(cm.themes || {})) {
+    const o = document.createElement('option');
+    o.value = name;
+    o.textContent = name;
+    sel.appendChild(o);
+  }
+  sel.value = 'strudelTheme';
+  sel.addEventListener('change', () => applyTheme(sel.value));
+}
+
+function applyTheme(name) {
+  try {
+    cm.initTheme(name);
+  } catch (e) {
+    setStatus(e.message, true);
+  }
+}
+
+// ── inline visualizers: `_pianoroll()` прямо в коде ─────────────────────────
+// В strudel.cc это НЕ полноэкранная картинка, а block-widget CodeMirror: канвас
+// вставляется блоком под той строкой, где стоит вызов. На трек их может быть
+// сколько угодно — по одному на инструмент.
+//
+// Как это работает в пакете: транспайлер видит вызов зарегистрированного метода
+// (`_pianoroll`, `_punchcard`, `_spiral`, `_pitchwheel`, `_scope`, `_spectrum`),
+// переписывает его в `_pianoroll('<id>')` и кладёт в meta.widgets конфиг
+// `{type, index, to}`. После eval StrudelMirror зовёт updateWidgets(), а
+// BlockWidget.toDOM() достаёт готовый элемент из своего реестра по
+// `getWidgetID(cfg)` = `<id>_widget_<type>_<index>`. Метод паттерна должен сам
+// создать canvas и положить его в этот реестр — setWidget(id, canvas).
+//
+// Почему не работает «из коробки»: @strudel/codemirror регистрирует эти методы
+// на СВОЁМ Pattern.prototype, а под esm.sh это не тот инстанс ядра, на котором
+// евал-ится трек (та же причина, по которой нам нужен свой sliderWithID).
+// Поэтому регистрируем руками на нашем core, а canvas отдаём в их реестр.
+const widgetCanvases = {};
+
+// ширина — по реальной ширине кода, иначе канвас 500px висит посреди пустой
+// панели, а на узком окне вылезает за край. Замер один раз, при создании.
+function codeWidth() {
+  const el = document.querySelector('#root .cm-content');
+  const w = el?.clientWidth || 0;
+  return Math.max(320, Math.min(900, (w || 560) - 48));
+}
+
+function widgetCanvas(id, options = {}) {
+  const { width = codeWidth(), height = 58, pixelRatio = window.devicePixelRatio || 1 } = options;
+  let c = widgetCanvases[id];
+  if (!c) {
+    c = document.createElement('canvas');
+    c.className = 'cm-inline-viz';
+    widgetCanvases[id] = c;
+  }
+  // канвас 1:1 с CSS * pixelRatio: painter'ы считают геометрию в пикселях
+  // канваса, поэтому растянутый CSS даёт мыло и уехавшие линии
+  c.width = Math.round(width * pixelRatio);
+  c.height = Math.round(height * pixelRatio);
+  c.style.width = width + 'px';
+  c.style.height = height + 'px';
+  cm.setWidget(id, c); // реестр CodeMirror — оттуда его заберёт BlockWidget
+  return c.getContext('2d');
+}
+// для отладки из консоли: какие канвасы уже созданы и под какими id
+window.__vizCanvases = widgetCanvases;
+
+// лайм панели по умолчанию; любой вызов может переопределить своими опциями.
+// inactive не чёрный и не лайм: ноты должны читаться на тёмном фоне, но не
+// спорить с активной (лаймовой) нотой и плейхедом.
+const VIZ_LOOK = { active: '#b3d80d', inactive: '#6b7d55', playheadColor: '#e3f07a' };
+
+// 🛑 ГЛАВНАЯ ЛОВУШКА ВИЗУАЛИЗАТОРОВ: __pianoroll рисует ноту с прозрачностью
+// `velocity * gain` из значения hap'а. У нас `gain` — это РУЧКА ГРОМКОСТИ
+// микшера, а все ударные по умолчанию стоят в нуле: картинка есть, нот не
+// видно (проверено — на канвасе оставалась одна линия плейхеда). Поэтому в
+// витрину отдаём копии hap'ов с gain = 1: ритм видно всегда, независимо от
+// того, выкручена дорожка или нет. Звук при этом не трогаем — см. ниже, какая
+// копия уходит в эфир, а какая только в canvas.
+const vizHaps = (haps) =>
+  haps.map((h) => {
+    // уже 1 — не копируем: painter зовётся каждый кадр, а у хэтов это 300+ hap'ов
+    if (h.value?.gain === 1) return h;
+    const value = typeof h.value === 'object' && h.value !== null ? { ...h.value, gain: 1 } : { value: h.value, gain: 1 };
+    return new core.Hap(h.whole, h.part, value, h.context);
+  });
+
+function registerInlineViz() {
+  const P = core.Pattern.prototype;
+
+  // pianoroll рисует сам (Pattern.prototype.draw → свой rAF), поэтому ему нужен
+  // не painter, а сам паттерн. Отсюда приём с «тенью»: в эфир уходит исходный
+  // паттерн (return this — звук и ручки как были), а рисуется его копия с
+  // gain = 1 и тегом id.
+  P._pianoroll = function (id, options = {}) {
+    const ctx = widgetCanvas(id, options);
+    const shadow = this.withHaps(vizHaps).tag(id);
+    shadow.pianoroll({ fold: 1, ...VIZ_LOOK, ...options, ctx, id });
+    return this;
+  };
+
+  // punchcard/spiral/pitchwheel работают наоборот: они вешают painter в state
+  // паттерна (onPaint), а painter зовёт Drawer редактора — и painter обязан
+  // висеть на ТОМ паттерне, который играет. Поэтому тут возвращаем this с
+  // тегом, а gain правим уже внутри painter'а: нарисовать — да, сыграть — нет.
+  //
+  // 🛑 И рисуем НЕ переданные painter'у haps. Дорожка кончается
+  // `.filter(audible)` — при нулевой громкости в паттерне нет ни одного hap'а,
+  // и ролл был бы пустым (то есть ровно тем багом, который мы только что
+  // вылечили). Поэтому спрашиваем свой, незагейченный паттерн: `self`.
+  const ownHaps = (self, id, time, drawTime) => {
+    const [lb, la] = drawTime ?? [-2, 2];
+    const from = Math.max(0, time - Math.abs(lb));
+    return vizHaps(self.queryArc(from, time + la).filter((h) => h.hasTag(id)));
+  };
+
+  P._punchcard = function (id, options = {}) {
+    const ctx = widgetCanvas(id, options);
+    const opts = { fold: 1, ...VIZ_LOOK, ...options, ctx, id };
+    const self = this.tag(id);
+    return self.onPaint((c, time, haps, drawTime) =>
+      draw.__pianoroll({
+        ctx,
+        time,
+        haps: ownHaps(self, id, time, drawTime),
+        ...draw.getDrawOptions(drawTime, opts),
+      }),
+    );
+  };
+
+  // круглые — квадратный канвас, иначе кольцо растягивается в эллипс
+  // `_spiral` сюда НЕ заведён намеренно: его функция рисования (drawSpiral)
+  // не экспортируется из @strudel/draw, поэтому перехватить haps и починить
+  // gain нельзя — на нулевой громкости он рисовал бы пустоту.
+  P._pitchwheel = function (id, options = {}) {
+    const size = options.size || 200;
+    const opts = { width: size, height: size, ...VIZ_LOOK, ...options, size: size / 5, id };
+    const ctx = widgetCanvas(id, opts);
+    const self = this.tag(id);
+    return self.onPaint((c, time, haps, drawTime) =>
+      draw.pitchwheel({
+        ...opts,
+        time,
+        ctx,
+        // свой запрос, не haps от Drawer'а — см. ownHaps выше
+        haps: ownHaps(self, id, time, drawTime).filter((h) => h.isActive(time)),
+      }),
+    );
+  };
+
+  // осциллограф/спектр живут в @strudel/webaudio; если их там нет — молча пропускаем
+  if (typeof P.scope === 'function') {
+    P._scope = function (id, options = {}) {
+      const opts = { width: 500, height: 58, pos: 0.5, scale: 1, ...options };
+      const ctx = widgetCanvas(id, opts);
+      return this.tag(id).scope({ ...opts, ctx, id });
+    };
+  }
+  if (typeof P.spectrum === 'function') {
+    P._spectrum = function (id, options = {}) {
+      const size = options.size || 200;
+      const opts = { width: size, height: size, ...options, size: size / 5 };
+      const ctx = widgetCanvas(id, opts);
+      return this.tag(id).spectrum({ ...opts, ctx, id });
+    };
+  }
+}
+
+// ── 6. editor and transport ───────────────────────────────────────
 let mirror;
 let code = '';
 let playing = false;
 
-// ЛОВУШКА @strudel/draw. `getDrawContext()` без аргументов ищет
-// canvas#test-canvas, не находит и СОЗДАЁТ его сам — position:fixed, во весь
-// экран, и вставляет первым в body. Причём создаёт его не мы: `StrudelMirror`
-// на каждом eval зовёт `cleanupDraw()`, а тот внутри делает ровно это. Сам по
-// себе canvas прозрачный (cleanupDraw только чистит его), но в CSS панели
-// правило `canvas { background: … }` красило и его тоже — и тогда он ложился
-// чёрным поверх шапки и левой панели (они static, а canvas в positioned-слое).
-// Снаружи это выглядело как «страница чёрная, видно только код», хотя
-// getBoundingClientRect и elementFromPoint показывали идеальную геометрию.
-// Отсюда два правила: CSS красит только `#scope`, и свой draw-canvas у нас
-// маленький и спрятанный, а не во весь экран.
-function makeDrawCanvas() {
-  const c = document.createElement('canvas');
-  c.id = 'panel-draw';
-  c.width = 2;
-  c.height = 2;
-  c.style.display = 'none';
-  document.body.appendChild(c);
-  return c;
+async function fillTrackSelect() {
+  const sel = $('track');
+  let list = [];
+  try {
+    const res = await fetch('/api/tracks');
+    if (!res.ok) throw new Error(String(res.status));
+    list = await res.json();
+  } catch {
+    list = [DEFAULT_TRACK]; // без сервера список не собрать — грузим дефолт
+  }
+  for (const p of list) {
+    const o = document.createElement('option');
+    o.value = p;
+    o.textContent = trackName(p);
+    sel.appendChild(o);
+  }
+  const fromHash = decodeURIComponent(location.hash.slice(1));
+  const want = list.includes(fromHash) ? fromHash : DEFAULT_TRACK;
+  sel.value = want;
+  return want;
+}
+
+async function readTrack(p) {
+  const res = await fetch(p);
+  if (!res.ok) throw new Error(`${p}: ${res.status}`);
+  return res.text();
+}
+
+// Заголовок и подпись — из самого файла: BPM берём из кода, а не из константы
+// в панели, иначе при смене трека шапка врёт.
+function showTrackInfo(p, src) {
+  $('title').textContent = trackTitle(p);
+  $('trackPath').textContent = trackName(p) + '.js';
+  const bpm = /const\s+BPM\s*=\s*(\d+(?:\.\d+)?)/.exec(src);
+  $('sub').textContent = bpm ? `${bpm[1]} BPM` : '';
+}
+
+async function loadTrack(p) {
+  if (!mirror || p === track) return;
+  setStatus('reading track…');
+  const src = await readTrack(p);
+  stop(); // старый паттерн глушим: иначе два трека играют разом
+  track = p;
+  code = src;
+  mirror.setCode(src);
+  showTrackInfo(p, src);
+  history.replaceState(null, '', '#' + p);
+  // даём CodeMirror разложить документ: evaluate() читает this.code, который
+  // обновляет его же слушатель изменений
+  await new Promise((r) => setTimeout(r, 0));
+  await play(); // выбор в меню — это жест пользователя, звук уже разрешён
 }
 
 async function boot() {
-  setStatus('загрузка движка…');
+  setStatus('loading engine…');
   const audioReady = wa.initAudioOnFirstClick();
   mini.miniAllStrings();
 
-  setStatus('читаю трек…');
-  const res = await fetch(TRACK);
-  if (!res.ok) throw new Error(`${TRACK}: ${res.status}`);
-  code = await res.text();
+  setStatus('reading track…');
+  track = await fillTrackSelect();
+  code = await readTrack(track);
+  showTrackInfo(track, code);
 
-  // как в strudel.cc loadModules(): всё, что должно быть видно в eval
+  // like loadModules() in strudel.cc: everything that must be visible in eval
   await core.evalScope(core, mini, tonal, wa, cm, { sliderWithID, slider });
+  registerInlineViz(); // _pianoroll / _spiral / ... на нашем Pattern.prototype
 
   const CDN = 'https://strudel.b-cdn.net';
-  makeDrawCanvas();
   mirror = new cm.StrudelMirror({
     root: $('root'),
     initialCode: code,
-    autodraw: false,
+    // autodraw — это цикл отрисовки редактора: он каждый кадр зовёт painter'ы
+    // всех паттернов. Нужен для _punchcard/_spiral/_pitchwheel (они копят
+    // painter'ы через onPaint). _pianoroll рисует сам, через Pattern.draw.
+    autodraw: true,
     drawTime: [-2, 2],
-    drawContext: draw.getDrawContext('panel-draw'),
+    // не getDrawContext() без аргумента: тот создаёт СВОЙ canvas во весь экран и
+    // вставляет первым в body. У нас в разметке есть скрытый #test-canvas —
+    // движок находит его и никуда не лезет.
+    drawContext: draw.getDrawContext('test-canvas'),
     pattern: core.silence,
     defaultOutput: wa.webaudioOutput,
     getTime: wa.getAudioContextCurrentTime,
     transpiler,
     prebake: async () => {
-      setStatus('сэмплы…');
-      // банк как у strudel.cc: без uzu-drumkit нет sh/oh/rim — три дорожки
-      // трека молча ругаются «sound not found», и это слышно как пустые хэты
+      setStatus('samples…');
+      // bank like strudel.cc: without uzu-drumkit there is no sh/oh/rim — three
+      // tracks then quietly complain "sound not found", audible as empty hats
       await Promise.all([
         wa.registerSynthSounds(),
         wa.samples('github:tidalcycles/dirt-samples'),
@@ -401,20 +836,33 @@ async function boot() {
     onUpdateState: (s) => {
       if (s?.evalError) setStatus(s.evalError.message, true);
     },
-    // после любого eval (PLAY или Ctrl+Enter в редакторе) виджеты пересобраны —
-    // значит и id слайдеров новые, ручки надо пересобрать, иначе они будут
-    // крутить старые id и звук перестанет слушаться
+    // after any eval (PLAY or Ctrl+Enter) the widgets are rebuilt — so the slider
+    // ids are new and the knobs must be rebuilt, otherwise they turn old ids and
+    // the sound stops listening
     afterEval: () => {
-      if (mirror) buildKnobs();
+      if (!mirror) return;
+      buildKnobs();
     },
   });
 
-  // трек внутри сам синхронизирует ползунки через window.strudelMirror
+  // StrudelMirror пишет на root ИНЛАЙН-стили:
+  //   display:block; background-color: var(--background); font-size: 18px;
+  // font-family: monospace
+  // Инлайн сильнее любого нашего селектора (кроме !important), и это ровно два
+  // наших симптома: фон перекрывал что угодно под редактором, а 18px — тот
+  // самый крупный шрифт кода. Снимаем оба руками.
+  const rootEl = $('root');
+  rootEl.style.backgroundColor = 'transparent';
+  rootEl.style.fontSize = '13px';
+
+  // the track itself syncs sliders through window.strudelMirror
   window.strudelMirror = mirror;
   window.__mirror = mirror;
+  window.__cm = cm;
 
+  fillThemes();
   requestAnimationFrame(drawSpectrum);
-  setStatus('готов — жми PLAY');
+  setStatus('ready — hit PLAY');
   return audioReady;
 }
 
@@ -423,12 +871,12 @@ async function play() {
   if (!mirror) return;
   await audioReady;
   if (!eq) buildMasterChain();
-  setStatus('запуск…');
+  setStatus('starting…');
   await mirror.evaluate();
   playing = true;
   $('play').classList.add('on');
   buildKnobs();
-  setStatus(`${knobs.length} ручек · играет`);
+  setStatus(`${knobs.length} knobs · playing`);
 }
 
 function stop() {
@@ -436,15 +884,18 @@ function stop() {
   mirror.stop();
   playing = false;
   $('play').classList.remove('on');
-  setStatus(`${knobs.length} ручек · стоп`);
+  setStatus(`${knobs.length} knobs · stopped`);
 }
 
 $('play').addEventListener('click', () => play().catch((e) => setStatus(e.message, true)));
 $('stop').addEventListener('click', () => stop());
+$('track').addEventListener('change', (e) => {
+  loadTrack(e.target.value).catch((err) => setStatus(err.message, true));
+});
 
-// @strudel/codemirror вешает именно `Ctrl-Enter` / `Ctrl-.` (не Mod), поэтому на
-// маке привычный Cmd+Enter молчит. Добавляем только Cmd: Ctrl остаётся за
-// редактором, двойного запуска не будет.
+// @strudel/codemirror binds exactly `Ctrl-Enter` / `Ctrl-.` (not Mod), so the
+// usual Cmd+Enter is silent on a mac. Add Cmd only: Ctrl stays with the editor,
+// no double eval.
 $('root').addEventListener(
   'keydown',
   (e) => {

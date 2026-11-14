@@ -92,7 +92,18 @@ async function launch(url) {
     return r.result.value;
   };
 
-  const close = () => { try { ws.close(); } catch {} proc.kill('SIGKILL'); };
+  // ws.close() не зовём: undici успевает получить кадр уже после закрытия и
+  // падает из websocketMessageReceived — проверки к этому моменту напечатаны,
+  // но процесс выходил с кодом 1, и зелёный прогон выглядел красным.
+  // Убиваем браузер — сокет закроется сам, а process.exit() ниже завершит всё.
+  const close = () => {
+    try {
+      ws.onmessage = null;
+      ws.onerror = null;
+      ws.onopen = null;
+    } catch {}
+    proc.kill('SIGKILL');
+  };
   return { send, evaluate, close };
 }
 

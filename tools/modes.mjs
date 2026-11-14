@@ -20,6 +20,8 @@ import path from 'node:path';
 import vm from 'node:vm';
 import * as core from '@strudel/core';
 import * as mini from '@strudel/mini';
+import './viz-stub.mjs';
+import { loudVolumes } from './loud.mjs';
 
 mini.miniAllStrings();
 
@@ -84,13 +86,11 @@ const lines = raw.split('\n');
 
 // В этих треках по задумке все громкости стартуют с нуля (звучит только
 // атмосфера), поэтому «слышимых» событий не будет ни в одном режиме.
-// Для проверки режимов поднимаем все *Vol до 0.8 — нам важен РИСУНОК,
-// а не то, что зритель ещё не поднял ручку. Остальные слайдеры не трогаем:
-// harmony должен остаться в дефолте, иначе пэды обоих режимов смешаются.
-const loud = raw.replace(
-  /const\s+(\w*[Vv]ol\w*)\s*=\s*slider\(\s*[^,\n]+/g,
-  (m, name) => m.replace(/slider\(\s*[^,\n]+/, 'slider(0.8'),
-);
+// Для проверки режимов поднимаем все *Vol до 0.8 (см. tools/loud.mjs) — нам
+// важен РИСУНОК, а не то, что зритель ещё не поднял ручку. Остальные слайдеры
+// не трогаем: harmony должен остаться в дефолте, иначе пэды обоих режимов
+// смешаются.
+const loud = loudVolumes(raw);
 
 const results = [];
 

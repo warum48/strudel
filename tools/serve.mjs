@@ -23,6 +23,29 @@ const MIME = {
 
 const server = http.createServer((req, res) => {
   const url = decodeURIComponent((req.url ?? '/').split('?')[0]);
+
+  // Список треков для выпадающего меню в шапке панели. Панель не хранит
+  // имён файлов: положил новый .js в tracks/ — он появился в меню.
+  if (url === '/api/tracks') {
+    const out = [];
+    const walk = (dir, prefix) => {
+      for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
+        if (e.name.startsWith('.')) continue;
+        const p = path.join(dir, e.name);
+        if (e.isDirectory()) walk(p, `${prefix}${e.name}/`);
+        else if (e.name.endsWith('.js')) out.push(`/tracks/${prefix}${e.name}`);
+      }
+    };
+    walk(path.join(root, 'tracks'), '');
+    out.sort();
+    res.writeHead(200, {
+      'content-type': 'application/json; charset=utf-8',
+      'cache-control': 'no-store',
+    });
+    res.end(JSON.stringify(out));
+    return;
+  }
+
   let rel = url === '/' ? '/web/index.html' : url;
   const full = path.join(root, rel);
   // никакого выхода за пределы репозитория

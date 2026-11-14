@@ -272,6 +272,26 @@ const verb       = slider(0.26, 0, 1, 0.01)   // общий реверб (в v2 
 const verbSize   = slider(5, 1, 20, 0.5)      // размер комнаты (свёртка: 12 с дорого)
 const duck       = slider(0.65, 0, 1, 0.01)   // сайдчейн низа от бочки
 
+// 🛑 НОЛЬ НА РУЧКЕ — ЭТО НЕ БЕСПЛАТНО. Событие с gain 0 всё равно проходит весь
+// путь: сэмпл грузится, узлы и AudioWorklet строятся, орбита и дилей получают
+// сигнал — просто всё умножается на ноль. Замер в живом движке: при gain 0 на
+// одно событие строится столько же worklet'ов, сколько при gain 1 (4 против 3–4
+// на `distort`). А у нас по умолчанию ВСЕ ударные стоят в нуле, и вдобавок в
+// каждом стеке четыре ветки режима, из которых три всегда с gain 0.
+//
+// Поэтому каждая дорожка кончается `.filter(audible)`: hap с нулевой
+// громкостью не доходит до триггера вообще — его не играют, не грузят, не
+// строят. Проверено в браузере через eval: `s("bd*4").gain(0)` даёт 5 hap'ов
+// на такт, с фильтром — 0; при gain 1 фильтр не трогает ничего (5 из 5).
+//
+// Гейт стоит ПОСЛЕ `._pianoroll()` намеренно: виджет рисует «тень» паттерна,
+// снятую ДО фильтра, поэтому ролл показывает ритм и на нулевой громкости.
+// Тип проверяем: если gain пришёл не числом (сигнал/паттерн), дорожку не глушим.
+const audible = (hap) => {
+  const g = hap.value?.gain
+  return typeof g !== 'number' || g > 0.001
+}
+
 // ══════════════════════════════════════════════════════════════════
 //  НАСТРОЙКИ — по группам, в том же порядке, что и дорожки
 // ══════════════════════════════════════════════════════════════════
@@ -499,6 +519,7 @@ $: s("pink")
   .lpf(airCut).lpq(0.8).ftype("24db")
   .lpdepth(airLfo).lpsync(0.0625).lpdc(0)
   .room(verb).roomsize(verbSize)
+  .filter(audible)
 
 // ДРОН — f1 с квинтой. Две расстроенные пилы: одна нота, две — стена.
 $: note(PAD)
@@ -508,12 +529,15 @@ $: note(PAD)
   .lpf(droneCut).lpq(3).ftype("24db")
   .attack(1.4).decay(1).sustain(0.9).release(2.2)
   .room(verb).roomsize(verbSize)
+  ._pianoroll()
+  .filter(audible)
 
 // ПЕСОК — 12 тактов на цикл, поэтому не совпадает ни с чем
 $: s("crackle")
   .gain(vinylVol.mul("<1 1 .7 1 1 1 1 .8 1 1 1 1>"))
   .lpf(vinylCut).hpf(400)
   .room(0.2)
+  .filter(audible)
 
 // ══════════════════════════════════════════════════════════════════
 //  УДАРНЫЕ — четыре режима, ни один не «четыре в пол»
@@ -544,6 +568,7 @@ $: stack(
   .distort(kickDist).distortvol(0.7)
   .decay(kickDecay).sustain(0).release(0.08)
   .duckorbit(2).duckdepth(duck).duckattack(0.02)
+  .filter(audible)
 
 // ТЕЛО БОЧКИ — то, чего у сэмпла нет: длина. 909-бочка кончается за 200 мс,
 // и сколько ей decay ни ставь, длиннее она не станет — decay только гасит.
@@ -561,6 +586,7 @@ $: stack(
   .penv(bodyDrop).panchor(0).pattack(0.002).pdecay(0.09).psustain(0).pcurve(1)
   .attack(0.002).decay(bodyDecay).sustain(0).release(0.12)
   .orbit(2)
+  .filter(audible)
 
 // 808 — главный инструмент. Синус, срез 160 Гц (выше — уже не 808), длинный
 // спад и ГЛИССАНДО между нотами. Гейт слайда — вторая строка: слайд только
@@ -575,6 +601,14 @@ $: note(EIGHT)
   .shape(eightShape)
   .attack(0.004).decay(eightDecay).sustain(0.55).release(0.25)
   .orbit(2)
+  // ВИЗУАЛИЗАТОР В КОДЕ: `._` в начале имени — это виджет, а не звук. Canvas
+  // встаёт блоком под этой строкой, на трек их может быть сколько угодно (по
+  // одному на инструмент). Список: _pianoroll, _punchcard, _pitchwheel.
+  // 🛑 На strudel.cc ноты рисуются с прозрачностью = громкости дорожки, а у
+  // нас ударные по умолчанию в нуле — то есть ТАМ ролл пустой, пока не поднял
+  // ручку. В нашей панели это уже обойдено (gain для картинки = 1).
+  ._pianoroll()
+  .filter(audible)
 
 // СНЕЙР — в трэпе он на 3-й доле (шаг 8). В «ломе» уезжает на 2-ю (шаг 6)
 // и на 11 — это и есть сломанный ритм, а не просто «сдвинутый».
@@ -587,6 +621,7 @@ $: stack(
   .lpf(snareCut).hpf(180)
   .decay(snareDecay).sustain(0).release(0.08)
   .room(verb).roomsize(verbSize)
+  .filter(audible)
 
 // КЛЭП — 2 и 4, но в ломе его нет: там снейр, и вместе они звучат как каша.
 $: stack(
@@ -599,6 +634,7 @@ $: stack(
   .decay(0.12).sustain(0)
   .pan(rand.mul(1.2).sub(0.6))
   .room(0.3).roomsize(verbSize)
+  .filter(audible)
 
 // ХЭТЫ — 16-е с роллами. ply(2) внутри sometimesBy даёт 32-е не везде,
 // а случайно: это дешевле и живее, чем писать 32-е в паттерн. worklet'ов
@@ -614,6 +650,8 @@ $: stack(
   .lastOf(4, (x) => x.ply(2))
   .nudge(rand.mul(0.012).sub(0.006))
   .degradeBy(0.06)
+  ._punchcard()
+  .filter(audible)
 
 // ОТКРЫТЫЕ ХЭТЫ — на «и», это то, что раскачивает полутемп
 $: stack(
@@ -624,6 +662,7 @@ $: stack(
    )
   .lpf(ohatCut)
   .room(verb).roomsize(verbSize)
+  .filter(audible)
 
 // RIM — 5 тактов, поэтому не совпадает с хэтами. Только лом и дробь.
 $: stack(
@@ -634,6 +673,7 @@ $: stack(
   .decay(0.05).sustain(0)
   .pan(rand.mul(1.4).sub(0.7))
   .delay(0.2).delaytime(0.3333).delayfeedback(0.28)
+  .filter(audible)
 
 // ШЕЙКЕР — 3 такта, 16-е с вероятностным пропуском: сетка есть, рисунка нет
 $: s("sh*16")
@@ -642,6 +682,7 @@ $: s("sh*16")
   .decay(0.03).sustain(0)
   .degradeBy(0.4)
   .pan(rand.mul(0.8).add(0.1))
+  .filter(audible)
 
 // ТАРЕЛКА — шумом, раз в 8 тактов. Не зависит от того, какие сэмплы есть.
 $: s("white")
@@ -649,6 +690,7 @@ $: s("white")
   .lpf(crashCut).hpf(4000)
   .attack(0.002).decay(0.9).sustain(0).release(0.5)
   .room(verb).roomsize(verbSize)
+  .filter(audible)
 
 // ══════════════════════════════════════════════════════════════════
 //  303 — БЕРЛИНСКАЯ ФАКТУРА
@@ -672,6 +714,8 @@ $: note(ACID)
   .delay(acidEcho).delaytime(0.375).delayfeedback(0.28)
   .room(0.2).roomsize(verbSize)
   .orbit(2)
+  ._pianoroll()
+  .filter(audible)
 
 // ЭЙСИД-ОТВЕТ — высокий, редкий, с большим дилеем. Это не второй слой
 // линии, а реплика: три ноты за 8 тактов.
@@ -685,6 +729,7 @@ $: note(GHOST)
   .delay(0.35).delaytime(0.375).delayfeedback(0.26)
   .pan(sine.slow(8).range(0.3, 0.7))
   .room(0.3).roomsize(verbSize)
+  .filter(audible)
 
 // ══════════════════════════════════════════════════════════════════
 //  МЕЛОДИЯ — два режима, одна фраза
@@ -700,6 +745,8 @@ $: note(MEL)
   .delay(melEcho).delaytime(0.375).delayfeedback(0.45)
   .room(verb).roomsize(verbSize)
   .pan(sine.slow(8).range(0.35, 0.65))
+  ._pianoroll()
+  .filter(audible)
 
 // ВОКОДЕР — та же фраза, другой инструмент. Настоящего вокодера в движке
 // нет (нужен носитель + модулятор), поэтому имитация: суперпила через
@@ -723,6 +770,7 @@ $: note(MEL)
   .chorus(vocChorus)
   .attack(0.03).decay(0.4).sustain(0.55).release(0.5)
   .room(verb).roomsize(verbSize)
+  .filter(audible)
 
 // ══════════════════════════════════════════════════════════════════
 //  ГАРМОНИЯ — пэд и стаб, оба тихие
@@ -737,6 +785,7 @@ $: note(PAD)
   .chorus(0.25)
   .attack(0.7).decay(1.0).sustain(0.9).release(1.0)
   .room(verb).roomsize(verbSize)
+  .filter(audible)
 
 // СТАБ — b9 (gb) раз в 8 тактов. Короткий удар, длинный хвост в реверб:
 // малая нона тут живёт 200 мс, а не такт, поэтому не превращается в кашу.
@@ -747,6 +796,7 @@ $: note(STAB)
   .vowel("<a o>")
   .decay(stabDecay).sustain(0).release(0.6)
   .room(verb).roomsize(verbSize)
+  .filter(audible)
 
 // ══════════════════════════════════════════════════════════════════
 //  IDM — микротайминг и цифровая пыль, а не реверб-холл
@@ -766,6 +816,7 @@ $: note("[c6|eb6|f6|ab6|bb5]*8")
   .pan(rand.mul(1.8).sub(0.9))
   .degradeBy(0.25)
   .sometimesBy(0.35, (x) => x.rev())
+  .filter(audible)
 
 // ТИКИ — белый шум, узкий band-pass. Это «цифровая пыль»: слышно, что
 // что-то происходит, но что именно — нет.
@@ -776,6 +827,7 @@ $: s("white")
   .decay(0.02).sustain(0)
   .pan(rand.mul(1.6).sub(0.8))
   .sometimesBy(0.3, (x) => x.crush(4))
+  .filter(audible)
 
 // ГРАНУЛЯРНАЯ ПЫЛЬ — тот же шум, но с длинным хвостом и бит-крушем.
 // pressBy(0.4) сдвигает каждое событие внутрь его же длины: получается
@@ -789,6 +841,7 @@ $: s("pink")
   .decay(0.08).sustain(0)
   .pressBy(0.4)
   .pan(rand.mul(1.2).sub(0.6))
+  .filter(audible)
 
 // «ЛЕНТА» — пила, играющая с неверной скоростью: speed 0.5 растягивает
 // осциллятор вниз и в длину. Это дешёвый tape-stop без сэмпла.
@@ -799,6 +852,7 @@ $: note(ROOT)
   .lpf(900).lpq(2)
   .attack(0.6).decay(0.8).sustain(0.4).release(1.2)
   .room(verb).roomsize(verbSize)
+  .filter(audible)
 
 // РАЙЗЕР — шум, у которого срез ползёт вверх за 8 тактов. Не «белый шум
 // с ревербом», а именно подъём: слышно направление.
@@ -807,6 +861,7 @@ $: s("white")
   .lpf(sine.range(300, riserCut).slow(8)).lpq(8)
   .attack(1.2).decay(0.4).sustain(0.7).release(0.3)
   .pan(sine.slow(16).range(0.2, 0.8))
+  .filter(audible)
 
 // ОБРАТНЫЙ СВЕЛЛ — тот же шум, но с атакой 1.4 с: это и есть реверс-тарелка
 // без сэмпла. Стоит за такт до импакта.
@@ -815,6 +870,7 @@ $: s("white")
   .lpf(swellCut).hpf(700)
   .attack(1.4).decay(0.05).sustain(0).release(0.05)
   .room(0.5).roomsize(verbSize)
+  .filter(audible)
 
 // ИМПАКТ — низкий синус с длинным хвостом, раз в 8 тактов. Не барабан:
 // это точка, в которую приходит трек.
@@ -824,6 +880,7 @@ $: note("f1")
   .lpf(110)
   .attack(0.002).decay(1.6).sustain(0).release(0.8)
   .room(0.4).roomsize(verbSize)
+  .filter(audible)
 
 // ══════════════════════════════════════════════════════════════════
 //  v2: РИЗ, 8-БИТ И IDM
@@ -849,6 +906,8 @@ $: note(REESE)
   .shape(0.32)
   .attack(0.012).decay(0.25).sustain(0.85).release(0.14)
   .orbit(2)
+  ._pianoroll()
+  .filter(audible)
 
 // ЧИП-АРП — 8-бит: квадрат, 16-е, две волны за 8 тактов. Никаких worklet'ов:
 // квадрат уже грязный, а 32 события в такт ни один worklet не переживёт.
@@ -861,6 +920,7 @@ $: note(CHIP)
   .decay(chipDecay).sustain(0).release(0.02)
   .pan(sine.fast(4).range(0.25, 0.75))
   .delay(0.22).delaytime(0.1875).delayfeedback(0.28)
+  .filter(audible)
 
 // ЧИП-БЛИП — «койн»: короткий квадрат с ПОДЪЁМОМ питча. panchor(1) значит
 // «старт ниже ноты, подъём занимает pattack» — поэтому это не писк, а именно
@@ -874,6 +934,7 @@ $: note("[f6|ab6|c7|eb6]")
   .decay(chip2Decay).sustain(0).release(0.02)
   .delay(0.3).delaytime(0.25).delayfeedback(0.35)
   .pan(rand.mul(1.2).sub(0.6))
+  .filter(audible)
 
 // ПИТЧ-ЛЕСТНИЦА — IDM: одна нота в такт, целотонный подъём и спуск. Бит-круш
 // тут уместен (8 событий за 8 тактов), а длинный спад и дилей делают из ноты
@@ -886,6 +947,7 @@ $: note(LADDER)
   .attack(0.004).decay(1.3).sustain(0.15).release(0.7)
   .delay(0.28).delaytime(0.5).delayfeedback(0.42)
   .pan(rand.mul(1.4).sub(0.7))
+  .filter(audible)
 
 // СТАТТЕР — гейтованная цифровая пыль. pressBy внутри sometimesBy сдвигает
 // событие внутрь его же длины: половина тиков обрублена, половина ровная.
@@ -898,6 +960,7 @@ $: s("white")
   .decay(0.03).sustain(0)
   .sometimesBy(0.45, (x) => x.pressBy(0.3))
   .pan(rand.mul(1.4).sub(0.7))
+  .filter(audible)
 
 // ══════════════════════════════════════════════════════════════════
 //  ШПАРГАЛКА НА НОЧЬ

@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link rel="icon" href="data:," />
-<title>SLOW TRAP 11 — панель + код</title>
+<title>SLOW TRAP 12 — mixer + tone + code</title>
 <style>
   :root {
     --bg: #0d0f0c;
@@ -14,6 +14,8 @@
     --dim: #7d8776;
     --accent: #b3d80d;
     --warn: #e3f07a;
+    --mix-w: 258px;
+    --tone-w: 344px;
   }
   * { box-sizing: border-box; }
   /* страница не скроллится вообще: CodeMirror при монтировании и eval делает
@@ -32,14 +34,14 @@
   header {
     display: flex;
     align-items: center;
-    gap: 14px;
-    padding: 10px 16px;
+    gap: 12px;
+    padding: 8px 14px;
     border-bottom: 1px solid var(--line);
     background: var(--panel);
     flex: none;
   }
-  header h1 { margin: 0; font-size: 13px; letter-spacing: 0.14em; text-transform: uppercase; font-weight: 600; }
-  header .sub { color: var(--dim); font-size: 11px; }
+  header h1 { margin: 0; font-size: 13px; letter-spacing: 0.14em; text-transform: uppercase; font-weight: 600; white-space: nowrap; }
+  header .sub { color: var(--dim); font-size: 11px; white-space: nowrap; }
   .spacer { flex: 1; }
   button {
     font: inherit;
@@ -53,17 +55,108 @@
   button:hover { border-color: #3a4234; }
   button.on { background: var(--accent); border-color: var(--accent); color: #0d0f0c; font-weight: 700; }
   button.ghost { background: transparent; }
-  main { flex: 1; display: grid; grid-template-columns: 380px 1fr; min-height: 0; }
-  #left {
-    border-right: 1px solid var(--line);
-    padding: 12px;
+  /* переключатели режимов: те же кнопки, только мелкие */
+  .sw { display: flex; align-items: center; gap: 4px; }
+  .sw .cap { color: var(--dim); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; }
+  .sw button { padding: 2px 7px; font-size: 11px; background: transparent; }
+  .sw button.on { background: var(--accent); color: #0d0f0c; }
+  /* панелька переключателей — отдельным блоком между Global и микшером */
+  #switches {
+    flex: none;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 16px;
+    padding: 7px 12px;
+    border-bottom: 1px solid var(--line);
+    background: #11140f;
+  }
+  main { flex: 1; display: grid; grid-template-columns: var(--mix-w) var(--tone-w) 1fr; min-height: 0; }
+  /* два столбца сайдбара: микшер (громкости) и тонкие настройки */
+  #mixer, #tone {
     display: flex;
     flex-direction: column;
-    gap: 10px;
     min-height: 0;
     overflow: hidden;
+    border-right: 1px solid var(--line);
   }
+  .colhead {
+    flex: none;
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    padding: 8px 12px 6px;
+    border-bottom: 1px solid var(--line);
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 600;
+  }
+  .colhead .n { color: var(--dim); letter-spacing: 0; text-transform: none; font-weight: 400; }
+  #mixlist, #tonelist { overflow-y: auto; min-height: 0; flex: 1; padding: 8px 12px 24px; }
+  /* общие ручки над микшером */
+  #globals { flex: none; padding: 8px 12px; border-bottom: 1px solid var(--line); background: #11140f; }
+  #globals .gl { font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--dim); margin-bottom: 6px; }
+  .rows { display: flex; flex-direction: column; gap: 2px; }
+  .row { display: grid; grid-template-columns: 74px 1fr 42px; align-items: center; gap: 6px; }
+  .row label { color: var(--dim); font-size: 11px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .row input[type=range] { width: 100%; accent-color: var(--accent); height: 14px; }
+  .row .v { font-size: 11px; color: var(--warn); text-align: right; }
+  .row.is-vol label { color: var(--text); font-weight: 600; }
+  .row.is-cut input[type=range] { accent-color: #7fb0ff; }
+  /* ── группы и инструменты: сворачиваются оба уровня ── */
+  details.grp {
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    background: var(--panel);
+    margin-bottom: 8px;
+  }
+  details.grp > summary {
+    cursor: pointer;
+    padding: 5px 8px;
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 600;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  details > summary::-webkit-details-marker { display: none; }
+  details > summary::before {
+    content: '▸';
+    font-size: 10px;
+    color: var(--accent);
+    width: 10px;
+    flex: none;
+    line-height: 1;
+  }
+  details[open] > summary::before { content: '▾'; }
+  details.grp > summary .n { margin-left: auto; color: var(--dim); letter-spacing: 0; font-weight: 400; }
+  details.grp > .body { padding: 0 8px 8px; }
+  details.inst { border-left: 1px solid var(--line); padding-left: 6px; margin: 4px 0 2px; }
+  details.inst > summary {
+    cursor: pointer;
+    list-style: none;
+    font-size: 11px;
+    color: var(--text);
+    font-weight: 600;
+    padding: 2px 0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  details.inst > summary .n { margin-left: auto; color: var(--dim); font-weight: 400; font-size: 10px; }
+  details.inst > .rows { padding: 2px 0 4px 2px; }
+  /* в узком столбце подпись короче, ползунок длиннее: 172px против 110px */
+  details.inst > .rows .row { grid-template-columns: 68px 1fr 38px; gap: 5px; }
   #right { min-width: 0; min-height: 0; display: flex; flex-direction: column; }
+  /* код красится темой редактора (activateTheme пишет --background в :root),
+     панель остаётся на своих цветах — так тема видна, но лайм никуда не делся */
+  #right { background: var(--background, var(--bg)); }
   #right .bar {
     flex: none;
     display: flex;
@@ -77,58 +170,50 @@
   #root { flex: 1; min-height: 0; overflow: hidden; }
   #root .cm-editor { height: 100%; }
   #root .cm-scroller { overflow: auto; }
-  /* только нашему спектру: общий `canvas {}` покрасил бы и служебный canvas
-     движка (@strudel/draw), а он во весь экран — см. комментарий в panel.js */
-  #scope { width: 100%; height: 90px; display: block; background: #0a0c09; border: 1px solid var(--line); border-radius: 3px; }
-  .block { border: 1px solid var(--line); border-radius: 3px; padding: 8px 10px; background: var(--panel); flex: none; }
-  .block h2 {
-    margin: 0 0 8px;
-    font-size: 10px;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-    color: var(--dim);
-    font-weight: 600;
+  /* ── спектр: фиксом в правый нижний угол, вдвое меньше прежнего ──
+     pointer-events: none — иначе он ест клики по коду под собой. */
+  #scope {
+    position: fixed;
+    right: 12px;
+    bottom: 12px;
+    width: 220px;
+    height: 66px;
+    z-index: 20;
+    pointer-events: none;
+    background: rgba(10, 12, 9, 0.86);
+    border: 1px solid var(--line);
+    border-radius: 3px;
   }
-  .eq { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
-  .band { display: flex; flex-direction: column; align-items: center; gap: 4px; }
-  .band input[type=range] { writing-mode: vertical-lr; direction: rtl; width: 20px; height: 78px; accent-color: var(--accent); }
-  .band .hz { font-size: 10px; color: var(--dim); }
-  .band .val { font-size: 11px; color: var(--warn); }
-  #knobs { overflow-y: auto; min-height: 0; flex: 1; padding-right: 4px; }
-  .group { margin-bottom: 14px; }
-  .group h3 {
-    margin: 0 0 4px;
-    font-size: 10px;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--accent);
-    font-weight: 600;
-    position: sticky;
-    top: -4px;
-    background: var(--bg);
-    padding: 4px 0 2px;
-    z-index: 1;
+  /* Скрытый canvas, который @strudel/draw находит по id при cleanupDraw().
+     Без него движок создаёт свой — position:fixed во весь экран и первым в body. */
+  #test-canvas { display: none; }
+  /* Визуализатор в коде: `._pianoroll()` вставляет этот canvas блоком под
+     строкой — как на strudel.cc. Одна дорожка = один канвас. */
+  .cm-inline-viz {
+    display: block;
+    margin: 4px 0 6px 4px;
+    background: #0a0c09;
+    border: 1px solid var(--line);
+    border-radius: 3px;
   }
-  .rows { display: flex; flex-direction: column; gap: 3px; }
-  .cell { display: flex; flex-direction: column; gap: 3px; }
-  .row { display: grid; grid-template-columns: 92px 1fr 52px; align-items: center; gap: 8px; }
-  .row label { color: var(--dim); font-size: 11px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .row input[type=range] { width: 100%; accent-color: var(--accent); height: 14px; }
-  .row .v { font-size: 11px; color: var(--warn); text-align: right; }
-  .row.is-vol label { color: var(--text); font-weight: 600; }
-  .row.is-cut input[type=range] { accent-color: #7fb0ff; }
-  #status { color: var(--dim); font-size: 11px; }
-  #status.err { color: #ff8a7a; }
-  .hint {
-    color: var(--dim);
+  /* тема редактора ставит .cm-content 18px — рядом с сотней ручек это слишком
+     крупно. Возвращаем 13px; селектор с #root перебивает тему без !important. */
+  #root .cm-editor .cm-content,
+  #root .cm-editor .cm-line { font-size: 13px; line-height: 1.5; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+  #root .cm-editor .cm-gutters { font-size: 11px; }
+  select {
+    font: inherit;
     font-size: 11px;
-    line-height: 1.5;
-    margin: 0;
-    flex: none;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    color: var(--text);
+    background: #1d211a;
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    padding: 3px 4px;
   }
+  /* выбор трека: любой файл из tracks/, а не один зашитый в panel.js */
+  #track { max-width: 210px; }
+  #status { color: var(--dim); font-size: 11px; white-space: nowrap; }
+  #status.err { color: #ff8a7a; }
   .kbd { color: var(--text); }
 </style>
 
@@ -147,68 +232,84 @@
 </head>
 <body>
 <header>
-  <h1>Slow Trap 11</h1>
-  <span class="sub" id="sub">136 BPM · half-time · IDM</span>
+  <select id="track" title="track (any file from tracks/)"></select>
+  <h1 id="title">…</h1>
+  <span class="sub" id="sub"></span>
   <span class="spacer"></span>
-  <span id="status">загрузка…</span>
+  <span id="status">loading…</span>
+  <select id="theme" title="editor color theme"></select>
   <button id="play" class="ghost">PLAY</button>
   <button id="stop" class="ghost">STOP</button>
 </header>
 
 <main>
-  <div id="left">
-    <div class="block">
-      <h2>Спектр</h2>
-      <canvas id="scope" width="600" height="180"></canvas>
-    </div>
-    <div class="block">
-      <h2>Эквалайзер мастера</h2>
-      <div class="eq">
-        <div class="band">
-          <input id="eqLow" type="range" min="-18" max="18" step="0.5" value="0" />
-          <span class="val" id="eqLowV">0.0 dB</span>
-          <span class="hz">низ 120</span>
-        </div>
-        <div class="band">
-          <input id="eqMid" type="range" min="-18" max="18" step="0.5" value="0" />
-          <span class="val" id="eqMidV">0.0 dB</span>
-          <span class="hz">середина 900</span>
-        </div>
-        <div class="band">
-          <input id="eqHigh" type="range" min="-18" max="18" step="0.5" value="0" />
-          <span class="val" id="eqHighV">0.0 dB</span>
-          <span class="hz">верх 5k</span>
-        </div>
-      </div>
-    </div>
-    <div class="block">
-      <h2>Мастер</h2>
+  <!-- ── столбец 1: ГЛОБАЛЬНОЕ → ПЕРЕКЛЮЧАТЕЛИ → МИКШЕР ── -->
+  <aside id="mixer">
+    <div class="colhead">Mixer <span class="n" id="mixCount"></span></div>
+    <div id="globals">
+      <div class="gl">Global</div>
       <div class="rows">
-        <div class="row">
-          <label for="master">громкость</label>
-          <input id="master" type="range" min="0" max="1.2" step="0.01" value="0.9" />
-          <span class="v" id="masterV">0.90</span>
+        <div class="row is-vol">
+          <label for="out" title="output gain after the engine — not a track slider">master</label>
+          <input id="out" type="range" min="0" max="1.2" step="0.01" value="0.9" />
+          <span class="v" id="outV">0.90</span>
         </div>
       </div>
+      <div class="rows" id="globalRows"></div>
     </div>
-    <div id="knobs"></div>
-    <p
-      class="hint"
-      title="Ручки — это те же ползунки, что в коде справа: тянешь ручку, меняется число в коде и звук сразу, без перезапуска. Эквалайзер — настоящие BiquadFilter, он стоит после движка."
-    >
-      Ручки = ползунки в коде · EQ — после движка
-    </p>
-  </div>
+    <div id="switches"></div>
+    <div id="mixlist"></div>
+  </aside>
 
-  <div id="right">
+  <!-- ── столбец 2: ТОНКИЕ НАСТРОЙКИ. Группы и инструменты сворачиваются ── -->
+  <aside id="tone">
+    <div class="colhead">Tone <span class="n" id="toneCount"></span></div>
+    <div id="tonelist"></div>
+  </aside>
+
+  <section id="right">
     <div class="bar">
-      <span>трек: <span class="kbd">tracks/techno/11-slowtrap-v2.js</span></span>
+      <span>track: <span class="kbd" id="trackPath">…</span></span>
       <span class="spacer"></span>
-      <span>Ctrl+Enter — запуск · Ctrl+. — стоп · на маке ещё Cmd+Enter</span>
+      <span>viz: <span class="kbd">._pianoroll()</span> in the code</span>
+      <span>Ctrl+Enter — run · Ctrl+. — stop · Cmd also works</span>
     </div>
+    <canvas id="test-canvas" width="640" height="240"></canvas>
     <div id="root"></div>
-  </div>
+  </section>
 </main>
+
+<!-- спектр живёт фиксом в правом нижнем углу, вне потока -->
+<canvas id="scope" width="440" height="132"></canvas>
+
+<!--
+  ── MASTER EQ — СКРЫТ, НЕ УДАЛЁН ────────────────────────────────────
+  Ручки убраны из интерфейса по просьбе («эквалайзер (ручки) просто
+  скрываем, если что — вернём»). Цепочка фильтров в panel.js осталась и
+  работает на 0 dB, поэтому вернуть = раскомментировать этот блок и
+  вызвать bindEq() в panel.js (там тоже закомментировано, рядом метка).
+
+  <div class="block">
+    <h2>Master EQ</h2>
+    <div class="eq">
+      <div class="band">
+        <input id="eqLow" type="range" min="-18" max="18" step="0.5" value="0" />
+        <span class="val" id="eqLowV">0.0 dB</span>
+        <span class="hz">low 120</span>
+      </div>
+      <div class="band">
+        <input id="eqMid" type="range" min="-18" max="18" step="0.5" value="0" />
+        <span class="val" id="eqMidV">0.0 dB</span>
+        <span class="hz">mid 900</span>
+      </div>
+      <div class="band">
+        <input id="eqHigh" type="range" min="-18" max="18" step="0.5" value="0" />
+        <span class="val" id="eqHighV">0.0 dB</span>
+        <span class="hz">high 5k</span>
+      </div>
+    </div>
+  </div>
+-->
 
 <script type="module" src="/web/panel.js"></script>
 </body>
