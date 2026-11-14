@@ -1,15 +1,18 @@
 # strudel: Status
 
 ## Current Phase
-Track library. Techno 01–16, atmospheric/dark dnb 01–02 and the first breakcore track are green.
-breakcore/01 is 174 BPM rinse / note-off: scenes (mode), break bank, slice coarseness, grit,
-plus four momentary pads in the web panel (`// @pads`, keys 1–4, no MIDI).
-Reference: `docs/breakcore/` (RU + EN), play guide in `10-panel.md`.
+Track library. Techno 01–16, dnb 01–02 and three breakcore tracks are green.
+breakcore/01 exists in two variants (chop 4/8/16/32; 16th fragments with no pitch shift).
+breakcore/02 is 200 BPM stems/gabber in F phrygian: parallel dry/wet kick (909 + saturated
+band + noise click), metal ring from a tuned feedback delay, synthesized noise textures with
+LFO filters (no wind/noise/pad samples), kick clean/dist/hard, 5 modes, 4 pads.
+Reference: `docs/breakcore/` (RU + EN); play guide in `10-panel.md`.
 
 ## Key Metrics
 - `npm run verify` — 24 tracks load and run, 0 errors.
-- breakcore/01: verify ok, tension clean, gains silent at zero, doubles no collisions,
-  cpu 12 worklets/bar (9/s), modes 5/5, live eval ok (slider sync ok).
+- breakcore/01 (both variants): verify ok, tension clean, gains silent, cpu ≤20/bar, modes 5/5, live ok.
+- breakcore/02: verify ok (20 tracks, 78 sliders), tension clean, gains silent, doubles no collisions,
+  cpu ≤60/bar (50/s), modes 5/5, live eval ok (slider sync ok).
 - `npm run tension` — dnb/01 clean; dnb/02 clean with 62 intentional tritones; dnb/02-v2 clean with 112; techno/16 clean.
 - `npm run live` — dnb/01, dnb/02, dnb/02-v2 and techno/16 evaluate and play in strudel.cc.
 - Sample button (browser e2e): techno/15 = 27 files, dnb/02-v2 = 98, techno/16 = 45; all `SAMPLES ✓`.
@@ -19,7 +22,8 @@ Reference: `docs/breakcore/` (RU + EN), play guide in `10-panel.md`.
 - techno/01–16, including 12-slowtrap-v3, 13-gabber-v3, 14-acid-jazz, 15-house-rave, 16-minimal-dub.
 - dnb/01-atmospheric-jungle (LTJ Bukem / Aphrodite).
 - dnb/02-dark-techstep (dark jungle / techstep / IDM).
-- breakcore/01-rinse (174 BPM rinse / note-off, scenes + bank + grit + 4 pads).
+- breakcore/01-rinse + 01-rinse-slices (two rinse variants, 174 BPM).
+- breakcore/02-stems-hardcore (200 BPM gabber, layered kick, clean/dist/hard).
 - Web panel: momentary pads (`// @pads`), docs/breakcore library (RU + EN).
 - README index and per-track notes.
 
@@ -27,8 +31,8 @@ Reference: `docs/breakcore/` (RU + EN), play guide in `10-panel.md`.
 - Nothing. breakcore/01 is complete; do not rewrite it.
 
 ### 📋 Next
-- **breakcore/02-stems-hardcore.js — 200+ BPM stems-hardcore / gabber. User explicitly asked for it.**
-- Optional: more scenes/pads once 02 exists.
+- Listen to 01 vs 01-slices and decide which one to keep (user: both are interesting for now).
+- Tune the 02 kick by ear (`kick` clean/dist/hard, grit values) and the pad set.
 
 ### 🔮 Horizon
 - A third dnb character (e.g. halftime / autonomic) only as a new file, never as a rewrite of 01/02.

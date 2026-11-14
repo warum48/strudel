@@ -81,8 +81,9 @@ $: n(trancearp('<0:2:6@3 2:4:8>', 'F@5 B@3', '<1 1 1@2 1 1@2 1>*16'))
   .scale('g:minor').s('sawtooth')
 ```
 
-У нас: `acidenv`/`accent` пока **не** применены — у 08/09 ручки `acidCut`,
-`acidEnv`, `acidRes` и отдельный gain-паттерн. Кандидат на следующий трек.
+У нас: применено в `breakcore/02-stems-hardcore.js` — supersaw + detune 0.5,
+glide-гейт `0 0 1 …` (3 слайда на такт), accent громкостью и фильтром.
+У 08/09 остаются ручки `acidCut`/`acidEnv`/`acidRes`.
 
 ## 4. Низ
 

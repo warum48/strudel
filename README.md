@@ -65,8 +65,14 @@ tracks/
     02-dark-techstep-v2.js v2 02: длинный grinder (long/drift/stutter)
                       и настоящий chop/granular 4/8/16 с ручками
   breakcore/
-    01-rinse.js       174 BPM rinse / note-off: сцены (mode), банк брейков,
-                      крупность нарезки, grit + 4 momentary-пэда
+    01-rinse.js       174 BPM rinse: chop 4/8/16/32 (первая версия)
+    01-rinse-slices.js 174 BPM rinse: только 16-е фрагменты, питч без сдвига
+    02-stems-hardcore.js 200 BPM stems/gabber, F phrygian: сцены
+                      intro/build/main/break/outro, параллельный dry/wet
+                      кик: dry 909 + готовый hardcore kick (char kick1/kick2) +
+                      тихий synth-extra (pitch −4 st, drive-then-trim),
+                      бас-линия, 303 без арпеджио, синт-пэд, металл из
+                      tuned feedback-делэя, шумовые текстуры с LFO-фильтром
 web/
   index.html        панель: шапка (транспорт, режимы, out) + ДВА столбца
                     (микшер / тонкие настройки) + ПЭДЫ + редактор справа

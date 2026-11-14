@@ -24,10 +24,26 @@ The panel is built from the track itself; nothing is hard-coded in the UI.
 |---|---|---|
 | `mode` | 0 intro · 1 groove · 2 solo · 3 return · 4 outro | 0 = kick/break/hats, no backbeat snare; 2 = drums and break only, drone/noise drop out; 4 = layers peel off |
 | `breakSel` | 0 amen · 1 think · 2 apache · 3 amencutup | changes the break source; `amencutup` is already chopped into 32 pieces |
-| `slice` | 0 off · 1 ×4 · 2 ×8 · 3 ×16 · 4 ×32 | `chop` coarseness, from the whole loop to dust |
+| `slice` | 0 sparse · 1 straight · 2 broken · 3 stutter · 4 micro | a pattern of short 16th fragments; break pitch stays natural |
 | `grit` | 0 clean · 1 crush · 2 shape · 3 both | `crush` = bit-crush, `shape` = waveshaper on the kick |
 
 Rule from the threads: **less is more**. Start at `slice=2` (×8) and `grit=1`.
+
+### `02-stems-hardcore.js` has a different set
+
+| Knob | Values | What it does |
+|---|---|---|
+| `scene` | intro · build · main · break · outro | arrangement: layers enter/leave by section |
+| `mode` | ritual · stomp · roll · half · collapse | kick/snare figure |
+| `kick` | clean · dist · hard | **kick recipe**, not volume: `clean` turns the wet layer off; `dist`/`hard` add the saturated band |
+| `char` | kick1 · kick2 | pick a ready hardcore kick (`hardcore:4/5`) |
+| `perc` | dry · metal | metallic ring on the offbeat |
+
+In Tone the kick has `pitch` (semitones, default −4) and `drive` (light glue on the wet layer):
+drive first, normal loudness after. `Kick extra` is the third, synthesized kick;
+default 0 — raise the fader if you want one more character.
+
+Pads are the same (keys 1–4): `fill`, `roll`, `stab`, `cut`.
 
 ---
 

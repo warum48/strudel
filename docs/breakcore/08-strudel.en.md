@@ -28,6 +28,8 @@ How to translate forum techniques into code that already works here. Verified ag
 | Reverb space | `.room(0.1).roomsize(4)` | ✅ used |
 | Polyrhythm | `struct("x ~ ~ x ~ ~")` / `euclid(3,8)` | ✅ used |
 | Layer stack | `stack(...)` | ✅ used |
+| Break tempo sync | `.fit()` (re-pitch, +4.4 st for Amen) | ⚠️ rejected in `breakcore/01` |
+| Break without pitch shift | `.slice(16, pat)` — short fragments | ✅ `breakcore/01` |
 | Offset trigger (`09xx`) | `.begin("<0 0.25 0.5>")` | ⚠️ verify with `npm run verify` |
 | Choke groups (note-off) | `.cut(1)` | ⚠️ verify with `npm run verify` |
 
@@ -94,6 +96,25 @@ This is a skeleton, not a finished track: next come 4-bar mutations, a snare rus
 and a "solo" passage without the kick.
 
 ---
+
+### 🛑 chop does not change speed: two options, and why the second was chosen
+
+`chop(n)` only sets `begin/end`; playback rate stays native. Amen (~136 BPM)
+inside a 174 track drifts, and at coarse chop counts (4 pieces) that is most
+audible.
+
+1. **`fit()`** fits the whole sample into one bar by re-pitching: 174/136 =
+   +4.4 semitones. Tempo fixed, break sounds higher — rejected in
+   `breakcore/01`.
+2. **Short fragments only.** `slice(16, pat)` gives 1/16-of-sample pieces
+   (~86 ms at 174). The native tempo is not readable inside such a piece and
+   the pitch is natural. "Coarseness" becomes density/order of 16ths, not
+   piece length.
+
+```js
+// chosen: no re-pitch
+s("amen").slice(16, "<[0 ~ 2 ~ 4 ~ 6 ~ 8 ~ 10 ~ 12 ~ 14 ~] [0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15]>").clip(0.62)
+```
 
 ## 3. Recipes in code
 

@@ -162,3 +162,93 @@ feedback 20–30 %) → room 8–12 %`
 - Do not "fix" weak chopping with distortion.
 - Do not boost the low end of a chopped break to make it "fat" — fat comes from the
   kick and sub.
+
+---
+
+## 12. Fat gabber kick (clean → distorted)
+
+Field problem: the kick is **loud but under-distorted** — loudness comes from
+gain, not clipping. The opposite extreme: distort the whole kick → "flat and
+harsh", the squared wave eats the body (reddit r/TechnoProduction).
+
+**Rule:** saturation lives on a band, not on the whole kick. Keep the sub
+clean, distort only the mid, and low-pass AFTER the shaper.
+
+### Three layers (as in Renoise #44325)
+1. **LOW** — the same 909, `lpf 90`, no distortion: weight.
+2. **MID** — kick, `hpf 110` → `lpf 2200`, two stages: `shape` (waveshaper) +
+   `distort` (clip). `distortvol` 0.65–0.85.
+3. **BODY** — sine at the root (A1 = 55 Hz) with a 10–50 ms pitch drop: the
+   length a 909 does not have.
+
+MID chain order: **hpf → shaper → clip → lpf**. A low-pass before the clip
+cannot remove harmonics the clip creates.
+
+### Numbers
+- Pitch envelope: 200–500 Hz → root in 10–50 ms (BeatKey).
+- Drive into the clipper: 6–18 dB; hard clip, not tube saturation.
+- Sub/top crossover: 50–150 Hz, default 90; return the sub around 0.7
+  (GitHub gabber-kick-distortion).
+- At 200 BPM the kick hits every 300 ms → short tail or it smears.
+- Master: −8…−5 LUFS; the kick is the loudest element.
+
+### Two kicks, not one with a drive knob
+Gabber usually starts with a "normal" kick and then the distorted one takes
+over. These are often **two different sounds**. In `breakcore/02` the `kick`
+switch does exactly that: `clean` = LOW + BODY only (mid layer off),
+`dist`/`hard` = MID added with different drive. It changes the recipe, not the
+volume.
+
+### A ready distorted kick instead of DIY
+If your own distortion sounds bad, stop polishing it — use an already
+overdriven sample. `hardcore` in Dirt-Samples has `hckick1`/`hckick2`
+(`hardcore:4/5`) — ready hardcore kicks. The wet layer then only gets EQ
+(hpf/lpf) and light glue shaping; no second clipping stage. In
+`breakcore/02` this is the `char` knob, and the synthesized overdrive is
+kept as a third kick at zero volume by default.
+
+### Drive then trim
+Loudness must not rise with drive. Strudel's chain order is fixed:
+`shape/distort → … → gain` (output). So "drive first, then trim" literally means:
+raise the wet-layer drive and keep `.gain()` normal. There is a separate `drive`
+on the kick (wet and extra). There is no global drive: in 1.2.6 it broke the
+query (`cannot parse as numeral`) and muddied the mix.
+
+### Don't
+- Distort the whole kick → "flat and harsh".
+- Compensate for too little distortion with the fader → loud and muddy.
+- Put reverb on the kick (not in gabber).
+- Add a reverse bass (that is hardstyle, not gabber).
+
+---
+
+## 13. Noise textures, not sample packs
+
+Rule from Myloops "Industrial Techno Textures": noise is an instrument, not a
+canned "wind" loop. White/pink/brown noise + resonant filter + slow modulation
+gives a living layer no pack contains.
+
+### Practices
+- **Noise type by mix role:** white = air/top; pink = balanced; brown = low. If
+  the kick owns <100 Hz, brown will only mud it.
+- **LFO on cutoff 0.1–0.3 Hz** (slow, breathing, not a wobble). Two LFOs at
+  different rates on cutoff and resonance drift in and out of phase.
+- **Distortion BEFORE the filter** for textures: harmonics first, then carve.
+  For the kick it is the opposite — band-limit before the clipper so the low end
+  stays smooth (see §12). Different jobs, not a contradiction.
+- **Metal = a short 2–40 ms feedback delay**, not a "metal" sample. The line
+  resonates at `1/t`: 5.7 ms ≈ F3 (174.6 Hz). Feedback 70–90 %, filter inside
+  the loop; modulating delay time by milliseconds bends the metal.
+- **Resample 2–3 generations** — the main source of a non-plugin sound.
+- **Movement is mandatory:** pan LFO, ±3 dB level rides every 4–8 bars, filter
+  opening/closing. A texture sitting flat for 8 bars is wallpaper.
+- **Light sidechain on textures** (1–3 dB); heavy ducking only for anything in
+  the kick's band.
+- **Arrangement:** textures come forward when the kick drops, recede when it
+  returns.
+
+### Don't
+- Use canned `wind` / `noise` / `pad` samples as "atmosphere".
+- Filter noise before distortion and then wonder why the top is brittle.
+- Keep a texture at one level for the whole track.
+- Run a feedback loop without a limiter: it can take monitors off the wall.

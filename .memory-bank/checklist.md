@@ -18,4 +18,6 @@
 - [x] `tracks/breakcore/01-rinse.js` — 174 BPM rinse / note-off, scenes + banks + momentary pads
 - [x] Web panel: `// @pads` momentary pads (press/hold → 1, release → 0, keys 1..4), no MIDI
 - [x] `docs/breakcore/10-panel.md` (+ `.en.md`) — how to play switches and pads
-- [ ] `tracks/breakcore/02-stems-hardcore.js` — 200+ BPM stems-hardcore / gabber (USER REQUESTED, next step)
+- [x] `tracks/breakcore/02-stems-hardcore.js` — 200 BPM stems/gabber, 3-layer kick, kick clean/dist/hard, 5 modes, 4 pads
+- [x] `tracks/breakcore/01-rinse-slices.js` — second rinse version (16th fragments, no pitch shift); 01-rinse.js kept
+- [x] docs/breakcore/04 §12 — fat gabber kick research (clean sub + band-limited saturation)
