@@ -4,7 +4,7 @@
 None.
 
 ## Done
-- Techno series 01–15.
+- Techno series 01–17, including 16-minimal-dub, 17-halfstep-dub and 17-halfstep-dub-v2.
 - dnb/01-atmospheric-jungle — Bukem-style atmospheric jungle with an Aphrodite jump-up mode.
 - dnb/02-dark-techstep — dark techstep / IDM with FM grinder bass, Apache and breaks165.
 - Audit tooling and web panel.
