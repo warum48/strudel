@@ -73,13 +73,19 @@
 //  kickExtra.drive (третий характер). Глобального драйва нет — он
 //  валил query и размывал микс.
 //
+//  ── ТЕМП СЛОЯ ───────────────────────────────────────────────────
+//  У баса и кислоты свои ручки `pace` в Tone: `.slow(n)`.
+//  1 = 8-е, 2 = 4-е, 4 = половинные. decay/release меняют длину
+//  ноты, но не частоту событий. Гейт glide замедляется тем же n.
+//
 //  ── КИСЛОТА (рецепт Switch Angel) ───────────────────────────────
 //  Не портаменто на каждой ноте — от этого «полоскание горла».
 //  • supersaw + detune 0.5 + unison 1 (её acid-патч);
 //  • glide только на ВЫБРАННЫХ 16-х: гейт-паттерн без угловых скобок
 //    (`0 0 1 …` = 16 шагов), иначе он становится константой;
 //  • accent = громче И ярче одним движением;
-//  • ноты f/gb/ab, без восходящих трезвучий.
+//  • РАЗРЕЖЕНО: 3–5 нот на такт по 8-м, интервалы шире (f→ab, gb→bb).
+//    Плотный 16-й поток + хроматика f→gb + glide = «бурление».
 //
 //  ── ЗАКОНЧЕННЫЙ ТРЕК ────────────────────────────────────────────
 //  scene = intro → build → main → break → outro. Это аранжировка:
@@ -126,6 +132,68 @@ if (typeof document !== 'undefined' && !window.__sliderSync) {
   document.addEventListener('scroll', () => requestAnimationFrame(syncSliders), true)
   document.addEventListener('pointerdown', syncSliders, true)
 }
+
+// ══════════════════════════════════════════════════════════════════
+//  GLIDE — настоящий слайд 303 (рецепт Switch Angel)
+// ══════════════════════════════════════════════════════════════════
+// Из github.com/switchangel/strudel-scripts. Считаем, ОТ какой ноты едем:
+// для каждой ноты берём частоту предыдущей и ставим питч-огибающую
+// (panchor 0, psustain 0, pattack 0, pdecay = время, penv = -12*log2(fTo/fFrom)).
+// Интервал точный, глиссандо переживает несколько нот. Это НЕ `.slide()`:
+// slide с паттерном в 1.2.6 валит query (`cannot parse as numeral`).
+const __freqOf = (v) => {
+  if (typeof getFrequencyFromValue === 'function') return getFrequencyFromValue(v)
+  const n = v.note ?? v.n ?? 0
+  return 440 * Math.pow(2, ((typeof n === 'number' ? n : noteToMidi(n)) - 69) / 12)
+}
+
+register('glide', (time, pat) => {
+  let curr = []
+  let prev = []
+  let lastT = null
+  const query = (state) => {
+    const trig = !!state.controls._cps
+    const haps = pat.query(state)
+    const out = []
+    for (const hap of haps) {
+      const t = Number(hap.whole.begin)
+      if (trig && (lastT == null || lastT !== t)) {
+        prev = curr
+        curr = []
+        lastT = t
+      }
+      const glideHaps = time.query(state.setSpan(hap.wholeOrPart()))
+      for (const gh of glideHaps) {
+        const part = hap.part.intersection(gh.part)
+        if (!part) continue
+        const glideT = gh.value
+        const freqF = __freqOf(hap.value)
+        let freqI = null
+        for (const v of prev) {
+          const phase = glideT > 0 ? Math.min((t - v.t) / glideT, 1) : 1
+          const cand = v.freqI + phase * (v.freqF - v.freqI)
+          if (freqI == null || Math.abs(cand - freqF) < Math.abs(freqI - freqF)) freqI = cand
+        }
+        if (freqI == null) freqI = freqF
+        if (trig) curr.push({ freqI, freqF, t })
+        let val = hap.value
+        if (glideT > 0 && Math.abs(freqF - freqI) > 1e-6) {
+          val = {
+            ...val,
+            panchor: 0,
+            psustain: 0,
+            pattack: 0,
+            pdecay: glideT,
+            penv: -12 * Math.log2(freqF / freqI),
+          }
+        }
+        out.push(new Hap(hap.whole, part, val, hap.combineContext(gh)))
+      }
+    }
+    return out
+  }
+  return new Pattern(query)
+}, false)
 
 // ── ПЕРЕКЛЮЧАТЕЛИ + ПЭДЫ ─────────────────────────────────────────
 // @switches scene=intro,build,main,break,outro mode=ritual,stomp,roll,half,collapse kick=clean,dist,hard char=kick1,kick2 perc=dry,metal
@@ -290,6 +358,8 @@ const instruments = {
       vol: slider(0.18, 0, 0.7, 0.01),
       cut: slider(80, 60, 100, 1),
       decay: slider(0.14, 0.04, 0.4, 0.01),
+      // 1 = 8-е, 2 = 4-е, 4 = половинные
+      pace: slider(2, 1, 4, 1),
     },
   },
   lead: {
@@ -297,10 +367,13 @@ const instruments = {
     acid: {
       name: 'Acid 303',
       vol: slider(0.2, 0, 0.7, 0.01),
-      cut: slider(1000, 300, 5000, 50),
-      res: slider(10, 2, 18, 0.5),
-      env: slider(2.4, 0, 6, 0.1),
-      decay: slider(0.1, 0.03, 0.35, 0.005),
+      cut: slider(700, 300, 5000, 50),
+      res: slider(7, 2, 18, 0.5),
+      env: slider(1.6, 0, 6, 0.1),
+      decay: slider(0.18, 0.03, 0.35, 0.005),
+      glide: slider(0.06, 0, 0.2, 0.005),
+      // 1 = 8-е, 2 = 4-е, 4 = половинные
+      pace: slider(2, 1, 4, 1),
     },
   },
   synth: {
@@ -366,7 +439,7 @@ const PAD = phrase([
 // Бас-линия: 8-е, F/Gb, без мелодии. Срез ≤ 80 по правилам проекта.
 const BASS_LINE = m('[f1 ~ f1 ~ f1 ~ f1 ~] [f1 ~ f1 ~ f1 ~ f1 ~] [gb1 ~ gb1 ~ gb1 ~ gb1 ~] [f1 ~ f1 ~ f1 ~ f1 ~]')
 // 303: 16-е, одна-две ноты, без восходящих трезвучий.
-const ACID = m('[f2 ~ f2 ~ f2 ~ gb2 ~ f2 ~ f2 ~ ab2 ~ f2 ~] [f2 ~ f2 f2 ~ f2 ~ ~ f2 ~ f2 ~ gb2 ~ f2 ~] [f2 ~ ab2 ~ f2 ~ gb2 ~ f2 ~ ab2 ~ f2 ~ gb2 ~] [f2 ~ f2 ~ f2 f2 ~ ~ f2 ~ f2 ~ ab2 ~ f2 ~]')
+const ACID = m('[f2 ~ ~ f2 ~ ~ ab2 ~] [f2 ~ f2 ~ ~ gb2 ~ ~] [gb2 ~ ~ gb2 ~ ~ bb2 ~] [f2 ~ ~ f2 ~ ab2 ~ ~]')
 // Пэд: только квинты, две тональности. Это фон, не мелодия.
 const PAD_CHORDS = m('<[f3,c4] [f3,c4] [gb3,db4] [f3,c4]>')
 
@@ -495,7 +568,7 @@ $: stack(
 
 // BASS LINE — пила, 8-е, F/Gb. Срез 80, короткий decay, сайдчейн.
 // drive → дисторшн ДО выходного gain: перегруз есть, громкость обычная.
-$: note(BASS_LINE).s("sawtooth")
+$: note(BASS_LINE).slow(bass.line.pace).s("sawtooth")
   .slide(0.03)
   .hpf(40).lpf(bass.line.cut).lpq(2)
   .decay(bass.line.decay).sustain(0).release(0.04)
@@ -504,13 +577,13 @@ $: note(BASS_LINE).s("sawtooth")
   .orbit(2)
   .filter(audible)
 
-// ACID — Switch Angel: supersaw + accent + lpf-огибающая. Glide убран:
-// slide с паттерном в 1.2.6 валит query («cannot parse as numeral»).
+// ACID — Switch Angel: supersaw + glide-регистр + accent + lpf-огибающая.
+// Glide только на 3 выбранных 16-х; это register, а не `.slide()`.
 // Ноты f/gb/ab, без восходящих трезвучий.
-$: note(ACID).s("supersaw").detune(0.5).unison(1)
+$: note(ACID).slow(lead.acid.pace).s("supersaw").detune(0.5).unison(1)
   // слайд только на трёх 16-х в такте (Switch Angel: гейт без <>)
   .lpf(lead.acid.cut).lpq(lead.acid.res)
-  .lpenv(lead.acid.env).lpa(0.004).lpd(lead.acid.decay).lpsustain(0.2)
+  .lpenv(lead.acid.env).lpa(0.004).lpd(lead.acid.decay).lpsustain(0.15)
   .decay(lead.acid.decay).sustain(0).release(0.04)
   .gain(lead.acid.vol.mul(arrAcid).mul("1 .68 1 .8 1 .72 1 .85"))
   .room(verb.mul(0.18)).roomsize(fx.reverb.size)

@@ -45,6 +45,9 @@ default 0 — raise the fader if you want one more character.
 
 Pads are the same (keys 1–4): `fill`, `roll`, `stab`, `cut`.
 
+In Tone, `Bass line` and `Acid 303` each have a `pace` knob (`.slow(n)`):
+1 = 8ths, 2 = quarters, 4 = halves. The acid glide gate is slowed by the same n.
+
 ---
 
 ## 3. Pads (momentary)
