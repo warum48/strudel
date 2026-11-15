@@ -43,7 +43,8 @@ In Tone the kick has `pitch` (semitones, default −4) and `drive` (light glue o
 drive first, normal loudness after. `Kick extra` is the third, synthesized kick;
 default 0 — raise the fader if you want one more character.
 
-Pads are the same (keys 1–4): `fill`, `roll`, `stab`, `cut`.
+Pads are the same (keys 1–4): `fill`, `roll`, `stab`, `cut`. The panel
+supports up to nine pads (keys 1–9); `idm/01-splinter.js` uses six.
 
 In Tone, `Bass line` and `Acid 303` each have a `pace` knob (`.slow(n)`):
 1 = 8ths, 2 = quarters, 4 = halves. The acid glide gate is slowed by the same n.
@@ -54,7 +55,7 @@ In Tone, `Bass line` and `Acid 303` each have a `pace` knob (`.slow(n)`):
 
 A pad is a 0/1 slider that the panel writes while you hold it:
 
-- **pointerdown / key 1–4** → value 1, the button lights up;
+- **pointerdown / key 1–9** → value 1, the button lights up;
 - **pointerup / keyup / pointer leave** → 0.
 
 In the track a pad gates a one-bar layer, so:
@@ -95,4 +96,4 @@ Keys do not fire while the editor has focus — digits type normally there.
 - The pad name is the variable name (`const padFill = slider(0,0,1,1)`).
 - In the track a pad must be a gate: `.gain(instrument.vol.mul(padX))`
   and `.filter(audible)` at the end of the track.
-- There is no MIDI: mouse and keys 1–4 only.
+- There is no MIDI: mouse and keys 1–9 only.

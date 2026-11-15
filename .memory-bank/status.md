@@ -1,15 +1,32 @@
 # strudel: Status
 
 ## Current Phase
-Track library. Techno 01–17 (+ 17-v2), dnb 01–02 and three breakcore tracks are green.
+Track library. Techno 01–17 (+ 17-v2), dnb 01–02, breakcore 01–02,
+IDM 01 and Khmer 01 are green.
 breakcore/01 exists in two variants (chop 4/8/16/32; 16th fragments with no pitch shift).
 breakcore/02 is 200 BPM stems/gabber in F phrygian: parallel dry/wet kick (909 + saturated
 band + noise click), metal ring from a tuned feedback delay, synthesized noise textures with
 LFO filters (no wind/noise/pad samples), kick clean/dist/hard, 5 modes, 4 pads.
-Reference: `docs/breakcore/` (RU + EN); play guide in `10-panel.md`.
+idm/01-splinter is 136 BPM glitch/granular IDM: C–Gb–Db–Bb, 33 tracks, 193 sliders,
+8 switches, 6 momentary pads, 8 drum modes (glitch/grain/acid/strip/skitter/
+shuffle/poly/fracture; 4–7 use every drum layer), mutate/fill rhythm macros,
+grain cloud/scan/freeze/edit with a moving padlong/space/wind/noise2 bank,
+pitch −24…+12, 8-bit pulse/square + arp, 303 with selective glide, `numbers`
+voice (dry/chop/pitch), sub ≤80 + growl + FM rubber, little reverb.
+khmer/01-sathukar is 88 BPM pinpeat / percussion: 27 tracks, 83 sliders,
+3 switches (scene/mode/harmony), 6 pads, 7-tone scale c–db–eb–f–gb–ab–bb
+plus 5-tone skeleton, roneat ek/thung, kong vong/thom, sralai, skor thom,
+sampho, chhing, krap, 4 modes (sathukar/pinpeat/boxing/percussion), no samples.
+khmer/02-skors is 96 BPM percussion / xylophones: 16 tracks, 86 sliders,
+real samples (Dirt-Samples + VSCO 2 CE CC0), xylo/marimba/gong/claves +
+taiko/hand/tabla/metal, scenes change rhythm only (all instruments present),
+`// @mutes` row under scenes, no pads, no sralai.
+Reference: `docs/breakcore/`, `docs/idm/` and `docs/khmer/` (RU + EN);
+play guides in `docs/breakcore/10-panel.md`, `docs/idm/README.md` and
+`docs/khmer/README.md`.
 
 ## Key Metrics
-- `npm run verify` — 28 tracks load and run, 0 errors.
+- `npm run verify` — 31 tracks load and run, 0 errors.
 - breakcore/01 (both variants): verify ok, tension clean, gains silent, cpu ≤20/bar, modes 5/5, live ok.
 - breakcore/02: verify ok (20 tracks, 78 sliders), tension clean, gains silent, doubles no collisions,
   cpu ≤19/bar (16/s), modes 5/5, live eval ok (slider sync ok).
@@ -20,6 +37,20 @@ Reference: `docs/breakcore/` (RU + EN); play guide in `10-panel.md`.
   arp with pace 4–16, full Moog note/arp controls, pad.fb regulator, `@scenes` intro/theme,
   tension clean, gains silent, modes 4/4, latch bar 8, cpu 10/bar (4/s),
   doubles no collisions, live eval ok. v1 untouched.
+- idm/01-splinter: verify ok (33 tracks, 193 sliders, 130 hits/bar), tension clean
+  (140 deliberate tritones under `@dark`), modes 8/8 (kick 16/8/16/4/28/20/24/40,
+  snare 12/4/8/0/20/8/16/32), mutate/fill, latch bar 8, gains silent,
+  doubles no collisions, cpu 25–28 worklets/bar for modes 0–3 (14–16/s),
+  live eval ok (slider sync ok).
+- khmer/01-sathukar: verify ok (27 tracks, 83 sliders, 49 hits/bar), tension clean
+  (96 deliberate tritones), modes 4/4 (roneat ek 16/0/0/0 and 0/16/16/0,
+  thung 6/6/6/0, sralai 0/4/0/0 and 0/0/17/0, skor low 8/16/28/16,
+  sam high 8/20/44/20, chhing 8/16/32/16), latch bar 8, gains silent,
+  doubles no collisions, cpu 4/bar (1/s), live eval ok (slider sync ok).
+- khmer/02-skors: verify ok (16 tracks, 86 sliders, 106 hits/bar), tension clean
+  (132 deliberate tritones), modes 4/4 (skor fill 8/20/52/44, sam high 44/44/44/44,
+  ghosts 17/12/6/25), latch bar 8, gains silent, doubles no collisions,
+  cpu 0/bar (samples only), live eval ok (slider sync ok).
 - Panel scenes e2e (headless Chromium): title `STRUDEL EXTENSION`, v2 90 knobs;
   Intro applies 19/19 values, Theme 22/22, Export reports 90, Import applies 2.
 - `npm run tension` — dnb/01 clean; dnb/02 clean with 62 intentional tritones; dnb/02-v2 clean with 112; techno/16, 17 and 17-v2 clean.
@@ -34,7 +65,13 @@ Reference: `docs/breakcore/` (RU + EN); play guide in `10-panel.md`.
 - dnb/02-dark-techstep (dark jungle / techstep / IDM).
 - breakcore/01-rinse + 01-rinse-slices (two rinse variants, 174 BPM).
 - breakcore/02-stems-hardcore (200 BPM gabber, layered kick, clean/dist/hard).
-- Web panel: momentary pads (`// @pads`), docs/breakcore library (RU + EN).
+- idm/01-splinter (136 BPM glitch/granular IDM, 8 switches, 6 pads, docs/idm).
+- khmer/01-sathukar (88 BPM pinpeat/percussion, 7-tone + 5-tone skeleton,
+  4 modes, 6 pads, docs/khmer).
+- khmer/02-skors (96 BPM percussion/xylophones, real Dirt+VSCO samples,
+  rhythm-only scenes, `@mutes` row, no pads, docs/khmer).
+- Web panel: momentary pads (`// @pads`, keys 1–9), mute buttons (`// @mutes`),
+  docs/breakcore + docs/idm + docs/khmer (RU + EN).
 - README index and per-track notes.
 
 ### 🔄 In Progress
@@ -44,9 +81,19 @@ Reference: `docs/breakcore/` (RU + EN); play guide in `10-panel.md`.
 - Listen to 01 vs 01-slices and decide which one to keep (user: both are interesting for now).
 - Tune the 02 kick by ear (`kick` clean/dist/hard, grit values) and the pad set.
 - Tune 17-v2 growl, Moog note/arp and `chords.pad.fb` by ear; v1 stays as the reference.
+- Tune idm/01 by ear: `grain.cloud.chop` 16–48, `grain.cloud.window`, `bass.growl.cut`,
+  `acid.line.glide`, and the 6 pads; keep `verb` low (0.1–0.25).
+- Tune khmer/01 by ear: `roneat.ek.decay` 0.1–0.25, `reed.lead.cut` 1500–3000,
+  `samLow.cut` 300–800, `samHigh.cut` 1200–3000, `chhing.decay` 0.03–0.08,
+  `gong.vong.decay` 1–2.5; keep the sub ≤80 and only in build/main.
+- Tune khmer/02 by ear: sample mix (skor/sampho/chhing levels), `mode` swing/roll,
+  mute combinations; decide whether to replace VSCO/Dirt with local Khmer recordings.
 
 ### 🔮 Horizon
 - A third dnb character (e.g. halftime / autonomic) only as a new file, never as a rewrite of 01/02.
+- A second IDM character (e.g. 8-bit/micro-edit or dark ambient glitch) only as a new file.
+- A second Khmer character (mahori / arak / boxing standalone) only as a new file.
+- Record local Khmer one-shots and swap the 02 sample map; docs/khmer/05-samples.md.
 
 ## Gates
 A new track is done only when all pass:
@@ -55,4 +102,8 @@ A new track is done only when all pass:
 ## Known Constraints
 - Samples lazy-load from GitHub; the first hit after raising a fader may wait for download.
 - Node checks have no `samples()`; every track guards sample-map calls with `typeof samples === 'function'`.
+- khmer/01 uses no samples at all (synth only); `s("pink")`/`s("white")` are built-in noise.
+- khmer/02 uses Dirt-Samples + a custom VSCO 2 CE map; the panel SAMPLES button downloads only `github:` maps, VSCO loads lazily.
+- Khmer tuning is approximated in 12-TET; 4/4 and the sub are modern adaptations, documented in `docs/khmer/`.
+- Khmer 02 rule: scenes change rhythm only; all instruments stay present. Instrument mutes live in `// @mutes` and no instrument is pad-only.
 - Do not rewrite dnb/02. New work = new file.

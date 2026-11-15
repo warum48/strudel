@@ -65,5 +65,76 @@ s("wt_ana:1").unison(5).wtsync(1.2).detune(rand.mul(1.5))
 Порядок в звуке: огибающая пишет в `filter.frequency`, LFO-нода **прибавляется**
 к тому же параметру. Поэтому `lpenv` даёт «ВУ» на атаке, а LFO — «УУУ-УУУ» поверх.
 
-Чего нет в опубл. `@strudel/core` 1.2.6, хотя в доках примеры есть: `penv`,
-`panchor` (питч-огибающая) и `glide` (портаменто). Не используем.
+`penv` / `panchor` / `pattack` / `pdecay` / `psustain` / `pcurve` в
+`@strudel/core` 1.2.6 есть и работают (см. README, «Грабли движка»).
+`glide` — не встроенная функция, а регистр из `09-dark-acid-v2.js` /
+Switch Angel: он считает интервал от предыдущей ноты и пишет `penv`.
+
+## Даб-техно
+
+- `docs/dub-techno/README.md` — плейбук: характер, гармония, звук, микс,
+  чек-лист следующего трека.
+- `docs/dub-techno/sources.md` — внешние гайды, канон для наслушанности,
+  что именно из них взято.
+- `docs/dub-techno/strudel-recipes.md` — готовые куски: аккорды, саб ≤80,
+  стаб в дилее, пэд, хэты, режимы, аудиты.
+- Живые примеры: `tracks/techno/16-minimal-dub.js` (120 BPM),
+  `tracks/techno/17-halfstep-dub.js` / `-v2` (104 BPM, Burial-leaning).
+
+## IDM
+
+- `docs/idm/README.md` — характер, карта инструментов, переключатели, пэды,
+  сцены, как играть, гейты.
+- `docs/idm/01-techniques.md` — глитч, грануляр, микро-события, 8 бит,
+  эйсид, шершавый бас, барабаны, «мало реверба».
+- `docs/idm/02-arrangement.md` — темп, форма, тёмная/атональная гармония,
+  антипоп, рандом под контролем, микс, перформанс.
+- `docs/idm/03-strudel.md` — `chop`/`slice`/`striate`/`splice`, `glide`,
+  `seg`, пэды, бюджеты CPU и грабли 1.2.6.
+- `docs/idm/04-sources.md` — источники и что именно взято.
+- Живой пример: `tracks/idm/01-splinter.js` (136 BPM, glitch/granular).
+
+## Кхмерская музыка
+
+- `docs/khmer/README.md` — характер, карта пинпета, переключатели, пэды
+  (01) и mutes (02), сцены, как играть, гейты.
+- `docs/khmer/01-instruments.md` — roneat ek/thung/dek, kong vong/thom,
+  sralai, sampho (ting/tip/theung/tup), skor thom (tight/loose),
+  chhing, krap; малый и большой составы.
+- `docs/khmer/02-tuning-rhythm.md` — семь тонов ~171 цент, пятитоновый
+  скелет, 12-TET-приближения, колотомия, Sathukar, боксёрская музыка.
+- `docs/khmer/03-strudel.md` — синтез, сэмплы VSCO/Dirt, `seg(1/8)`,
+  сцены-ритмы, `@mutes`, бюджеты CPU, грабли 1.2.6 (`.add(slider)`).
+- `docs/khmer/04-sources.md` — Wikipedia, UMBC/Sam-Ang Sam, UNESCO,
+  Garzoli, Garland; что взято, а что адаптировано.
+- `docs/khmer/05-samples.md` — какие реальные сэмплы есть, чего нет,
+  как подставить локальные записи.
+- Живые примеры: `tracks/khmer/01-sathukar.js` (88 BPM, синтез),
+  `tracks/khmer/02-skors.js` (96 BPM, реальные сэмплы, сцены-ритмы,
+  mute-кнопки, без пэдов).
+
+Сэмплы:
+
+- VSCO 2 CE (CC0) — xylo, marimba, gong, claves:
+  https://github.com/sgossner/VSCO-2-CE
+- Dirt-Samples — east (тайко/woodblock), hand, tabla, metal:
+  https://github.com/tidalcycles/Dirt-Samples
+- Roneat Studio Pro — приложение для roneat ek; в репозитории
+  mock/dummy сэмплы, не банк: https://github.com/Vagabond404/Roneat-Studio-Pro
+- Sounds of Angkor — видео/фото инструментов, не one-shots:
+  https://soundsofangkor.org/
+
+Ключевые внешние источники:
+
+- https://en.wikipedia.org/wiki/Music_of_Cambodia
+- https://en.wikipedia.org/wiki/Pinpeat
+- https://en.wikipedia.org/wiki/Roneat
+- https://en.wikipedia.org/wiki/Samphor
+- https://en.wikipedia.org/wiki/Sralai
+- https://en.wikipedia.org/wiki/Ching_(instrument)
+- https://en.wikipedia.org/wiki/Skor_thom
+- https://www.umbc.edu/eol/cambodia/histcmus.htm
+- https://www.umbc.edu/eol/cambodia/pinpeat.htm
+- https://www2.umbc.edu/eol/cambodia/scale.htm
+- https://unesdoc.unesco.org/ark:/48223/pf0000135257
+- https://iftawm.org/journal/oldsite/articles/2015b/Garzoli_AAWM_Vol_4_2.pdf

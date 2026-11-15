@@ -448,6 +448,17 @@ let padNames = new Set();
 const padButtons = new Map(); // index → { k, b }
 const heldKeys = new Set();
 
+// MUTES — top-level 0/1 sliders named in `// @mutes muteA,muteB`.
+// Unlike pads they are not momentary: a click writes the opposite value
+// and it stays. The row sits under Scenes; the track only multiplies a
+// layer's gain by the unmuted signal, so mutes never reorder the code.
+function scanMuteNames(src) {
+  const line = /^[ \t]*\/\/[ \t]*@mutes[ \t]+(.+)$/m.exec(src);
+  if (!line) return new Set();
+  return new Set(line[1].trim().split(/[\s,]+/).filter(Boolean));
+}
+let muteNames = new Set();
+
 // SCENES — трек может объявить два пресета прямо в комментарии:
 //   // @scenes {"intro":{...},"theme":{...}}
 // Ключи — пути дерева (`drums.kick.vol`) или имена глобальных ручек
@@ -488,6 +499,7 @@ function buildKnobs() {
   labels = names;
   switchCaps = scanSwitchCaps(src);
   padNames = scanPadNames(src);
+  muteNames = scanMuteNames(src);
   scenes = importedScenes || scanScenes(src);
   renderScenes();
   const ws = mirror.widgets.filter((w) => w.type === 'slider').sort((a, b) => a.from - b.from);
@@ -525,10 +537,12 @@ function render() {
   const globals = [];
   const switches = [];
   const pads = [];
+  const mutes = [];
   const groups = new Map(); // group → Map(instrument → knobs[])
   for (const k of knobs) {
     if (k.path.length === 0) {
-      if (padNames.has(k.name)) pads.push(k);
+      if (muteNames.has(k.name)) mutes.push(k);
+      else if (padNames.has(k.name)) pads.push(k);
       else (isSwitch(k) ? switches : globals).push(k);
       continue;
     }
@@ -543,6 +557,7 @@ function render() {
   renderGlobals(globals);
   renderSwitches(switches);
   renderPads(pads);
+  renderMutes(mutes);
   renderMixer(groups);
   renderTone(groups);
 
@@ -634,6 +649,39 @@ function pressPadAt(i, on) {
   p.k.value = v;
   setKnob(p.k, v);
   p.b.classList.toggle('on', on);
+}
+
+// MUTES: обычная кнопка-переключатель. Клик пишет max/min и остаётся там;
+// трек глушит слой через `1 - mute`, поэтому инструмент не исчезает из кода.
+function renderMutes(list) {
+  const root = $('mutes');
+  root.innerHTML = '';
+  if (!list.length) return;
+  const cap = document.createElement('span');
+  cap.className = 'cap';
+  cap.textContent = 'Mutes — click';
+  root.appendChild(cap);
+  for (const k of list) {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'mute';
+    const word = k.name.replace(/^mute/, '') || k.name;
+    b.textContent = cap_(word);
+    const isOn = () => Number(k.value) > (k.min + k.max) / 2;
+    const paint = () => {
+      const on = isOn();
+      b.classList.toggle('on', on);
+      b.title = `${k.name}: ${on ? 'muted' : 'live'}`;
+    };
+    b.addEventListener('click', () => {
+      const next = isOn() ? k.min : k.max;
+      k.value = next;
+      setKnob(k, next);
+      paint();
+    });
+    paint();
+    root.appendChild(b);
+  }
 }
 
 function bindPadKeys() {

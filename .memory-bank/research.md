@@ -6,6 +6,11 @@
 | H-001 | Bukem atmosphere comes from slow pads over fast breaks, not from a slow tempo | ✅ CONFIRMED | pad movement vs break tempo | pads 4× slower | phreak.fm / Logical Progression analysis | — |
 | H-002 | Liquid dnb sits at 170–174 BPM with pads HPF 200 Hz and Rhodes HPF 120 Hz | ✅ CONFIRMED | BPM / HPF | 172 ± 2 | BeatKey liquid guide | — |
 | H-003 | Dark dnb is made by dissonance and sound design, not just filtering | ✅ CONFIRMED | tritone / minor 2nd count | intentional | DOA/Grid dark dnb thread; Preset Drive techstep guide | — |
+| H-004 | IDM coherence comes from sparse layers + meticulous sequencing, not random generation | ✅ CONFIRMED | foreground layers / deterministic kick | ≤4 layers; kick deterministic | Elektronauts 173927; Studio Brootle IDM guides | — |
+| H-005 | Granular IDM in Strudel = `chop`/`slice`/`begin`/`end`, and the cloud must stay dry | ✅ CONFIRMED | cloud room send | ≤0.2 | SOS granular; idm/01 cloud room 0.2 | — |
+| H-006 | Fat rough bass = sub ≤80 + separate mid growl + FM rubber; `shape` before `gain` | ✅ CONFIRMED | sub cut / growl band / FM ratio | sub ≤80; growl 150–400; ratio 1.2–2.5 | idm/01 bass tree; docs/rules.md | — |
+| H-007 | Khmer pinpeat can be adapted as cycle + heterophony + 7-tone scale, with percussion carrying the form and no Western chords | ✅ CONFIRMED | modes / tension / cpu / live | 4 modes, no tension, ≤20 worklets/bar | khmer/01-sathukar; docs/khmer | — |
+| H-008 | Real samples beat synthesis for Khmer percussion/xylophones; rhythm-only scenes + manual mutes are a better performance model than scene gating/pads | ✅ CONFIRMED | verify / modes / latch / live; sample count | 16 tracks, 26 sliders, 0 worklets, no pad-only parts | khmer/02-skors; docs/khmer/05-samples | — |
 
 ## Confirmed Findings
 - LTJ Bukem: breaks at full tempo but mixed back; pads move at quarter speed; melodic bass, not a static sub.
@@ -17,9 +22,17 @@
 - `slice` chops and reorders; `chop` plays the slices in order and is the API the Strudel docs describe as granular. v1 used only slice; v2 adds a real chop layer.
 - Long grinder variants: LONG (sustain + slow filter), DRIFT (perlin FM/cut + rare octave + jitter), STUTTER (ply/degrade + bitcrush). All use the same per-mode note phrases.
 - Sample downloader scope: track-declared maps + uzu-drumkit, used keys only; `fetchSampleMap` resolves JSON, `loadBuffer` fills the engine buffer cache. Downloading the whole Dirt-Samples JSON library would be hundreds of MB and is not needed.
-- Minimal dub techno (Tunary / Studio Brootle / House of Loop / Basic Channel): 120–130 BPM; muted 4/4 kick; soft offbeat hats; one short filtered chord stab into long delay/reverb; deep sub; hiss/field recordings; slow filter/feedback moves over 8/16/32 bars; no new sections.
+- Minimal dub techno (Tunary / Studio Brootle / House of Loop / Basic Channel): 120–130 BPM; muted 4/4 kick; soft offbeat hats; one short chord stab into long delay/reverb; deep sub; hiss/field recordings; slow filter/feedback moves over 8/16/32 bars; no new sections.
+- IDM (Elektronauts 173927, Studio Brootle, SOS granular): complexity from manual sequencing, not layer count; randomness only on textures; melody as rhythm, rhythm as melody; micro-slicing (peak + a little around); grains 1–100 ms; transient flamming is the main granular failure; 8-bit = pulse duty + fast arps + noise channel; acid = selective glide, accent = louder+brighter, sparse wide intervals; space = short reverb + delay/pan.
+- IDM track recipe: 130–140 BPM; 3–4 foreground layers; 8 switches + 6 momentary pads; 8 drum modes (4–7 use every layer); `mutate` ghosts + `fill` roll as rhythm macros; grain cloud (chop 32, dry), scan (sine position), freeze (pad), edit (slice); moving source bank `padlong/space/wind/noise2`; pitch −24…+12; 8-bit lead/arp (pulse/square + crush); sparse 303; spoken `numbers` voice (dry/chop/pitch); sub ≤80 + growl 150–400 + FM rubber; tritone axis with `@dark`, no minor 2nd; little reverb.
 - Dub delay: feedback ~40–65%, filter the repeats, keep the dry stab louder than the echo; at 120 BPM dotted-quarter delay = 0.375 cycles.
 - Anti-pop rules applied to techno/16: bass cut max 80, kick lpf 260, no melody/303, no snare backbeat, no sidechain/riser/drop, bII/9 instead of 1–2–4–5.
+- Khmer pinpeat: seven tones per octave near equal (~171.4 cents; Ellis 1885, disputed by Garzoli 2015); no absolute pitch, ensemble tunes to the sralai; 21-bar roneat = 3 octaves; 5- and 7-note scales in use; heterophony + colotomy, not chord harmony.
+- Khmer instruments/roles: roneat ek lead, roneat thung skeleton, kong vong/thom support, sralai only wind (quadruple reed, circular breathing), sampho leads (ting/tip/theung/tup), skor thom tight/loose pair, chhing timekeeper (closed accent + open "ching"), krap rare.
+- Khmer form: `Sathukar` is an opening piece, not a genre; `bot` pieces for the Reamker; boxing music = sralai + sampho + chhing, slow rubato then fast metred and accelerating.
+- Khmer adaptation recipe: 88 BPM 4/4 grid; 8-bar phrase; 7-tone `c db eb f gb ab bb` + 5-tone skeleton `c eb f g bb`; drone C–G / C–Gb latched 8 bars; roneat ek/thung + kong vong + sralai + skor thom + sampho + chhing + krap; 4 modes (sathukar/pinpeat/boxing/percussion); no samples; sub ≤80 only in build/main.
+- Real-sample Khmer recipe (02): 96 BPM; Dirt-Samples (`east` taiko, `hand`, `tabla`, `metal`) + VSCO 2 CE CC0 (xylo, marimba, gong, claves); no sralai; scenes = rhythm patterns only, all instruments present; `// @mutes` 0/1 buttons under scenes; no pads/pad-only parts; `mode` = fill/ghost/swing; `harmony` = fifth/axis latched 8 bars; 0 worklets.
+- Sample reality check: no public Khmer one-shot bank found; Dirt-Samples has no Khmer instruments; VSCO is Western orchestral; Roneat Studio Pro ships mock samples; Sounds of Angkor has videos, not one-shots; best path = local recordings mapped via `samples({...})` (docs/khmer/05-samples.md).
 
 ## Genre Recipe Library (saved 2026-11-15)
 
@@ -97,10 +110,30 @@ Breakcore source links:
 - Elektronauts — Generative breakbeat slices (continuous variation): https://www.elektronauts.com/t/trying-to-reproduce-this-generative-breakbeat-slices-continuous-variation-trick-but/256454
 - IDMForums — What is Breakcore? / Challenge #6: https://idmforums.com/t/what-is-breakcore/386 , https://idmforums.com/t/challenge-6-breakcore-complex/6643
 
+### IDM — research digest (2026-11-15)
+- Studio Brootle — IDM beat: 114 BPM, 3 LinnDrum + 3 Operators; Follow Actions (bounded random), velocity→FM/filter/envelope, Beat Repeat, grain delay, ping-pong, short gated drums. https://www.studiobrootle.com/how-to-make-an-idm-beat-aphex-twin-autechre-influenced/
+- Studio Brootle — IDM techniques: looped envelopes, grain delay tuned to 7 semitones, high-feedback chorus/phaser, sample&hold LFO 1/8–1/16 on resonant filter, arp + random pitch. https://www.studiobrootle.com/idm-techniques/
+- Elektronauts — sequencing theory: less is more; manual sequencing; randomness is spice; rhythm as melody; micro-slicing peak+around; do not overload lows. https://www.elektronauts.com/t/whats-the-sequencing-theory-in-idm/173927
+- Sonic State / Felix Fleer — IDM overview: sound design, drum processing, glitches. https://sonicstate.com/news/2023/02/18/how-to-create-idm/
+- SOS — Granular Synthesis: grains 1–100 ms; density/overlap; transient flamming; grain cloud jitter on pitch/position/length/pan; position modulation is the life source. https://www.soundonsound.com/techniques/granular-synthesis
+- Wikipedia — Granular synthesis: microsound scale, cloud vs note. https://en.wikipedia.org/wiki/Granular_synthesis
+- Wikipedia — Chiptune: pulse duty, square/triangle/noise, few voices → fast arps, FM era, tracker culture. https://en.wikipedia.org/wiki/Chiptune
+- Switch Angel — strudel-scripts: glide from previous note, accent = louder+brighter, sparse 303. https://github.com/switchangel/strudel-scripts
+
+### Khmer — research digest (2026-11-16)
+- Wikipedia — Music of Cambodia / Pinpeat: pin peat vs phleng kar vs mahori; small and large pinpeat; instrument list; `Sathukar` and `bot`; boxing music. https://en.wikipedia.org/wiki/Music_of_Cambodia ; https://en.wikipedia.org/wiki/Pinpeat
+- Sam-Ang Sam (UMBC): history, village/court/temple contexts, pinpeat ensemble, scale page (5 or 7 notes; 7 available). https://www.umbc.edu/eol/cambodia/histcmus.htm ; https://www.umbc.edu/eol/cambodia/pinpeat.htm ; https://www2.umbc.edu/eol/cambodia/scale.htm
+- Instrument pages: roneat (21 bars), samphor (two heads, 4 strokes, up to 8 pitches, leads), skor thom (pair, tight/loose, sticks), sralai (quadruple reed, ensemble tunes to it, circular breathing), chhing (timekeeper, closed accent + open "ching"), skor thom. https://en.wikipedia.org/wiki/Roneat ; https://en.wikipedia.org/wiki/Samphor ; https://en.wikipedia.org/wiki/Sralai ; https://en.wikipedia.org/wiki/Ching_(instrument) ; https://en.wikipedia.org/wiki/Skor_thom
+- UNESCO — Traditional Musical Instruments of Cambodia (Khean et al.): instrument reference. https://unesdoc.unesco.org/ark:/48223/pf0000135257
+- Garzoli — “The Myth of Equidistance in Thai Tuning” (AAWM 2015): critique of rigid 7-TET; measured tuning varies. https://iftawm.org/journal/oldsite/articles/2015b/Garzoli_AAWM_Vol_4_2.pdf
+- Adaptation: 12-TET flat rounding `c db eb f gb ab bb` + 5-tone `c eb f g bb`; 88 BPM 4/4; 8-bar phrase; drone C–G / C–Gb latched; 4 modes; no samples.
+- Samples: Dirt-Samples has no Khmer instruments (east = Japanese taiko/woodblock, hand, tabla, metal, tok/tink/chin); VSCO 2 CE (CC0) has real xylo/marimba/gong/claves; Roneat Studio Pro ships mock samples; Sounds of Angkor has videos. Best = local recordings, mapped with `samples({...})`. https://github.com/sgossner/VSCO-2-CE ; https://github.com/tidalcycles/Dirt-Samples ; https://github.com/Vagabond404/Roneat-Studio-Pro
+- 02 rules: scenes change rhythm only (all instruments present); `// @mutes` row under scenes (ordinary 0/1, not momentary); no pad-only instruments; `mode` = fill/ghost/swing; `harmony` = fifth/axis latched 8 bars; real samples, no sralai, no sub.
+
 ### Repo mapping
-- Already covered: dub techno minimalism (techno/16), gabber kick (techno/13), atmospheric jungle (dnb/01), dark techstep/IDM (dnb/02).
-- Not yet covered: trance supersaw/breakdown, hard-techno gallop, trip hop, breakcore micro-slicing + odd meters. Any new one = new file, never a rewrite of dnb/01–02.
-- Strudel primitives that map 1:1: `slice`/`chop` (granular), `ply` (retrig/rolls), `degrade` (generative variation), `sometimes`/`rarely` (velocity-random analogue), `speed` (re-pitch copies), `lpf`+`room` (gabber/dub chains).
+- Already covered: dub techno minimalism (techno/16), gabber kick (techno/13), atmospheric jungle (dnb/01), dark techstep/IDM (dnb/02), glitch/granular IDM (idm/01), Khmer pinpeat/percussion (khmer/01), Khmer percussion/xylophones with real samples (khmer/02).
+- Not yet covered: trance supersaw/breakdown, hard-techno gallop, trip hop, breakcore micro-slicing + odd meters, Khmer mahori/arak/boxing standalone. Any new one = new file, never a rewrite of dnb/01–02.
+- Strudel primitives that map 1:1: `slice`/`chop`/`striate`/`splice` (granular), `ply` (retrig/rolls), `degrade` (generative variation), `sometimes`/`rarely` (velocity-random analogue), `speed` (re-pitch copies), `lpf`+`room` (gabber/dub chains), `arp(run(n))` (8-bit arps), `crush` (8-bit grit, worklet).
 
 ## Current Experiment
 None.
