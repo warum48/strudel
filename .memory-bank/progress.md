@@ -158,3 +158,15 @@
   `bitMode 2` (coarse), `acidMode 1` (sparse), `voxMode 2` (chop), plus all
   instrument/mix/mutation values.
 - Audits: verify 33 tracks / 193 sliders / 130 hits, live eval ok.
+
+## 2026-11-16 — techno/18-khmer-dub
+- Added `tracks/techno/18-khmer-dub.js`: 122 BPM dub techno + Khmer percussion.
+  Fm9 → Gbmaj9 (bII), full dub set (kick/hat/rim/click/shaker, sub/dub,
+  pad/stab/organ/skank/horns, hiss/air/field, delay/reverb) + 30 Khmer
+  percussion channels (skor/sampho/chhing/krap/kong/wood) as one bus through
+  a shared delay/reverb. 17 tracks, 158 sliders, 177 hits/bar.
+- Tension fixes: moved Gb maj7 color, changed BASS db2→ab1, removed pad f
+  from Gb to avoid m2 with skank; tension clean.
+- Audits: verify 17 tracks / 158 sliders / 177 hits/bar, tension clean,
+  modes 4/4, latch bar 8, gains silent, doubles no collisions,
+  cpu 6/bar (3/s), live eval ok.

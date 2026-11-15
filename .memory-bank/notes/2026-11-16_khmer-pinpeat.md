@@ -48,3 +48,10 @@
 - Acid is a separate switch, not a Khmer mode: acid bass `fast(pace/16)`,
   acid arp `arp(run(pace))`; both pace 4…32. The Khmer layers stay rhythmic.
 - Strong reverb: `verb` 0…1.2, `verbSize` 1…16. CPU 16/bar with acid on.
+
+## 18-khmer-dub (same day)
+- Dub techno in Fm9→Gbmaj9 (bII), 122 BPM; full dub set + 30 Khmer percussion
+  channels. The 30 channels are one stack through shared `percEcho`/`percVerb`
+  and `verb`/`verbSize`; each has vol/cut/clip and a 6-group mute.
+- Keep Khmer percussion rhythmic/ostinato; no melodic lines. Voicing gotcha:
+  Gb pad `f` and skank `gb` are a minor second; use f4 or omit f from pad.

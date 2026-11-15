@@ -76,6 +76,7 @@ Switch Angel: он считает интервал от предыдущей н�
   чек-лист следующего трека.
 - `docs/dub-techno/sources.md` — внешние гайды, канон для наслушанности,
   что именно из них взято.
+- `tracks/techno/18-khmer-dub.js` — 122 BPM dub techno + 30 Khmer percussion channels, Fm9→Gbmaj9.
 - `docs/dub-techno/strudel-recipes.md` — готовые куски: аккорды, саб ≤80,
   стаб в дилее, пэд, хэты, режимы, аудиты.
 - Живые примеры: `tracks/techno/16-minimal-dub.js` (120 BPM),

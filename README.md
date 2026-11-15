@@ -61,6 +61,11 @@ tracks/
                       hats, Dm9→Bbmaj9, vowel pad, sub ≤80 + growl, Moog
     17-halfstep-dub-v2.js v2 17: audible Moog note + Moog arp with pace,
                       pad.fb; 17 не тронут
+    18-khmer-dub.js   122 BPM dub techno + Khmer drums: Fm9→Gbmaj9, полный
+                      дабовый набор (kick/hat/rim/click/shaker, sub/dub,
+                      pad/stab/organ/skank/horns, hiss/air/field, delay/reverb)
+                      + 30 кхмерских перкуссионных каналов через общий
+                      delay/reverb; 17 дорожек, 158 слайдеров
   dnb/
     01-atmospheric-jungle.js 174 BPM LTJ Bukem / Aphrodite: Amen + chop,
                       Dm9–Gm9–Bb–A7sus, deep sub / Reese / mentasm
@@ -154,7 +159,7 @@ tools/
 ```
 
 Независимые серии: **drum & bass** (`tracks/01…04`), **techno**
-(`tracks/techno/01…`), **atmospheric dnb** (`tracks/dnb/01…`),
+(`tracks/techno/01…18`), **atmospheric dnb** (`tracks/dnb/01…`),
 **breakcore** (`tracks/breakcore/01…`), **IDM** (`tracks/idm/01…`) и
 **кхмерский пинпет** (`tracks/khmer/01…04`). Внутри серии
 треки — версии одного трека, а не разные:
@@ -524,6 +529,28 @@ eval ок, паттерн играет, слайдер синхронизиро�
 снейр 4/4/8/0, хэты 64/0/64/0, `latch` — такт 8, `gains` — тихо, `tension` —
 трения нет, `cpu` — 10/9/10/10 worklet'ов на такт (4/с), `doubles` — наложений
 нет, `live` — eval ок, паттерн играет, слайдер синхронизирован.
+
+`techno/18-khmer-dub.js` — **новый трек**: 122 BPM, dub techno снизу,
+кхмерская перкуссия сверху. Fm9 → Gbmaj9 (bII), другие ноты, чем в 16/17.
+
+- **Дабовый набор.** kick / hat / rim / click / shaker; sub / dub bass;
+  pad warm/air; stab; organ; skank; horns; hiss / air / field; dub delay +
+  reverb. Всё в дубовой логике: глухой кик, саб ≤80, стаб в дилее, пэд
+  туманом, без мелодий и дропов.
+- **30 кхмерских драмов.** 30 отдельных каналов в MIXER (skor low/high/fill,
+  sampho low/high/ghost/rim, chhing closed/open/roll, krap, kong, woodblock/
+  shime) с vol / cut / clip. В коде — один перкуссионный автобус, чтобы все
+  30 проходили через **общий delay + reverb**, а не 30 отдельных хвостов.
+- **Реверб/дилей сильнее.** `verb` до 1.0, `verbSize` до 20, `percEcho` до 0.8,
+  `percVerb` до 1.0. Мокрый, но не «собор».
+- **Режимы.** `mode` dub/strip/pressure/click — только верх; `harmony`
+  warm/air — защёлка 8 тактов; `@mutes` — 6 групп перкуссии.
+- **Низ.** `bass.sub.cut` и `bass.dub.cut` ≤80, кик 270. Мелодических
+  кхмерских линий нет: только ритм/остинато.
+
+Проверки 18: 17 дорожек / 177 ударов / 158 слайдеров, `tension` — трения
+нет, `modes` — 4/4 по верху, `latch` — такт 8, `gains` — тихо, `doubles` —
+наложений нет, `cpu` — 6 worklet/такт (3/с), `live` — eval ок.
 
 `dnb/01-atmospheric-jungle.js` — **новый трек, новая подпапка**: 174 BPM,
 атмосферный jungle / liquid dnb в духе LTJ Bukem + jump-up-режим в духе

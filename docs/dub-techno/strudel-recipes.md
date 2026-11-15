@@ -321,3 +321,30 @@ npm run live -- tracks/techno/16-minimal-dub.js
 - `gains` — тихо при всех нулях.
 - `doubles` — без наложений; пустые первые такты у редких слоёв — норма.
 - `live` — eval ок; sample button 45 файлов для 16.
+
+## Khmer percussion bus (18)
+
+30 кхмерских каналов — один `stack`, чтобы все прошли через общий
+delay/reverb, а не через 30 отдельных хвостов.
+
+```js
+const percLayers = PERC.map((p) => {
+  const base = p.note ? note(p.note).s(p.s) : s(p.s).n(p.n)
+  return base.struct(m(p.pat)).speed(p.speed)
+    .gain(perc[p.key].vol.mul(unmuted(MUTES[p.group])))
+    .lpf(perc[p.key].cut).hpf(p.hpf)
+    .clip(perc[p.key].clip)
+    .pan(p.pan)
+})
+
+$: stack(...percLayers)
+  .delay(percEcho)
+  .delaytime(fx.dub.time)
+  .delayfeedback(fx.dub.feedback.mul(0.7))
+  .room(verb.mul(percVerb)).roomsize(verbSize)
+  .filter(audible)
+```
+
+`PERC` — 30 спек: `east`/`hand`/`tabla`/`metal`/`tok`/`chin`/`claves`/`gong`.
+У каждого канала в дереве `vol/cut/clip`, у групп — mute. Ноты/паттерны
+держат ритм, а не мелодию.

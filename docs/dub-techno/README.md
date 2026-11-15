@@ -132,3 +132,21 @@
 - [ ] Modes + harmony latch 8; при желании `@scenes`.
 - [ ] `verify`, `tension`, `modes`, `latch`, `gains`, `doubles`, `cpu`, `live`.
 - [ ] Проверить, что трек живёт 2 минуты без новых секций.
+
+## 9. Khmer dub (`techno/18-khmer-dub.js`)
+
+Дабовый низ + кхмерский верх. 122 BPM, Fm9 → Gbmaj9 (bII), другие ноты,
+чем в 16/17.
+
+- **Дабовый набор:** kick / hat / rim / click / shaker, sub / dub bass,
+  pad warm/air, stab, organ, skank, horns, hiss / air / field, dub delay
+  + reverb. Саб ≤80, кик 270, стаб в дилее, никаких мелодий и дропов.
+- **30 кхмерских драмов:** skor low/high/fill, sampho low/high/ghost/rim,
+  chhing closed/open/roll, krap, kong, woodblock/shime. 30 каналов в
+  MIXER (vol / cut / clip), один перкуссионный автобус в коде.
+- **Все 30 через общий delay + reverb:** `percEcho` 0…0.8, `percVerb` 0…1,
+  `verb` 0…1, `verbSize` 1…20. Это дешевле 30 отдельных хвостов.
+- **Mutes:** skor / sampho / chhing / krap / gong / wood. `mode` — только
+  верх, `harmony` — warm/air с защёлкой 8 тактов.
+- **Проверки:** 17 дорожек / 177 ударов / 158 слайдеров, tension clean,
+  cpu 6/такт (3/с), doubles без наложений, live ок.
