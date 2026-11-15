@@ -448,6 +448,28 @@ let padNames = new Set();
 const padButtons = new Map(); // index → { k, b }
 const heldKeys = new Set();
 
+// SCENES — трек может объявить два пресета прямо в комментарии:
+//   // @scenes {"intro":{...},"theme":{...}}
+// Ключи — пути дерева (`drums.kick.vol`) или имена глобальных ручек
+// (`mode`, `harmony`). Нет строки — кнопки Intro/Theme выключены.
+function scanScenes(src) {
+  const line = /^[ \t]*\/\/[ \t]*@scenes[ \t]+(.+)$/m.exec(src);
+  if (!line) return null;
+  try {
+    return JSON.parse(line[1]);
+  } catch (e) {
+    console.warn('panel: @scenes parse failed', e);
+    return null;
+  }
+}
+let scenes = null;
+let importedScenes = null; // JSON import can override scenes until track change
+
+const knobKey = (k) => (k.path.length ? k.path.join('.') : k.name);
+function setSceneStatus(text) {
+  const el = $('sceneStatus');
+  if (el) el.textContent = text;
+}
 
 const fmt = (x) => {
   const n = Number(x);
@@ -466,6 +488,8 @@ function buildKnobs() {
   labels = names;
   switchCaps = scanSwitchCaps(src);
   padNames = scanPadNames(src);
+  scenes = importedScenes || scanScenes(src);
+  renderScenes();
   const ws = mirror.widgets.filter((w) => w.type === 'slider').sort((a, b) => a.from - b.from);
   if (sites.length !== ws.length) {
     console.warn(`panel: ${sites.length} slider( в тексте против ${ws.length} виджетов`);
@@ -634,6 +658,106 @@ function bindPadKeys() {
   window.addEventListener('blur', () => {
     for (const i of heldKeys) pressPadAt(i, false);
     heldKeys.clear();
+  });
+}
+
+// ── SCENES: Intro / Theme + JSON export/import ─────────────────────
+function renderScenes() {
+  const intro = $('sceneIntro');
+  const theme = $('sceneTheme');
+  if (!intro || !theme) return;
+  const hasIntro = !!(scenes && scenes.intro && Object.keys(scenes.intro).length);
+  const hasTheme = !!(scenes && scenes.theme && Object.keys(scenes.theme).length);
+  intro.disabled = !hasIntro;
+  theme.disabled = !hasTheme;
+  intro.title = hasIntro ? 'apply intro scene' : 'no @scenes.intro in this track';
+  theme.title = hasTheme ? 'apply theme scene' : 'no @scenes.theme in this track';
+  setSceneStatus(
+    hasIntro || hasTheme
+      ? [hasIntro && 'intro', hasTheme && 'theme'].filter(Boolean).join(' / ')
+      : 'no scenes',
+  );
+}
+
+// Применяем значения по путям дерева. Идём с конца: правка числа меняет
+// длину текста и сдвигает только то, что правее, а мы уже отправили те
+// значения по их исходным id. Так пачка из 90 ручек не путает движок.
+function applyValues(values, label = 'scene') {
+  const byKey = new Map(knobs.map((k) => [knobKey(k), k]));
+  const entries = Object.entries(values || {});
+  const pairs = [];
+  for (const [key, raw] of entries) {
+    const k = byKey.get(key);
+    const v = Number(raw);
+    if (!k || !Number.isFinite(v)) continue;
+    pairs.push([k, Math.min(k.max, Math.max(k.min, v))]);
+  }
+  pairs.sort((a, b) => b[0].idx - a[0].idx);
+  for (const [k, v] of pairs) {
+    k.value = v;
+    setKnob(k, v);
+  }
+  render();
+  renderScenes();
+  setSceneStatus(`${label}: ${pairs.length}/${entries.length} values`);
+  return pairs.length;
+}
+
+function applyScene(name) {
+  const scene = scenes && scenes[name];
+  if (!scene) {
+    setSceneStatus(`no ${name} scene`);
+    return;
+  }
+  applyValues(scene, name);
+}
+
+function exportScene() {
+  const values = {};
+  for (const k of knobs) values[knobKey(k)] = k.value;
+  const payload = { track: trackName(track), values, scenes };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  const base = trackName(track).replace(/[\/\\]+/g, '-');
+  const stamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-');
+  a.download = `${base}-${stamp}.json`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  setSceneStatus(`exported ${Object.keys(values).length} values`);
+}
+
+async function importScene(file) {
+  try {
+    const text = await file.text();
+    const json = JSON.parse(text);
+    if (json && json.scenes && typeof json.scenes === 'object') {
+      importedScenes = json.scenes;
+      scenes = importedScenes;
+      renderScenes();
+    }
+    const values = json && json.values && typeof json.values === 'object' ? json.values : json;
+    if (!values || typeof values !== 'object') throw new Error('no values in JSON');
+    const n = applyValues(values, 'imported');
+    setSceneStatus(`imported ${n} values${json.track ? ' · ' + json.track : ''}`);
+  } catch (e) {
+    setSceneStatus('import error: ' + e.message);
+    setStatus(e.message, true);
+  }
+}
+
+function bindScenes() {
+  $('sceneIntro').addEventListener('click', () => applyScene('intro'));
+  $('sceneTheme').addEventListener('click', () => applyScene('theme'));
+  $('sceneExport').addEventListener('click', exportScene);
+  $('sceneImport').addEventListener('click', () => $('sceneFile').click());
+  $('sceneFile').addEventListener('change', (e) => {
+    const f = e.target.files?.[0];
+    if (f) importScene(f);
+    e.target.value = '';
   });
 }
 
@@ -961,6 +1085,9 @@ async function loadTrack(p) {
   stop(); // старый паттерн глушим: иначе два трека играют разом
   track = p;
   code = src;
+  importedScenes = null;
+  scenes = scanScenes(src);
+  renderScenes();
   mirror.setCode(src);
   showTrackInfo(p, src);
   // a different track uses different maps: reset the sample button/status
@@ -983,6 +1110,8 @@ async function boot() {
   setStatus('reading track…');
   track = await fillTrackSelect();
   code = await readTrack(track);
+  scenes = scanScenes(code);
+  renderScenes();
   showTrackInfo(track, code);
 
   // like loadModules() in strudel.cc: everything that must be visible in eval
@@ -1098,6 +1227,7 @@ $('root').addEventListener(
   true,
 );
 
+bindScenes();
 bindPadKeys();
 audioReady = boot().catch((e) => {
   console.error(e);

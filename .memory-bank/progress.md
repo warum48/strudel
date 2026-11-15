@@ -41,3 +41,4 @@
 - Moog note is now a proper `moog.note` instrument (flat `moog` was skipped by the panel's 3-level tree): low d3/a2/bb2 velvet register, `vol` 0.2, octave −2…2, cut 1100, full controls (attack/decay/sustain/release, shape, LFO, echo, room, slide); arp has the same set + pace 2–16.
 - Added `chords.pad.fb` macro scaling pad resonance/chorus/LFO depth: 1 = v1, 0 = dry pad.
 - Audits: verify 28 tracks (17 tracks, 90 sliders), tension clean, gains silent, modes 4/4, latch bar 8, cpu 10/bar (4/s), doubles no collisions, live eval ok.
+- Panel: static tab title `STRUDEL EXTENSION`; new Scenes/JSON bar. `// @scenes` drives Intro/Theme; Export downloads `{track,values,scenes}`, Import applies values and can replace scenes. v2 e2e: 90 knobs, Intro 19/19, Theme 22/22, Export 90, Import 2.

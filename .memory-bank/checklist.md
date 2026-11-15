@@ -10,8 +10,9 @@
 - [x] dnb/02-dark-techstep-v2.js — long grinder variants + chop/granular layer
 - [x] techno/16-minimal-dub.js — 120 BPM anti-pop dub techno, sub ≤80, echo stab
 - [x] techno/17-halfstep-dub.js — 104 BPM Burial-leaning halfstep dub, vowel pad, sub ≤80 + growl, sparse Moog
-- [x] techno/17-halfstep-dub-v2.js — v2: separate `Moog note` (low velvet d3/a2/bb2, octave −2…2) + full Moog/arp UI controls (attack/decay/sustain/release, shape, LFO, echo, room, slide, pace 2–16), pad.fb; v1 untouched
+- [x] techno/17-halfstep-dub-v2.js — v2: separate `Moog note` (low velvet d3/a2/bb2, octave −2…2) + full Moog/arp UI controls (attack/decay/sustain/release, shape, LFO, echo, room, slide, pace 4–16), pad.fb; v1 untouched
 - [x] Web panel: DOWNLOAD SAMPLES button with live status
+- [x] Web panel: Scenes/JSON bar (Intro/Theme from `// @scenes`, Export/Import JSON), static `STRUDEL EXTENSION` title
 - [x] README index and track notes
 - [x] Audits: verify, tension, modes, latch, gains, doubles, cpu, live
 - [x] Project memory bank

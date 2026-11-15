@@ -4,7 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link rel="icon" href="data:," />
-<title>SLOW TRAP 12 — mixer + tone + code</title>
+<title>STRUDEL EXTENSION</title>
 <style>
   :root {
     --bg: #0d0f0c;
@@ -105,6 +105,46 @@
   #pads button.pad .k { color: var(--dim); font-weight: 400; margin-left: 5px; }
   #pads button.pad.on { background: var(--warn); border-color: var(--warn); color: #0d0f0c; font-weight: 700; }
   #pads button.pad.on .k { color: #0d0f0c; }
+  /* ── SCENES / JSON — отдельная панелька: Intro+Theme | Export+Import ── */
+  #scenes {
+    flex: none;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 14px;
+    padding: 7px 12px;
+    border-bottom: 1px solid var(--line);
+    background: #11140f;
+  }
+  #scenes .zone { display: flex; align-items: center; gap: 6px; }
+  #scenes .cap {
+    color: var(--dim);
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+  #scenes .sep {
+    width: 1px;
+    align-self: stretch;
+    background: var(--line);
+    margin: 0 4px;
+  }
+  #scenes button {
+    padding: 4px 12px;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  #scenes button:disabled { opacity: 0.38; cursor: not-allowed; }
+  #sceneStatus {
+    margin-left: auto;
+    color: var(--dim);
+    font-size: 11px;
+    white-space: nowrap;
+    max-width: 320px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
   main { flex: 1; display: grid; grid-template-columns: var(--mix-w) var(--tone-w) 1fr; min-height: 0; }
   /* два столбца сайдбара: микшер (громкости) и тонкие настройки */
   #mixer, #tone {
@@ -277,6 +317,23 @@
   <button id="samples" class="ghost" title="download and decode every sample used by this track">SAMPLES</button>
   <span id="sampleStatus"></span>
 </header>
+
+<!-- ── SCENES / JSON: первая зона — пресеты, вторая — обмен JSON ── -->
+<div id="scenes">
+  <div class="zone">
+    <span class="cap">Scenes</span>
+    <button id="sceneIntro" type="button" disabled>INTRO</button>
+    <button id="sceneTheme" type="button" disabled>THEME</button>
+  </div>
+  <span class="sep"></span>
+  <div class="zone">
+    <span class="cap">JSON</span>
+    <button id="sceneExport" type="button" title="download the current track settings">EXPORT</button>
+    <button id="sceneImport" type="button" title="load settings or scenes from JSON">IMPORT</button>
+    <input id="sceneFile" type="file" accept=".json,application/json" hidden />
+  </div>
+  <span id="sceneStatus"></span>
+</div>
 
 <main>
   <!-- ── столбец 1: ГЛОБАЛЬНОЕ → ПЕРЕКЛЮЧАТЕЛИ → МИКШЕР ── -->

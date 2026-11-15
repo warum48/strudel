@@ -17,9 +17,11 @@ Reference: `docs/breakcore/` (RU + EN); play guide in `10-panel.md`.
   modes 4/4 (kick 8/4/8/8), latch bar 8, cpu 6/bar (3/s), doubles no collisions,
   live eval ok (slider sync ok).
 - techno/17-halfstep-dub-v2: verify ok (17 tracks, 90 sliders), separate low `Moog note` with octave +
-  arp with pace 2–16, full Moog note/arp controls, pad.fb regulator, tension clean, gains silent,
-  modes 4/4, latch bar 8, cpu 10/bar (4/s),
+  arp with pace 4–16, full Moog note/arp controls, pad.fb regulator, `@scenes` intro/theme,
+  tension clean, gains silent, modes 4/4, latch bar 8, cpu 10/bar (4/s),
   doubles no collisions, live eval ok. v1 untouched.
+- Panel scenes e2e (headless Chromium): title `STRUDEL EXTENSION`, v2 90 knobs;
+  Intro applies 19/19 values, Theme 22/22, Export reports 90, Import applies 2.
 - `npm run tension` — dnb/01 clean; dnb/02 clean with 62 intentional tritones; dnb/02-v2 clean with 112; techno/16, 17 and 17-v2 clean.
 - `npm run live` — dnb/01, dnb/02, dnb/02-v2, techno/16, techno/17 and techno/17-v2 evaluate and play in strudel.cc.
 - Sample button (browser e2e): techno/15 = 27 files, dnb/02-v2 = 98, techno/16 = 45; all `SAMPLES ✓`.

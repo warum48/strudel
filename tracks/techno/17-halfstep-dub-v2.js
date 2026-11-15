@@ -328,6 +328,7 @@ const phrase = (bars) => m('<' + bars.join(' ') + '>')
 
 // Корни: Dm9 (1–4), Bbmaj9 (5–8). Строка ниже — маркер для tension.
 // @roots d d d d bb bb bb bb
+// @scenes {"intro":{"atmos.hiss.vol":0.05,"atmos.air.vol":0.03,"atmos.field.vol":0.035,"drums.kick.vol":0,"drums.snare.vol":0,"drums.hat.vol":0,"drums.open.vol":0,"drums.rim.vol":0,"drums.shaker.vol":0,"drums.click.vol":0,"bass.sub.vol":0,"bass.growl.vol":0,"chords.pad.vol":0.18,"chords.pad.fb":0.5,"chords.stab.vol":0,"moog.note.vol":0.2,"moog.arp.vol":0.12,"mode":0,"harmony":0},"theme":{"atmos.hiss.vol":0.05,"atmos.air.vol":0.03,"atmos.field.vol":0.035,"drums.kick.vol":0.35,"drums.snare.vol":0.25,"drums.hat.vol":0.22,"drums.open.vol":0.12,"drums.rim.vol":0.15,"drums.shaker.vol":0,"drums.click.vol":0,"bass.sub.vol":0.45,"bass.growl.vol":0.28,"bass.growl.cut":360,"chords.pad.vol":0.28,"chords.pad.fb":0.6,"chords.pad.cut":850,"chords.stab.vol":0.35,"chords.stab.cut":950,"moog.note.vol":0.2,"moog.arp.vol":0.12,"mode":0,"harmony":0}}
 
 // ROOT — саб по корням, одна нота на такт.
 const ROOT = phrase([
@@ -465,7 +466,7 @@ $: stack(
 // SNARE — на 3 (halfstep). В STEP ещё призрак на «и» 2-й.
 $: stack(
      s("sd").struct("~ ~ ~ ~ ~ ~ ~ ~ x ~ ~ ~ ~ ~ ~ ~").gain(drums.snare.vol.mul(m0)),
-     s("sd").struct("~ ~ ~ ~ ~ ~ ~ ~ x ~ ~ ~ ~ ~ ~ x").gain(drums.snare.vol.mul(m1)),
+     s("sd").struct("~ ~ ~ ~ ~ ~ ~ ~ x ~ ~ ~ ~ ~ ~ ~").gain(drums.snare.vol.mul(m1)),
      s("sd").struct("~ ~ ~ ~ ~ ~ x ~ x ~ ~ ~ ~ ~ ~ ~").gain(drums.snare.vol.mul(m2)),
    )
   .lpf(drums.snare.cut).hpf(180).lpq(1.5)
