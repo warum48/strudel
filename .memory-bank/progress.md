@@ -118,3 +118,43 @@
   doubles no collisions, cpu 0/bar, live eval ok.
 - Panel e2e (headless Chromium, khmer/02): 7 mute buttons, 60 TONE rows
   (Drums 40 / Gongs 8 / Xylophones 12), 15 MIXER rows, 0 pads.
+
+## 2026-11-16 — khmer/03-skors-ritual
+- Added `tracks/khmer/03-skors-ritual.js`: 76 BPM percussion + low xylophone, 11 tracks,
+  58 sliders, no high melodic lines/sralai. Skor high .33,
+  sampho low .34 / high .28 / ghost .23, chhing .23 / open .21, krap .19,
+  fills .18, kong thom .22; lower tuning (skor/sam −2), longer tails.
+- Scenes 0–3 (procession/invocation/trance/lament) change rhythm only; all
+  instruments present. `// @mutes` row (skor/sampho/chhing/krap/gong), no pads.
+  `mode` = fill/ghost/swing; `harmony` = fifth/axis gong latched 8 bars.
+- Docs: khmer README (RU+EN), project README, references, memory bank.
+- Audits: verify 11 tracks / 58 sliders / 40 hits/bar, tension clean
+  (35 deliberate tritones), modes 4/4 (fills 8/20/52/44), latch bar 8,
+  gains silent, doubles no collisions, cpu 0/bar, live eval ok.
+
+## 2026-11-16 — 03 low xylophone
+- Added `xylo.low` to `khmer/03-skors-ritual.js`: real VSCO marimba samples,
+  `octave` 0/1/2 = 0/−1/−2, volume 0.24, `muteLow`. New LOW 8-bar phrase;
+  no high xylophone lines. Track now 11 tracks / 58 sliders / 40 hits/bar.
+- Audits: tension clean (35 deliberate tritones), modes 4/4, latch bar 8,
+  gains silent, doubles no collisions, cpu 0/bar, live eval ok.
+
+## 2026-11-16 — khmer/04-confluence
+- Added `tracks/khmer/04-confluence.js`: 108 BPM mix of 01–03, 16 tracks,
+  79 sliders, 12 rhythm scenes. Percussion/gongs from 01–03, no melodic
+  xylophones. `verb` up to 1.2, `verbSize` up to 16.
+- 12 rhythms via 12-cell SKOR/SAM/CHHING arrays; high/open shifted, ghost/roll
+  `ply`/`degrade`. Khmer layers are ostinato/rhythm only.
+- Acid section: `acid` 0/1, acid bass (`fast(pace/16)`) and acid arp
+  (`arp(run(pace))`), both `pace` 4…32. Tested with acid on: 16 worklets/bar (7/s).
+- Audits: verify 16 tracks / 79 sliders / 137 hits/bar, tension clean
+  (13 deliberate tritones), modes 4/4, latch bar 8, gains silent, doubles no
+  collisions, cpu 0/bar without acid, live eval ok.
+
+## 2026-11-15 — idm/01 theme preset from dump
+- Replaced `@scenes.theme` in `tracks/idm/01-splinter.js` with the exported
+  `dumps/idm-01-splinter-2026-11-15-20-13-18.json` `values` (193 keys).
+- Theme now restores: `scene 2`, `mode 1` (grain), `grainSrc 2` (space),
+  `bitMode 2` (coarse), `acidMode 1` (sparse), `voxMode 2` (chop), plus all
+  instrument/mix/mutation values.
+- Audits: verify 33 tracks / 193 sliders / 130 hits, live eval ok.

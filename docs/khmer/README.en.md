@@ -10,7 +10,11 @@ Example tracks:
 `tracks/khmer/01-sathukar.js` — 88 BPM, synthesis, 27 tracks, 83 sliders,
 3 switches, 6 pads;
 `tracks/khmer/02-skors.js` — 96 BPM, real samples, 16 tracks, 86 sliders,
-rhythm scenes and mute buttons, no pads and no sralai.
+rhythm scenes and mute buttons, no pads and no sralai;
+`tracks/khmer/03-skors-ritual.js` — 76 BPM, percussion + low xylophone,
+11 tracks, 58 sliders, no high lines and no sralai;
+`tracks/khmer/04-confluence.js` — 108 BPM, mix of 01–03 + acid section,
+12 rhythms, 16 tracks, 79 sliders, no melodic xylophones.
 
 > **Honesty.** This is a modern composition *in the spirit of*, not a
 > transcription. A real pinpeat does not play in 4/4 to a click and
@@ -112,7 +116,7 @@ is the gong colour. No pads; everything plays from regular sequencers.
 
 ---
 
-## 4. 02-skors: scenes, mutes, samples
+## 4. 02–04: scenes, mutes, samples, acid
 
 The second track changes the control rules:
 
@@ -131,6 +135,43 @@ The second track changes the control rules:
 - Sound is real samples: Dirt-Samples (taiko, hand drum, tabla, metal)
   + VSCO 2 CE (xylophone, marimba, gong, claves, CC0). It is not a
   Khmer bank; see `05-samples.md` for details and limits.
+
+### 03-skors-ritual — percussion only, no high lines
+
+The third track reacts to the "childish" aftertaste of 02: **no high
+xylophones, no sralai, no high melodic lines**. Drums, a low kong thom
+and a low xylophone (VSCO marimba, 1–2 octaves down).
+
+- **Line-up.** Skor thom high 0.33, sampho low 0.34, sampho high 0.28,
+  sampho ghost 0.23, chhing 0.23, chhing open 0.21, krap 0.19,
+  drum fills 0.18, kong thom 0.22, roneat low 0.24.
+- **Character.** 76 BPM, lower tuning (skor/sam −2), long tails, dark
+  chhing, rare krap. A ceremony, not a cartoon.
+- **Scenes.** 0 procession / 1 invocation / 2 trance / 3 lament.
+  Rhythm only; all instruments exist in every scene.
+- **Mutes.** skor / sampho / chhing / krap / gong / low; ordinary 0/1,
+  no pads. `harmony` fifth/axis — gong latched every 8 bars.
+- **Low xylophone.** `xylo.low.octave` 0/1/2 = 0/−1/−2 octaves; a real
+  marimba, not synthesis.
+
+### 04-confluence — mix of 01–03 + acid
+
+The fourth track is a crossroads, not a version: percussion and gongs
+from 01–03, **12 different rhythms** (`scene` 0…11) and a separate acid
+section.
+
+- **From 01:** skor high .33, sampho low .34 / high .28 / ghost .23,
+  chhing .23 / open .21, krap .19, fills .18.
+- **From 02:** all percussion and gongs, except melodic xylophones.
+- **From 03:** everything except `Roneat low`.
+- **12 rhythms:** `SKOR`, `SAM`, `CHHING` — 12 cells each; high/open
+  play shifted, ghost/roll use `ply`/`degrade`.
+- **Acid:** `acid` 0/1; acid bass and acid arp, both have `pace` 4…32.
+  Deliberately incongruous: Khmer cycle + acid.
+- **Reverb:** `verb` up to 1.2, `verbSize` up to 16 — enough to leave
+  for a temple.
+- **Melody:** Khmer layers are rhythm/ostinato only; melody lives only
+  in the acid section. No pads.
 
 ## 5. Documents
 
@@ -172,6 +213,28 @@ For `02-skors`:
 - `gains` — silent at all zeros.
 - `doubles` — no collisions.
 - `cpu` — 0 worklets/bar: samples only, no worklet effects.
+- `live` — eval ok, pattern plays, slider sync ok.
+
+For `03-skors-ritual`:
+
+- `verify` — 11 tracks, 40 hits/bar, 58 sliders, 0 errors.
+- `tension` — clean; 35 deliberate tritones (`@dark`).
+- `modes` — fills 8/20/52/44; the rest keep their pattern.
+- `latch` — gong fifth/axis on bar 8.
+- `gains` — silent at all zeros.
+- `doubles` — no collisions.
+- `cpu` — 0 worklets/bar.
+- `live` — eval ok, pattern plays, slider sync ok.
+
+For `04-confluence`:
+
+- `verify` — 16 tracks, 137 hits/bar, 79 sliders, 0 errors.
+- `tension` — clean; 13 deliberate tritones (`@dark`).
+- `modes` — fills/ghost/swing change; acid is a separate `acid` 0/1.
+- `latch` — gong fifth/axis on bar 8.
+- `gains` — silent at all zeros.
+- `doubles` — no collisions.
+- `cpu` — 0/bar without acid, 16/bar (7/s) with acid.
 - `live` — eval ok, pattern plays, slider sync ok.
 
 ---

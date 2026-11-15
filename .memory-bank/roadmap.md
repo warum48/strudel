@@ -11,6 +11,8 @@ None.
   8 drum modes, mutate/fill macros, docs/idm.
 - khmer/01-sathukar — 88 BPM pinpeat/percussion, 7-tone + 5-tone skeleton, 4 modes, 6 pads, docs/khmer.
 - khmer/02-skors — 96 BPM percussion/xylophones, real Dirt+VSCO samples, rhythm-only scenes, `@mutes` row, no pads, docs/khmer.
+- khmer/03-skors-ritual — 76 BPM percussion + low xylophone, no high xylo/sralai, rhythm-only scenes, `@mutes` row, fifth/axis gong, no pads, docs/khmer.
+- khmer/04-confluence — 108 BPM mix of 01–03, 12 rhythms, acid bass/arp with pace, strong reverb, mutes, no pads, docs/khmer.
 - Web panel: `// @mutes` row under scenes.
 - Audit tooling and web panel.
 
@@ -22,6 +24,8 @@ None.
 - Tune idm/01 by ear: grain cloud chop/window, growl cutoff, acid glide, pads.
 - Tune khmer/01 by ear: roneat decay, sralai cut/q, sampho cuts, chhing decay, gong decay.
 - Tune khmer/02 by ear: sample mix and mute combinations; consider local Khmer recordings.
+- Tune khmer/03 by ear: skor/sam pitch and decay, chhing darkness, gong decay; keep it sparse and low.
+- Tune khmer/04 by ear: 12 scene rhythms, acid cut/res/env/pace, verb/verbSize.
 
 ## Horizon
 - Halftime / autonomic character as a separate track.

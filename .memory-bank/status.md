@@ -2,7 +2,7 @@
 
 ## Current Phase
 Track library. Techno 01–17 (+ 17-v2), dnb 01–02, breakcore 01–02,
-IDM 01 and Khmer 01 are green.
+IDM 01 and Khmer 01–04 are green.
 breakcore/01 exists in two variants (chop 4/8/16/32; 16th fragments with no pitch shift).
 breakcore/02 is 200 BPM stems/gabber in F phrygian: parallel dry/wet kick (909 + saturated
 band + noise click), metal ring from a tuned feedback delay, synthesized noise textures with
@@ -21,12 +21,19 @@ khmer/02-skors is 96 BPM percussion / xylophones: 16 tracks, 86 sliders,
 real samples (Dirt-Samples + VSCO 2 CE CC0), xylo/marimba/gong/claves +
 taiko/hand/tabla/metal, scenes change rhythm only (all instruments present),
 `// @mutes` row under scenes, no pads, no sralai.
+khmer/03-skors-ritual is 76 BPM percussion + low xylophone: 11 tracks, 58 sliders,
+skor high .33, sampho low .34 / high .28 / ghost .23, chhing .23 / open .21,
+krap .19, fills .18, kong thom .22, roneat low .24; low xylo only, no high xylo/sralai, rhythm-only scenes,
+`// @mutes` row, fifth/axis gong latched 8 bars, no pads.
+khmer/04-confluence is 108 BPM mix of 01–03: 16 tracks, 79 sliders, 12 rhythm
+scenes, percussion/gongs without melodic xylophones, acid bass + arp with
+`pace` 4…32, `verb` up to 1.2, `verbSize` up to 16, mutes, no pads.
 Reference: `docs/breakcore/`, `docs/idm/` and `docs/khmer/` (RU + EN);
 play guides in `docs/breakcore/10-panel.md`, `docs/idm/README.md` and
 `docs/khmer/README.md`.
 
 ## Key Metrics
-- `npm run verify` — 31 tracks load and run, 0 errors.
+- `npm run verify` — 33 tracks load and run, 0 errors.
 - breakcore/01 (both variants): verify ok, tension clean, gains silent, cpu ≤20/bar, modes 5/5, live ok.
 - breakcore/02: verify ok (20 tracks, 78 sliders), tension clean, gains silent, doubles no collisions,
   cpu ≤19/bar (16/s), modes 5/5, live eval ok (slider sync ok).
@@ -51,6 +58,12 @@ play guides in `docs/breakcore/10-panel.md`, `docs/idm/README.md` and
   (132 deliberate tritones), modes 4/4 (skor fill 8/20/52/44, sam high 44/44/44/44,
   ghosts 17/12/6/25), latch bar 8, gains silent, doubles no collisions,
   cpu 0/bar (samples only), live eval ok (slider sync ok).
+- khmer/03-skors-ritual: verify ok (11 tracks, 58 sliders, 40 hits/bar), tension
+  clean (35 deliberate tritones), modes 4/4 (fills 8/20/52/44), latch bar 8,
+  gains silent, doubles no collisions, cpu 0/bar, live eval ok.
+- khmer/04-confluence: verify ok (16 tracks, 79 sliders, 137 hits/bar), tension
+  clean (13 deliberate tritones), modes 4/4, latch bar 8, gains silent, doubles
+  no collisions, cpu 0/bar (16/bar, 7/s with acid), live eval ok.
 - Panel scenes e2e (headless Chromium): title `STRUDEL EXTENSION`, v2 90 knobs;
   Intro applies 19/19 values, Theme 22/22, Export reports 90, Import applies 2.
 - `npm run tension` — dnb/01 clean; dnb/02 clean with 62 intentional tritones; dnb/02-v2 clean with 112; techno/16, 17 and 17-v2 clean.
@@ -70,6 +83,10 @@ play guides in `docs/breakcore/10-panel.md`, `docs/idm/README.md` and
   4 modes, 6 pads, docs/khmer).
 - khmer/02-skors (96 BPM percussion/xylophones, real Dirt+VSCO samples,
   rhythm-only scenes, `@mutes` row, no pads, docs/khmer).
+- khmer/03-skors-ritual (76 BPM percussion + low xylophone, no high xylo/sralai,
+  rhythm-only scenes, `@mutes` row, fifth/axis gong, no pads, docs/khmer).
+- khmer/04-confluence (108 BPM mix of 01–03, 12 rhythms, acid bass/arp with
+  pace, strong reverb, mutes, no pads, docs/khmer).
 - Web panel: momentary pads (`// @pads`, keys 1–9), mute buttons (`// @mutes`),
   docs/breakcore + docs/idm + docs/khmer (RU + EN).
 - README index and per-track notes.
@@ -88,11 +105,15 @@ play guides in `docs/breakcore/10-panel.md`, `docs/idm/README.md` and
   `gong.vong.decay` 1–2.5; keep the sub ≤80 and only in build/main.
 - Tune khmer/02 by ear: sample mix (skor/sampho/chhing levels), `mode` swing/roll,
   mute combinations; decide whether to replace VSCO/Dirt with local Khmer recordings.
+- Tune khmer/03 by ear: skor/sam pitch and decay, chhing darkness, gong decay;
+  keep it sparse and low.
+- Tune khmer/04 by ear: 12 scene rhythms, acid cut/res/env/pace, verb/verbSize;
+  keep the Khmer layers rhythmic, not melodic.
 
 ### 🔮 Horizon
 - A third dnb character (e.g. halftime / autonomic) only as a new file, never as a rewrite of 01/02.
 - A second IDM character (e.g. 8-bit/micro-edit or dark ambient glitch) only as a new file.
-- A second Khmer character (mahori / arak / boxing standalone) only as a new file.
+- A third Khmer character (mahori / arak / boxing standalone) only as a new file.
 - Record local Khmer one-shots and swap the 02 sample map; docs/khmer/05-samples.md.
 
 ## Gates

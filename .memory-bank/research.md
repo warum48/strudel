@@ -11,6 +11,8 @@
 | H-006 | Fat rough bass = sub ≤80 + separate mid growl + FM rubber; `shape` before `gain` | ✅ CONFIRMED | sub cut / growl band / FM ratio | sub ≤80; growl 150–400; ratio 1.2–2.5 | idm/01 bass tree; docs/rules.md | — |
 | H-007 | Khmer pinpeat can be adapted as cycle + heterophony + 7-tone scale, with percussion carrying the form and no Western chords | ✅ CONFIRMED | modes / tension / cpu / live | 4 modes, no tension, ≤20 worklets/bar | khmer/01-sathukar; docs/khmer | — |
 | H-008 | Real samples beat synthesis for Khmer percussion/xylophones; rhythm-only scenes + manual mutes are a better performance model than scene gating/pads | ✅ CONFIRMED | verify / modes / latch / live; sample count | 16 tracks, 26 sliders, 0 worklets, no pad-only parts | khmer/02-skors; docs/khmer/05-samples | — |
+| H-009 | A serious/ethnic Khmer percussion track works better with no high melodic lines: low drums, dark chhing, sparse krap, low gong only | ✅ CONFIRMED | register / density / modes / live | 11 tracks, 58 sliders, 40 hits/bar, 0 worklets | khmer/03-skors-ritual | — |
+| H-010 | A mix of Khmer percussion + acid bass/arp can coexist if Khmer layers stay rhythmic and acid is a separate section with `pace` | ✅ CONFIRMED | verify / tension / latch / cpu / live | 16 tracks, 79 sliders, 12 scenes, 16 worklets/bar with acid | khmer/04-confluence | — |
 
 ## Confirmed Findings
 - LTJ Bukem: breaks at full tempo but mixed back; pads move at quarter speed; melodic bass, not a static sub.
@@ -33,6 +35,8 @@
 - Khmer adaptation recipe: 88 BPM 4/4 grid; 8-bar phrase; 7-tone `c db eb f gb ab bb` + 5-tone skeleton `c eb f g bb`; drone C–G / C–Gb latched 8 bars; roneat ek/thung + kong vong + sralai + skor thom + sampho + chhing + krap; 4 modes (sathukar/pinpeat/boxing/percussion); no samples; sub ≤80 only in build/main.
 - Real-sample Khmer recipe (02): 96 BPM; Dirt-Samples (`east` taiko, `hand`, `tabla`, `metal`) + VSCO 2 CE CC0 (xylo, marimba, gong, claves); no sralai; scenes = rhythm patterns only, all instruments present; `// @mutes` 0/1 buttons under scenes; no pads/pad-only parts; `mode` = fill/ghost/swing; `harmony` = fifth/axis latched 8 bars; 0 worklets.
 - Sample reality check: no public Khmer one-shot bank found; Dirt-Samples has no Khmer instruments; VSCO is Western orchestral; Roneat Studio Pro ships mock samples; Sounds of Angkor has videos, not one-shots; best path = local recordings mapped via `samples({...})` (docs/khmer/05-samples.md).
+- Serious/ethnic Khmer percussion recipe (03): 76 BPM; skor high + sampho low/high/ghost + chhing/open + krap + fills + low kong thom; lower tuning (skor/sam −2), long tails, dark chhing, rare krap; low xylophone only (marimba, octave 0/1/2), no high xylophones/sralai/high melodic lines; scenes rhythm-only; mutes manual; gong fifth/axis latched. Volumes from 01: .33/.34/.28/.23/.23/.21/.19/.18 + gong .22.
+- Mix + acid recipe (04): 108 BPM; SKOR/SAM/CHHING 12 cells each, high/open shifted, ghost/roll `ply`/`degrade`; all Khmer layers ostinato/rhythm, no melodic xylo; acid bass `fast(pace/16)` + acid arp `arp(run(pace))`, `pace` 4…32; `verb` 1.2, `verbSize` 16; 0 worklets without acid, 16/bar with acid.
 
 ## Genre Recipe Library (saved 2026-11-15)
 

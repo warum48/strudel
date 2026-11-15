@@ -280,3 +280,60 @@ they can be changed live and saved to JSON.
   from direct URLs.
 - No Khmer one-shot bank was found; local recordings are better. See
   `05-samples.md`.
+
+## 10. 03-skors-ritual: percussion only
+
+The third track has no high lines: no high xylophones, no sralai.
+Drums (skor high, sampho low/high/ghost, chhing/open, krap, fills),
+a low kong thom and a **low xylophone** (VSCO marimba).
+
+```js
+const BPM = 76
+setcpm(BPM / 4)
+
+// lower tuning and longer tails
+.note("<g1>").add(note(drums.skor.pitch))
+.penv(-10).panchor(1).pattack(0.001).pdecay(0.05).psustain(0)
+.lpf(drums.skor.cut).decay(drums.skor.decay)
+```
+
+- Every layer is a regular `$:` sequencer; no pads.
+- `scene` 0–3 changes rhythm only; `mode` is fill/ghosts/swing.
+- `// @mutes` silences skor/sampho/chhing/krap/gong.
+- `harmony` fifth/axis: kong thom C–G ⇄ C–Gb, latched every 8 bars.
+- Low xylophone: `xylo.low` with `octave` 0/1/2 (0/−1/−2). Real marimba
+  samples; `note(LOW).add(note(xylo.low.octave.fmap(o => -12 * o)))`.
+- Low register and emptiness are part of the composition; do not add a
+  high xylophone back.
+
+## 11. 04-confluence: 12 rhythms + acid
+
+The fourth track is a mix of 01–03. The Khmer part stays rhythmic:
+12 `SKOR`, `SAM`, `CHHING` cells with `late`, `ply`, `degrade`.
+Melody lives only in the separate acid section.
+
+```js
+const sc = (arr) => scene.pick(arr.map((s) => m(s)))
+$: s("east").n("6 7 8")
+  .struct(sc(SKOR))
+  .gain(drums.skorLow.vol.mul(unmuted(muteSkor)))
+```
+
+Acid bass and arp:
+
+```js
+$: note("c1 c1 eb1 c1 f1 c1 gb1 c1 bb0 c1 eb1 c1 f1 gb1 c1 bb0")
+  .s("sawtooth")
+  .fast(acidInst.bass.pace.fmap((p) => p / 16))
+  .lpenv(acidInst.bass.env)
+  .lpa(0.002).lpd(acidInst.bass.decay).lpsustain(0.1)
+
+$: note("[c4,eb4,gb4,bb4]")
+  .arp(run(acidInst.arp.pace))   // pace = steps per bar
+  .s("sawtooth")
+```
+
+- `acid` 0/1 enables the section; `pace` 4…32 on bass and arp.
+- `verb` up to 1.2, `verbSize` up to 16.
+- Khmer layers are ostinato/rhythm; do not add melody to them.
+- `scene` 0…11 — 12 rhythms; `mode` — fill/ghost/swing.

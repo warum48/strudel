@@ -32,3 +32,19 @@
 - `khmer/02` instrument settings live in the `instruments` tree:
   every layer has `vol/cut/hpf/clip/room`; panel MIXER = vol, TONE = the rest.
   E2E: 15 mixer rows, 60 tone rows, 7 mute buttons, 0 pads.
+
+## 03-skors-ritual (same day)
+- Serious/ethnic direction: remove high melodic lines entirely. Percussion-only
+  with low drums + chhing + krap + one low kong thom; low xylophone only, no high xylo, no sralai.
+- 76 BPM, skor/sam tuned −2, longer decays/rooms, darker chhing. Low xylophone: marimba VSCO, octave 0/1/2 = 0/−1/−2. Volume set from
+  01: skor .33, samLow .34, samHigh .28, ghost .23, chhing .23, open .21, krap .19,
+  fills .18; gong .22.
+- Same control model as 02: rhythm-only scenes, `// @mutes`, no pads. Gong
+  fifth/axis latched 8 bars keeps `latch` green and adds weight.
+
+## 04-confluence (same day)
+- Mix of 01–03 with 12 rhythms: 12-cell SKOR/SAM/CHHING arrays; high/open
+  shifted, ghost/roll `ply`/`degrade`; no melodic xylophones.
+- Acid is a separate switch, not a Khmer mode: acid bass `fast(pace/16)`,
+  acid arp `arp(run(pace))`; both pace 4…32. The Khmer layers stay rhythmic.
+- Strong reverb: `verb` 0…1.2, `verbSize` 1…16. CPU 16/bar with acid on.

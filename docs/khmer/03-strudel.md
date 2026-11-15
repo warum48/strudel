@@ -282,3 +282,60 @@ const unmuted = (m) => m.fmap((v) => (v ? 0 : 1))
   грузится лениво по прямым URL.
 - Кхмерский one-shot банк не найден; локальные записи лучше. См.
   `05-samples.md`.
+
+## 10. 03-skors-ritual: только ударные
+
+Третий трек — без высоких линий: ни высоких ксилофонов, ни сралая.
+Ударные (skor high, sampho low/high/ghost, chhing/open, krap, fills),
+низкий kong thom и **низкий ксилофон** (маримба VSCO).
+
+```js
+const BPM = 76
+setcpm(BPM / 4)
+
+// ниже строй и длиннее хвосты
+.note("<g1>").add(note(drums.skor.pitch))
+.penv(-10).panchor(1).pattack(0.001).pdecay(0.05).psustain(0)
+.lpf(drums.skor.cut).decay(drums.skor.decay)
+```
+
+- Все слои — обычные `$:`-секвенсоры; пэдов нет.
+- `scene` 0–3 меняет только ритм; `mode` — филл/призраки/свинг.
+- `// @mutes` глушит skor/sampho/chhing/krap/gong.
+- `harmony` fifth/axis: kong thom C–G ⇄ C–Gb, защёлка 8 тактов.
+- Низкий ксилофон: `xylo.low` с `octave` 0/1/2 (0/−1/−2). Сэмплы
+  реальной маримбы; `note(LOW).add(note(xylo.low.octave.fmap(o => -12 * o)))`.
+- Низкий регистр и пустота — часть композиции; не добавляй высокий
+  ксилофон обратно.
+
+## 11. 04-confluence: 12 ритмов + acid
+
+Четвёртый трек — микс 01–03. Кхмерская часть остаётся ритмом:
+12 ячеек `SKOR`, `SAM`, `CHHING`, сдвиги `late`, `ply`, `degrade`.
+Мелодия — только в отдельной acid-секции.
+
+```js
+const sc = (arr) => scene.pick(arr.map((s) => m(s)))
+$: s("east").n("6 7 8")
+  .struct(sc(SKOR))
+  .gain(drums.skorLow.vol.mul(unmuted(muteSkor)))
+```
+
+Acid bass и arp:
+
+```js
+$: note("c1 c1 eb1 c1 f1 c1 gb1 c1 bb0 c1 eb1 c1 f1 gb1 c1 bb0")
+  .s("sawtooth")
+  .fast(acidInst.bass.pace.fmap((p) => p / 16))
+  .lpenv(acidInst.bass.env)
+  .lpa(0.002).lpd(acidInst.bass.decay).lpsustain(0.1)
+
+$: note("[c4,eb4,gb4,bb4]")
+  .arp(run(acidInst.arp.pace))   // pace = число шагов на такт
+  .s("sawtooth")
+```
+
+- `acid` 0/1 включает секцию; `pace` 4…32 у bass и arp.
+- `verb` до 1.2, `verbSize` до 16.
+- Кхмерские слои — остинато/ритм; не добавляй им мелодию.
+- `scene` 0…11 — 12 ритмов; `mode` — fill/ghost/swing.

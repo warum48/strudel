@@ -14,10 +14,13 @@
 - [x] tracks/idm/01-splinter.js — 136 BPM glitch/granular IDM: C–Gb–Db–Bb, 33 tracks, 193 sliders, 8 switches (incl. `grainSrc`, `voxMode`), 6 pads, 8 drum modes (4–7 use every layer), `mutate`/`fill` rhythm macros, grain cloud/scan/freeze/edit with a moving padlong/space/wind/noise2 bank and pitch −24…+12, 8-bit pulse/square + arp, 303 glide (default run), `numbers` voice, sub ≤80 + growl + FM rubber, little reverb
 - [x] tracks/khmer/01-sathukar.js — 88 BPM pinpeat/percussion: 27 tracks, 83 sliders, 3 switches (`scene`/`mode`/`harmony`), 6 pads, 7-tone scale c–db–eb–f–gb–ab–bb + 5-tone skeleton, roneat ek/thung, kong vong/thom, sralai, skor thom, sampho, chhing, krap, 4 modes (sathukar/pinpeat/boxing/percussion), no samples
 - [x] tracks/khmer/02-skors.js — 96 BPM percussion/xylophones: 16 tracks, 86 sliders, real Dirt-Samples + VSCO 2 CE (CC0), scenes change rhythm only, `// @mutes` row under scenes, no pads, no sralai
+- [x] tracks/khmer/03-skors-ritual.js — 76 BPM percussion + low xylophone: 11 tracks, 58 sliders, skor high .33, sampho low .34/high .28/ghost .23, chhing .23/open .21, krap .19, fills .18, kong thom .22, roneat low .24; low xylo only, no high xylo/sralai, rhythm-only scenes, mutes, fifth/axis gong, no pads
+- [x] tracks/khmer/04-confluence.js — 108 BPM mix of 01–03: 16 tracks, 79 sliders, 12 rhythm scenes, percussion/gongs without melodic xylophones, acid bass + arp with `pace`, verb up to 1.2, verbSize up to 16, mutes, no pads
 - [x] Web panel: `// @mutes` row (ordinary 0/1 buttons under scenes, not momentary)
 - [x] docs/khmer/ — README + instruments + tuning/rhythm + Strudel + sources + samples (RU + EN)
 - [x] README index + per-track notes for khmer/01
 - [x] docs/idm/ — README + techniques + arrangement + Strudel + sources (RU + EN)
+- [x] idm/01 `@scenes.theme` mirrors `dumps/idm-01-splinter-2026-11-15-20-13-18.json` (193 keys)
 - [x] README index + per-track notes for idm/01
 - [x] Web panel: pads keys 1–9 (idm/01 uses 6)
 - [x] Web panel: DOWNLOAD SAMPLES button with live status

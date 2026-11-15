@@ -111,7 +111,10 @@ Switch Angel: он считает интервал от предыдущей н�
   как подставить локальные записи.
 - Живые примеры: `tracks/khmer/01-sathukar.js` (88 BPM, синтез),
   `tracks/khmer/02-skors.js` (96 BPM, реальные сэмплы, сцены-ритмы,
-  mute-кнопки, без пэдов).
+  mute-кнопки, без пэдов), `tracks/khmer/03-skors-ritual.js`
+  (76 BPM, только ударные, без высоких мелодических линий),
+  `tracks/khmer/04-confluence.js` (108 BPM, микс 01–03, 12 ритмов,
+  acid bass/arp с `pace`).
 
 Сэмплы:
 

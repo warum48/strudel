@@ -83,7 +83,8 @@ track it must gate a layer: `.gain(instrument.vol.mul(padX))` and
 ### Scenes
 
 `// @scenes` gives two buttons: `INTRO` (atmosphere, cloud, clicks) and
-`THEME` (full groove with kick, bass, acid and 8-bit lead). JSON
+`THEME` (full groove with kick, bass, acid and 8-bit lead; preset from
+`dumps/idm-01-splinter-2026-11-15-20-13-18.json`, 193 keys). JSON
 export/import lives in the panel.
 
 ---
@@ -92,7 +93,8 @@ export/import lives in the panel.
 
 1. `npm run web` → `tracks/idm/01-splinter.js`.
 2. Start with `INTRO`: `scene 0`, `grainMode 1`, `verb 0.18`.
-3. `THEME` or manually: `scene 2`, `mode 0` (glitch), `acidMode 1`.
+3. `THEME` or manually: `scene 2`, `mode 1` (grain), `grainSrc 2` (space),
+   `bitMode 2` (coarse), `acidMode 1`, `voxMode 2` (chop).
 4. Hold `1` (roll) on the last bar of a phrase, release.
 5. `padFreeze` (3) for one or two bars to hang the cloud.
 6. `padCut` (2) at a break, not constantly.
