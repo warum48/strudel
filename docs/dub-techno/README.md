@@ -142,12 +142,16 @@
 - **Дабовый набор:** kick / hat / rim / click / shaker, sub / dub bass,
   pad warm/air, stab, organ, skank, horns, hiss / air / field, dub delay
   + reverb. Саб ≤80, кик 270, стаб в дилее, никаких мелодий и дропов.
-- **30 кхмерских драмов:** skor low/high/fill, sampho low/high/ghost/rim,
-  chhing closed/open/roll, krap, kong, woodblock/shime. 30 каналов в
-  MIXER (vol / cut / clip), один перкуссионный автобус в коде.
-- **Все 30 через общий delay + reverb:** `percEcho` 0…0.8, `percVerb` 0…1,
-  `verb` 0…1, `verbSize` 1…20. Это дешевле 30 отдельных хвостов.
-- **Mutes:** skor / sampho / chhing / krap / gong / wood. `mode` — только
+- **18 кхмерских драмов:** skor high/fill, sampho low/high/ghost/rim,
+  chhing closed/open/roll. 18 каналов в MIXER (vol / cut / clip), один
+  перкуссионный автобус в коде.
+- **Все 18 через общий delay + reverb:** `percEcho` 0…0.8, `percVerb` 0…1,
+  `verb` 0…1, `verbSize` 1…20. Это дешевле 18 отдельных хвостов.
+- **Таймлайн:** `@timeline` — 5 секций / 64 такта, 11 target-значений на
+  секцию; горизонтальная сворачиваемая панель, редактирование секций и
+  target-значений, playhead. Меняются только уровни инструментов; reverb/delay
+  не автоматизируются, чтобы не рвать хвосты.
+- **Mutes:** skor / sampho / chhing. `mode` — только
   верх, `harmony` — warm/air с защёлкой 8 тактов.
-- **Проверки:** 19 дорожек / 186 ударов / 187 слайдеров, tension clean,
+- **Проверки:** 19 дорожек / 142 удара / 149 слайдеров, tension clean,
   cpu 15/такт (8/с), doubles без наложений, live ок.

@@ -64,9 +64,9 @@ tracks/
     18-khmer-dub.js   122 BPM dub techno + Khmer drums: Fm9→Abmaj9→Dbmaj9→
                       Gbmaj9, полный дабовый набор (kick/hat/rim/click/shaker,
                       sub/dub, pad/stab/organ/skank/horns, hiss/air/field,
-                      delay/reverb) + Moog-линия в духе 17 + 30 кхмерских
+                      delay/reverb) + Moog-линия в духе 17 + 18 кхмерских
                       перкуссионных каналов через общий delay/reverb;
-                      19 дорожек, 187 слайдеров
+                      19 дорожек, 149 слайдеров
   dnb/
     01-atmospheric-jungle.js 174 BPM LTJ Bukem / Aphrodite: Amen + chop,
                       Dm9–Gm9–Bb–A7sus, deep sub / Reese / mentasm
@@ -120,13 +120,15 @@ tracks/
                       mute-кнопки, без пэдов
 web/
   index.html        панель: шапка (транспорт, режимы, out) + SCENES/JSON
-                    + MUTES + ДВА столбца (микшер / тонкие настройки) +
-                    ПЭДЫ + редактор справа; вкладка — STRUDEL EXTENSION
+                    + MUTES + TIMELINE + ДВА столбца (микшер / тонкие
+                    настройки) + ПЭДЫ + редактор справа; вкладка — STRUDEL EXTENSION
   panel.js          @strudel/codemirror: StrudelMirror + свои ручки поверх его
                     виджетов; раскладка берётся из дерева instruments;
                     `// @pads` рисует momentary-пэды (клавиши 1–9),
                     `// @mutes` — ряд обычных 0/1 mute-кнопок под сценами,
-                    `// @scenes` — Intro/Theme, Export/Import JSON
+                    `// @scenes` — Intro/Theme, Export/Import JSON,
+                    `// @timeline` — горизонтальная сворачиваемая панель:
+                    секции, target-значения, playhead, воспроизведение
 docs/
   dub-techno/         плейбук по даб-техно: характер, гармония, стаб в дилее,
                       саб ≤80, пэд, режимы, чек-лист следующего трека
@@ -539,20 +541,22 @@ eval ок, паттерн играет, слайдер синхронизиро�
   pad warm/air; stab; organ; skank; horns; hiss / air / field; dub delay +
   reverb. Пэд короткий (не 5 тактов гула), стаб темнее, гармония
   джазовее. Плюс Moog-линия и тихое арпеджио в духе 17, но в Fm/Ab/Db/Gb.
-- **30 кхмерских драмов.** 30 отдельных каналов в MIXER (skor low/high/fill,
-  sampho low/high/ghost/rim, chhing closed/open/roll, krap, kong, woodblock/
-  shime) с vol / cut / clip. В коде — один перкуссионный автобус, чтобы все
-  30 проходили через **общий delay + reverb**, а не 30 отдельных хвостов.
+- **18 кхмерских драмов.** 18 отдельных каналов в MIXER (skor high/fill,
+  sampho low/high/ghost/rim, chhing closed/open/roll) с vol / cut / clip.
+  В коде — один перкуссионный автобус, чтобы все 18 проходили через
+  **общий delay + reverb**, а не 18 отдельных хвостов.
 - **Реверб/дилей сильнее.** `verb` до 1.0, `verbSize` до 20, `percEcho` до 0.8,
   `percVerb` до 1.0. Мокрый, но не «собор».
 - **Режимы.** `mode` dub/strip/pressure/click — только верх; `harmony`
-  warm/air — защёлка 8 тактов; `@mutes` — 6 групп перкуссии.
+  warm/air — защёлка 8 тактов; `@mutes` — 3 группы перкуссии.
 - **Низ.** `bass.sub.cut` и `bass.dub.cut` ≤80, кик 270. Мелодических
   кхмерских линий нет: только ритм/остинато.
 
-Проверки 18: 19 дорожек / 186 ударов / 187 слайдеров, `tension` — трения
+Проверки 18: 19 дорожек / 142 удара / 149 слайдеров, `tension` — трения
 нет, `modes` — 4/4 по верху, `latch` — такт 8, `gains` — тихо, `doubles` —
-наложений нет, `cpu` — 15 worklet/такт (8/с), `live` — eval ок.
+наложений нет, `cpu` — 15 worklet/такт (8/с), `live` — eval ок. Таймлайн —
+5 секций / 64 такта, 11 target-значений на секцию; меняются только уровни,
+эффекты не дёргаются на границах. Редактируется в горизонтальной панели.
 
 `dnb/01-atmospheric-jungle.js` — **новый трек, новая подпапка**: 174 BPM,
 атмосферный jungle / liquid dnb в духе LTJ Bukem + jump-up-режим в духе

@@ -324,8 +324,8 @@ npm run live -- tracks/techno/16-minimal-dub.js
 
 ## Khmer percussion bus (18)
 
-30 кхмерских каналов — один `stack`, чтобы все прошли через общий
-delay/reverb, а не через 30 отдельных хвостов.
+18 кхмерских каналов — один `stack`, чтобы все прошли через общий
+delay/reverb, а не через 18 отдельных хвостов.
 
 ```js
 const percLayers = PERC.map((p) => {

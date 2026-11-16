@@ -490,6 +490,11 @@ const fmt = (x) => {
 };
 
 let knobs = []; // { idx, path, name, anchor, min, max, step, value }
+let timeline = []; // @timeline sections: { at, length, name, values }
+let timelineSel = -1;
+let timelineLast = -1;
+let timelineTimer = null;
+let timelineBar = 0;
 const knobByAnchor = new Map(); // widget id → { input, out }
 const openState = new Map(); // 'group' / 'group.inst' → свёрнуто ли
 
@@ -500,6 +505,8 @@ function buildKnobs() {
   switchCaps = scanSwitchCaps(src);
   padNames = scanPadNames(src);
   muteNames = scanMuteNames(src);
+  timeline = scanTimeline(src);
+  if (timelineSel >= timeline.length) timelineSel = timeline.length - 1;
   scenes = importedScenes || scanScenes(src);
   renderScenes();
   const ws = mirror.widgets.filter((w) => w.type === 'slider').sort((a, b) => a.from - b.from);
@@ -528,6 +535,7 @@ function buildKnobs() {
       value: Number(w.value),
     });
   }
+  renderTimeline();
   render();
 }
 
@@ -684,6 +692,277 @@ function renderMutes(list) {
   }
 }
 
+// ── TIMELINE: @timeline + horizontal editor + playback ────────────
+function scanTimeline(src) {
+  const line = /^[ \t]*\/\/[ \t]*@timeline[ \t]+(.+)$/m.exec(src);
+  if (!line) return [];
+  try {
+    const arr = JSON.parse(line[1].trim());
+    if (!Array.isArray(arr)) return [];
+    return arr
+      .filter((s) => s && Number.isFinite(Number(s.at)))
+      .map((s) => ({
+        at: Math.max(0, Number(s.at) || 0),
+        length: Math.max(1, Number(s.length) || 8),
+        name: String(s.name || 'section'),
+        values: s.values && typeof s.values === 'object' ? s.values : {},
+      }));
+  } catch {
+    return [];
+  }
+}
+
+const tlTotal = () => Math.max(8, ...timeline.map((s) => s.at + s.length));
+const tlKeyLabel = (key) => {
+  const k = knobs.find((x) => knobKey(x) === key);
+  return k ? (k.path.length ? k.path.join('.') : k.name) : key;
+};
+const tlCurrent = (key) => {
+  const k = knobs.find((x) => knobKey(x) === key);
+  return k ? Number(k.value) : 0;
+};
+
+function updatePlayhead(bar = timelineBar) {
+  const el = $('tlPlayhead');
+  if (!el) return;
+  const total = tlTotal();
+  el.style.left = `${Math.max(0, Math.min(100, (bar / total) * 100))}%`;
+}
+
+function renderTimeline() {
+  const root = $('timeline');
+  if (!root) return;
+  const total = tlTotal();
+  const ruler = $('tlRuler');
+  ruler.innerHTML = '';
+  const step = total <= 16 ? 4 : total <= 64 ? 8 : 16;
+  for (let b = 0; b <= total; b += step) {
+    const t = document.createElement('div');
+    t.className = 'tl-tick';
+    t.style.left = `${(b / total) * 100}%`;
+    t.textContent = b;
+    ruler.appendChild(t);
+  }
+  const secs = $('tlSections');
+  secs.innerHTML = '';
+  timeline.forEach((sec, i) => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'tl-block' + (i === timelineSel ? ' sel' : '');
+    b.style.left = `${(sec.at / total) * 100}%`;
+    b.style.width = `${Math.max(1.5, (sec.length / total) * 100)}%`;
+    b.title = `${sec.name} · bars ${sec.at}–${sec.at + sec.length}`;
+    const nm = document.createElement('span');
+    nm.className = 'nm';
+    nm.textContent = sec.name;
+    const mt = document.createElement('span');
+    mt.className = 'mt';
+    mt.textContent = `${sec.at}–${sec.at + sec.length} · ${Object.keys(sec.values).length} v`;
+    b.append(nm, mt);
+    b.addEventListener('click', () => {
+      timelineSel = i;
+      renderTimeline();
+    });
+    secs.appendChild(b);
+  });
+  $('tlStatus').textContent = timeline.length
+    ? `${timeline.length} sections · ${total} bars`
+    : 'no @timeline';
+  updatePlayhead();
+  renderTimelineInspector();
+}
+
+function renderTimelineInspector() {
+  const root = $('tlInspector');
+  if (!root) return;
+  root.innerHTML = '';
+  const sec = timeline[timelineSel];
+  if (!sec) {
+    const d = document.createElement('div');
+    d.className = 'tl-empty';
+    d.textContent = 'select a section to edit it';
+    root.appendChild(d);
+    return;
+  }
+
+  const textRow = (label, value, onchange, type = 'text') => {
+    const row = document.createElement('div');
+    row.className = 'tl-row';
+    const lab = document.createElement('label');
+    lab.textContent = label;
+    const inp = document.createElement('input');
+    inp.type = type;
+    inp.value = value;
+    if (type === 'number') {
+      inp.min = '0';
+      inp.step = '1';
+    }
+    inp.addEventListener('change', () => onchange(inp.value));
+    row.append(lab, inp);
+    return row;
+  };
+
+  root.append(
+    textRow('name', sec.name, (v) => {
+      sec.name = String(v || 'section');
+      commitTimeline();
+    }),
+    textRow('at', sec.at, (v) => {
+      const n = Math.max(0, Number(v) || 0);
+      sec.at = n;
+      commitTimeline();
+    }, 'number'),
+    textRow('length', sec.length, (v) => {
+      const n = Math.max(1, Number(v) || 1);
+      sec.length = n;
+      commitTimeline();
+    }, 'number'),
+  );
+
+  const vals = document.createElement('div');
+  vals.className = 'tl-vals';
+  const entries = Object.entries(sec.values || {});
+  for (const [key, raw] of entries) {
+    const row = document.createElement('div');
+    row.className = 'tl-val';
+    const lab = document.createElement('span');
+    lab.textContent = tlKeyLabel(key);
+    lab.title = key;
+    const inp = document.createElement('input');
+    inp.type = 'number';
+    inp.step = '0.01';
+    inp.value = raw;
+    inp.addEventListener('change', () => {
+      const v = Number(inp.value);
+      if (!Number.isFinite(v)) return;
+      sec.values[key] = v;
+      commitTimeline();
+    });
+    const del = document.createElement('button');
+    del.type = 'button';
+    del.textContent = '×';
+    del.title = 'remove target';
+    del.addEventListener('click', () => {
+      delete sec.values[key];
+      commitTimeline();
+    });
+    row.append(lab, inp, del);
+    vals.appendChild(row);
+  }
+  root.appendChild(vals);
+
+  const add = document.createElement('div');
+  add.className = 'tl-add';
+  const sel = document.createElement('select');
+  for (const k of [...knobs].sort((a, b) => knobKey(a).localeCompare(knobKey(b)))) {
+    const o = document.createElement('option');
+    o.value = knobKey(k);
+    o.textContent = knobKey(k);
+    sel.appendChild(o);
+  }
+  const val = document.createElement('input');
+  val.type = 'number';
+  val.step = '0.01';
+  val.value = tlCurrent(sel.value);
+  sel.addEventListener('change', () => {
+    val.value = tlCurrent(sel.value);
+  });
+  const addBtn = document.createElement('button');
+  addBtn.type = 'button';
+  addBtn.textContent = '+';
+  addBtn.title = 'add target at this section';
+  addBtn.addEventListener('click', () => {
+    const key = sel.value;
+    const v = Number(val.value);
+    if (!Number.isFinite(v)) return;
+    sec.values[key] = v;
+    commitTimeline();
+  });
+  add.append(sel, val, addBtn);
+  root.appendChild(add);
+
+  const delSec = document.createElement('button');
+  delSec.type = 'button';
+  delSec.textContent = 'remove section';
+  delSec.style.marginTop = '6px';
+  delSec.addEventListener('click', () => {
+    timeline.splice(timelineSel, 1);
+    timelineSel = -1;
+    commitTimeline();
+  });
+  root.appendChild(delSec);
+}
+
+function commitTimeline() {
+  const sel = timeline[timelineSel];
+  timeline.sort((a, b) => a.at - b.at);
+  timelineSel = sel ? timeline.indexOf(sel) : -1;
+  writeTimeline();
+  renderTimeline();
+}
+
+function writeTimeline() {
+  if (!mirror) return;
+  const json = JSON.stringify(timeline);
+  const src = mirror.editor.state.doc.toString();
+  const m = /^([ \t]*\/\/[ \t]*@timeline[ \t]+)(.*)$/m.exec(src);
+  if (m) {
+    const from = m.index + m[1].length;
+    mirror.editor.dispatch({ changes: { from, to: m.index + m[0].length, insert: json } });
+  } else {
+    const a = /^[ \t]*\/\/[ \t]*@scenes.*$/m.exec(src);
+    const pos = a ? a.index + a[0].length : 0;
+    mirror.editor.dispatch({ changes: { from: pos, to: pos, insert: `\n// @timeline ${json}` } });
+  }
+  setStatus('timeline saved');
+}
+
+function addTimelineSection() {
+  const end = timeline.length ? Math.max(...timeline.map((s) => s.at + s.length)) : 0;
+  const at = Math.max(end, Math.floor(timelineBar));
+  timeline.push({ at, length: 8, name: `SEC ${timeline.length + 1}`, values: {} });
+  timelineSel = timeline.length - 1;
+  commitTimeline();
+}
+
+function startTimeline() {
+  stopTimeline();
+  timelineLast = -1;
+  timelineTimer = setInterval(timelineTick, 120);
+}
+function stopTimeline() {
+  if (timelineTimer) clearInterval(timelineTimer);
+  timelineTimer = null;
+  timelineLast = -1;
+  timelineBar = 0;
+  updatePlayhead(0);
+}
+function timelineTick() {
+  if (!playing || !mirror) return;
+  const now = mirror.repl?.scheduler?.now?.();
+  if (typeof now !== 'number' || !Number.isFinite(now)) return;
+  timelineBar = Math.max(0, Math.floor(now));
+  updatePlayhead(timelineBar);
+  if (!timeline.length) return;
+  let idx = -1;
+  for (let i = 0; i < timeline.length; i++) {
+    if (timeline[i].at <= timelineBar) idx = i;
+  }
+  if (idx === timelineLast) return;
+  timelineLast = idx;
+  if (idx >= 0) {
+    const sec = timeline[idx];
+    const n = applyTimelineValues(sec.values || {}, `timeline: ${sec.name}`);
+    if (!n) setSceneStatus(`timeline: ${sec.name} (no matching knobs)`);
+  }
+}
+
+$('tlAdd')?.addEventListener('click', (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+  addTimelineSection();
+});
+
 function bindPadKeys() {
   const typing = () => {
     const ae = document.activeElement;
@@ -749,6 +1028,43 @@ function applyValues(values, label = 'scene') {
   renderScenes();
   setSceneStatus(`${label}: ${pairs.length}/${entries.length} values`);
   return pairs.length;
+}
+
+// Timeline применяет только значения, не перестраивая весь сайдбар:
+// перерисовка 149 ручек в момент смены секции — это и был слышимый провал.
+// Меняем число, шлём cm-slider и обновляем конкретный input.
+function applyTimelineValues(values, label = 'timeline') {
+  const byKey = new Map(knobs.map((k) => [knobKey(k), k]));
+  const entries = Object.entries(values || {});
+  const pairs = [];
+  for (const [key, raw] of entries) {
+    const k = byKey.get(key);
+    const v = Number(raw);
+    if (!k || !Number.isFinite(v)) continue;
+    pairs.push([k, Math.min(k.max, Math.max(k.min, v))]);
+  }
+  pairs.sort((a, b) => b[0].idx - a[0].idx);
+  let applied = 0;
+  let needsFull = false;
+  for (const [k, v] of pairs) {
+    if (Math.abs(Number(k.value) - v) < 1e-9) {
+      applied++;
+      continue;
+    }
+    k.value = v;
+    setKnob(k, v);
+    const ui = knobByAnchor.get('slider_' + k.anchor);
+    if (ui) {
+      ui.input.value = v;
+      ui.out.textContent = fmt(v);
+    } else if (isSwitch(k)) {
+      needsFull = true;
+    }
+    applied++;
+  }
+  if (needsFull) render();
+  setSceneStatus(`${label}: ${applied}/${entries.length} values`);
+  return applied;
 }
 
 function applyScene(name) {
@@ -1240,11 +1556,13 @@ async function play() {
   playing = true;
   $('play').classList.add('on');
   buildKnobs();
+  startTimeline();
   setStatus(`${knobs.length} knobs · playing`);
 }
 
 function stop() {
   if (!mirror) return;
+  stopTimeline();
   mirror.stop();
   playing = false;
   $('play').classList.remove('on');

@@ -175,3 +175,14 @@
   darker stab, added Moog lead + arp in the spirit of 17 with new notes.
   Fixed minor seconds/tritones in the new voicings. Now 19 tracks / 187 sliders
   / 186 hits, cpu 15/bar (8/s), live ok.
+- 18 cleanup + timeline: removed skorLow A/B, krap, all gongs, woodblock/shime;
+  now 18 Khmer channels, 149 sliders, 142 hits. Added `percLevel` global and
+  `@timeline` (5 sections / 64 bars) with panel editor: horizontal collapsible
+  track, section blocks, inspector for name/at/length/targets, playhead, and
+  playback via scheduler.now() applying values at section boundaries. Verified
+  e2e: DUB section applies at bar 8 (kick 0.36); full verify 34 files.
+- Fixed timeline section-boundary dropout: removed effect-bus and switch
+  targets (verb/verbSize/percEcho/percVerb/mode/harmony) from @timeline; added
+  light `applyTimelineValues` that updates only 11 instrument levels and never
+  re-renders the whole 149-slider sidebar. Section changes no longer restart the
+  UI or reset reverb/delay tails.

@@ -128,6 +128,81 @@
     text-transform: uppercase;
   }
   #mutes button.mute.on { background: var(--bad); border-color: var(--bad); color: #0d0f0c; font-weight: 700; }
+  /* ── TIMELINE: горизонтальная полоса секций + инспектор ── */
+  #timeline { flex: none; border-bottom: 1px solid var(--line); background: #11140f; }
+  #timeline > summary {
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 12px;
+    cursor: pointer;
+    color: var(--dim);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    user-select: none;
+  }
+  #timeline > summary::-webkit-details-marker { display: none; }
+  #timeline > summary::before { content: '▸'; color: var(--accent); font-size: 11px; }
+  #timeline[open] > summary::before { content: '▾'; }
+  #timeline .tl-cap { color: var(--text); }
+  #timeline .sp { flex: 1; }
+  #timeline #tlStatus { color: var(--dim); text-transform: none; letter-spacing: 0; }
+  #timeline #tlAdd { padding: 3px 8px; font-size: 10px; }
+  #timeline .tl-body { display: flex; gap: 10px; padding: 0 12px 10px; align-items: stretch; }
+  #timeline .tl-track {
+    flex: 1;
+    min-width: 0;
+    position: relative;
+    height: 124px;
+    border: 1px solid var(--line);
+    background: #0b0d0a;
+    overflow: hidden;
+  }
+  #timeline .tl-ruler { position: absolute; left: 0; right: 0; top: 0; height: 20px; border-bottom: 1px solid var(--line); }
+  #timeline .tl-tick { position: absolute; top: 0; bottom: 0; border-left: 1px solid #20251d; color: var(--dim); font-size: 9px; padding-left: 3px; }
+  #timeline .tl-sections { position: absolute; left: 0; right: 0; top: 20px; bottom: 0; }
+  #timeline button.tl-block {
+    position: absolute;
+    top: 4px;
+    bottom: 4px;
+    min-width: 18px;
+    padding: 4px 5px;
+    text-align: left;
+    overflow: hidden;
+    border: 1px solid #39402f;
+    background: #171b14;
+    color: var(--text);
+    font-size: 10px;
+    line-height: 1.2;
+    cursor: pointer;
+  }
+  #timeline button.tl-block:hover { border-color: var(--warn); }
+  #timeline button.tl-block.sel { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); background: #1d2417; }
+  #timeline button.tl-block .nm { display: block; font-weight: 700; letter-spacing: 0.04em; }
+  #timeline button.tl-block .mt { display: block; color: var(--dim); font-size: 9px; margin-top: 2px; }
+  #timeline .tl-playhead { position: absolute; top: 20px; bottom: 0; width: 2px; left: 0; background: var(--accent); box-shadow: 0 0 8px var(--accent); pointer-events: none; }
+  #timeline .tl-inspector { width: 360px; flex: none; border: 1px solid var(--line); background: #0b0d0a; padding: 8px; overflow: auto; max-height: 124px; font-size: 11px; }
+  #timeline .tl-inspector:empty { display: none; }
+  #timeline .tl-row { display: flex; align-items: center; gap: 5px; margin-bottom: 5px; }
+  #timeline .tl-row label { color: var(--dim); min-width: 58px; font-size: 9px; text-transform: uppercase; letter-spacing: 0.06em; }
+  #timeline .tl-row input[type="text"], #timeline .tl-row input[type="number"], #timeline .tl-row select {
+    background: #11140f; color: var(--text); border: 1px solid var(--line); padding: 2px 4px; font-size: 10px; min-width: 0;
+  }
+  #timeline .tl-row input[type="text"] { flex: 1; }
+  #timeline .tl-row input[type="number"] { width: 62px; }
+  #timeline .tl-vals { border-top: 1px solid var(--line); margin-top: 5px; padding-top: 5px; }
+  #timeline .tl-val { display: grid; grid-template-columns: 1fr 64px 22px; gap: 4px; align-items: center; margin-bottom: 3px; }
+  #timeline .tl-val span { color: var(--dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 9px; }
+  #timeline .tl-val input { width: 100%; }
+  #timeline .tl-val button { padding: 1px 5px; font-size: 10px; }
+  #timeline .tl-add { display: grid; grid-template-columns: 1fr 64px 22px; gap: 4px; margin-top: 5px; }
+  #timeline .tl-empty { color: var(--dim); padding: 6px; font-size: 10px; }
+  @media (max-width: 900px) {
+    #timeline .tl-body { flex-direction: column; }
+    #timeline .tl-inspector { width: auto; max-height: 180px; }
+  }
   /* ── SCENES / JSON — отдельная панелька: Intro+Theme | Export+Import ── */
   #scenes {
     flex: none;
@@ -360,6 +435,24 @@
 
 <!-- ── MUTES: обычные 0/1-кнопки, не momentary; глушат группы инструментов ── -->
 <div id="mutes"></div>
+
+<!-- ── TIMELINE: горизонтальная, сворачиваемая; секции + автоматизация ── -->
+<details id="timeline" open>
+  <summary>
+    <span class="tl-cap">Timeline</span>
+    <span id="tlStatus">no @timeline</span>
+    <span class="sp"></span>
+    <button id="tlAdd" type="button" title="add a section at the end">+ section</button>
+  </summary>
+  <div class="tl-body">
+    <div class="tl-track" id="tlTrack">
+      <div class="tl-ruler" id="tlRuler"></div>
+      <div class="tl-sections" id="tlSections"></div>
+      <div class="tl-playhead" id="tlPlayhead"></div>
+    </div>
+    <div class="tl-inspector" id="tlInspector"></div>
+  </div>
+</details>
 
 <main>
   <!-- ── столбец 1: ГЛОБАЛЬНОЕ → ПЕРЕКЛЮЧАТЕЛИ → МИКШЕР ── -->

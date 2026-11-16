@@ -16,10 +16,9 @@
 //  chords: pad (warm/air) / stab / organ / skank / horns
 //  fx: dub delay / reverb
 //
-//  ── 30 КХМЕРСКИХ ДРАМОВ ───────────────────────────────────────
-//  skor low/high/fill ×6, sampho low/high/ghost/rim ×8,
-//  chhing closed/open/roll ×6, krap ×2, kong ×6,
-//  woodblock/shime ×2. Все 30 идут через общий delay + reverb.
+//  ── 18 КХМЕРСКИХ ДРАМОВ ───────────────────────────────────────
+//  skor high/fill ×4, sampho low/high/ghost/rim ×8,
+//  chhing closed/open/roll ×6. Все 18 идут через общий delay + reverb.
 //  У каждого свой канал в MIXER: vol / cut / clip.
 //
 //  ── ПРАВИЛА ──────────────────────────────────────────────────
@@ -27,6 +26,8 @@
 //  • mode: dub / strip / pressure / click — меняет только верх.
 //  • harmony: warm / air — защёлка на 8 тактов.
 //  • Никаких райзеров, sidechain-пумпа, snare на 2/4 и дропов.
+//  • @timeline меняет только уровни инструментов; reverb/delay/mode/
+//    harmony не дёргаются на границах, иначе рвутся хвосты.
 // ══════════════════════════════════════════════════════════════════
 
 const BPM = 122
@@ -38,16 +39,6 @@ setcpm(BPM / 4) // один цикл = один такт 4/4
 if (typeof samples === 'function') {
   samples('github:tidalcycles/uzu-drumkit')
   samples('github:tidalcycles/Dirt-Samples')
-  samples({
-    gong: {
-      c2: 'Percussion/gongHit_mf.wav',
-      g2: 'Percussion/gongHit_f.wav',
-    },
-    claves: {
-      c6: 'Percussion/Claves1_Hit_v1_rr1_Sum.wav',
-      g6: 'Percussion/Claves1_Hit_v2_rr1_Sum.wav',
-    },
-  }, 'https://raw.githubusercontent.com/sgossner/VSCO-2-CE/master/')
 }
 
 // ══════════════════════════════════════════════════════════════════
@@ -94,19 +85,17 @@ const hQ = harmony.seg(1 / 8)
 const hA = hQ.fmap((h) => (h < 0.5 ? 1 : 0))
 const hB = hQ.fmap((h) => (h < 0.5 ? 0 : 1))
 
-// @mutes muteSkor,muteSampho,muteChhing,muteKrap,muteGong,muteWood
+// @mutes muteSkor,muteSampho,muteChhing
 const muteSkor = slider(0, 0, 1, 1)
 const muteSampho = slider(0, 0, 1, 1)
 const muteChhing = slider(0, 0, 1, 1)
-const muteKrap = slider(0, 0, 1, 1)
-const muteGong = slider(0, 0, 1, 1)
-const muteWood = slider(0, 0, 1, 1)
 
 // Реверб/дилей: сильнее, чем в 16/17, но всё ещё даб, а не собор.
 const verb = slider(0.75, 0, 1, 0.01)
 const verbSize = slider(16, 1, 20, 0.5)
 const percEcho = slider(0.28, 0, 0.8, 0.01)
 const percVerb = slider(0.7, 0, 1, 0.01)
+const percLevel = slider(1, 0, 1, 0.01)
 
 // ══════════════════════════════════════════════════════════════════
 //  ИНСТРУМЕНТЫ
@@ -261,18 +250,6 @@ const instruments = {
   },
   perc: {
     name: 'Khmer Percussion',
-    skorLowA: {
-      name: 'skorLow A',
-      vol: slider(0.4, 0, 1, 0.01),
-      cut: slider(300, 40, 16000, 10),
-      clip: slider(0.7, 0.02, 4, 0.01),
-    },
-    skorLowB: {
-      name: 'skorLow B',
-      vol: slider(0.36, 0, 1, 0.01),
-      cut: slider(260, 40, 16000, 10),
-      clip: slider(0.8, 0.02, 4, 0.01),
-    },
     skorHighA: {
       name: 'skorHigh A',
       vol: slider(0.33, 0, 1, 0.01),
@@ -381,66 +358,6 @@ const instruments = {
       cut: slider(13000, 40, 16000, 10),
       clip: slider(0.04, 0.02, 4, 0.01),
     },
-    krapHigh: {
-      name: 'krapHigh',
-      vol: slider(0.19, 0, 1, 0.01),
-      cut: slider(3000, 40, 16000, 10),
-      clip: slider(0.12, 0.02, 4, 0.01),
-    },
-    krapLow: {
-      name: 'krapLow',
-      vol: slider(0.17, 0, 1, 0.01),
-      cut: slider(2400, 40, 16000, 10),
-      clip: slider(0.14, 0.02, 4, 0.01),
-    },
-    gongVongA: {
-      name: 'gongVong A',
-      vol: slider(0.3, 0, 1, 0.01),
-      cut: slider(2600, 40, 16000, 10),
-      clip: slider(1.8, 0.02, 4, 0.01),
-    },
-    gongVongB: {
-      name: 'gongVong B',
-      vol: slider(0.28, 0, 1, 0.01),
-      cut: slider(2200, 40, 16000, 10),
-      clip: slider(2.0, 0.02, 4, 0.01),
-    },
-    gongThomA: {
-      name: 'gongThom A',
-      vol: slider(0.26, 0, 1, 0.01),
-      cut: slider(400, 40, 16000, 10),
-      clip: slider(3.0, 0.02, 4, 0.01),
-    },
-    gongThomB: {
-      name: 'gongThom B',
-      vol: slider(0.24, 0, 1, 0.01),
-      cut: slider(350, 40, 16000, 10),
-      clip: slider(3.2, 0.02, 4, 0.01),
-    },
-    gongAxis: {
-      name: 'gong Axis',
-      vol: slider(0.22, 0, 1, 0.01),
-      cut: slider(380, 40, 16000, 10),
-      clip: slider(2.6, 0.02, 4, 0.01),
-    },
-    gongHigh: {
-      name: 'gongHigh',
-      vol: slider(0.2, 0, 1, 0.01),
-      cut: slider(1200, 40, 16000, 10),
-      clip: slider(1.4, 0.02, 4, 0.01),
-    },
-    woodblock: {
-      name: 'woodblock',
-      vol: slider(0.15, 0, 1, 0.01),
-      cut: slider(4500, 40, 16000, 10),
-      clip: slider(0.12, 0.02, 4, 0.01),
-    },
-    shime: {
-      name: 'shime',
-      vol: slider(0.14, 0, 1, 0.01),
-      cut: slider(5000, 40, 16000, 10),
-      clip: slider(0.1, 0.02, 4, 0.01),
-    },
   },
   fx: {
     name: 'FX',
@@ -462,9 +379,6 @@ const MUTES = {
   skor: muteSkor,
   sampho: muteSampho,
   chhing: muteChhing,
-  krap: muteKrap,
-  gong: muteGong,
-  wood: muteWood,
 }
 
 const audible = (hap) => {
@@ -480,6 +394,7 @@ const phrase = (bars) => m('<' + bars.join(' ') + '>')
 
 // @roots f f ab ab db db gb gb
 // @scenes {"intro":{"mode":0,"harmony":0},"theme":{"mode":2,"harmony":0}}
+// @timeline [{"at":0,"length":8,"name":"INTRO","values":{"drums.kick.vol":0,"bass.sub.vol":0,"bass.dub.vol":0,"chords.pad.vol":0.08,"chords.stab.vol":0,"chords.organ.vol":0,"chords.skank.vol":0,"chords.horns.vol":0,"moog.note.vol":0,"moog.arp.vol":0,"percLevel":0.6}},{"at":8,"length":16,"name":"DUB","values":{"drums.kick.vol":0.36,"bass.sub.vol":0.5,"bass.dub.vol":0.36,"chords.pad.vol":0.16,"chords.stab.vol":0.4,"chords.organ.vol":0.16,"chords.skank.vol":0.14,"chords.horns.vol":0.12,"moog.note.vol":0.18,"moog.arp.vol":0.09,"percLevel":1}},{"at":24,"length":8,"name":"BREAK","values":{"drums.kick.vol":0,"bass.sub.vol":0.15,"bass.dub.vol":0,"chords.pad.vol":0.1,"chords.stab.vol":0,"chords.organ.vol":0,"chords.skank.vol":0,"chords.horns.vol":0,"moog.note.vol":0.18,"moog.arp.vol":0.06,"percLevel":1}},{"at":32,"length":16,"name":"DUB 2","values":{"drums.kick.vol":0.36,"bass.sub.vol":0.5,"bass.dub.vol":0.38,"chords.pad.vol":0.18,"chords.stab.vol":0.42,"chords.organ.vol":0.18,"chords.skank.vol":0.16,"chords.horns.vol":0.14,"moog.note.vol":0.2,"moog.arp.vol":0.1,"percLevel":1}},{"at":48,"length":16,"name":"OUT","values":{"drums.kick.vol":0,"bass.sub.vol":0,"bass.dub.vol":0,"chords.pad.vol":0.12,"chords.stab.vol":0,"chords.organ.vol":0.08,"chords.skank.vol":0,"chords.horns.vol":0,"moog.note.vol":0.08,"moog.arp.vol":0.04,"percLevel":0.55}}]
 
 const ROOT = phrase([
   '[f1]', '[f1]', '[ab1]', '[ab1]',
@@ -766,11 +681,9 @@ $: note(MOOG_ARP_CHORDS)
   .filter(audible)
 
 // ══════════════════════════════════════════════════════════════════
-//  30 KHMER DRUMS — один автобус, 30 каналов
+//  18 KHMER DRUMS — один автобус, 18 каналов
 // ══════════════════════════════════════════════════════════════════
 const PERC = [
-  { key: 'skorLowA', group: 'skor', s: 'east', n: '6 7 8', pat: 'x ~ ~ ~ ~ ~ x ~ x ~ ~ ~ ~ ~ x ~', speed: 0.78, pan: 0.42, hpf: 30 },
-  { key: 'skorLowB', group: 'skor', s: 'east', n: '6 8 7', pat: 'x ~ ~ x ~ ~ x ~ ~ ~ x ~ x ~ x x', speed: 0.72, pan: 0.58, hpf: 30 },
   { key: 'skorHighA', group: 'skor', s: 'east', n: '3 4 5', pat: '~ ~ x ~ ~ x ~ ~ ~ ~ x ~ ~ x ~ ~', speed: 1.0, pan: 0.47, hpf: 40 },
   { key: 'skorHighB', group: 'skor', s: 'east', n: '5 4 3', pat: 'x ~ ~ ~ x ~ ~ ~ x ~ ~ ~ x ~ ~ ~', speed: 1.05, pan: 0.55, hpf: 40 },
   { key: 'skorFillA', group: 'skor', s: 'east', n: '0 2', pat: 'x ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ x ~', speed: 0.95, pan: 0.38, hpf: 60 },
@@ -789,16 +702,6 @@ const PERC = [
   { key: 'chhingOpenB', group: 'chhing', s: 'metal', n: '6 7', pat: '~ ~ x ~ ~ ~ x ~ ~ ~ x ~ ~ ~ x ~', speed: 1.0, pan: 0.62, hpf: 2200 },
   { key: 'chhingRollA', group: 'chhing', s: 'metal', n: '8', pat: 'x ~ x x ~ x ~ x x ~ x ~ x x ~ x', speed: 1.0, pan: 0.5, hpf: 5000 },
   { key: 'chhingRollB', group: 'chhing', s: 'metal', n: '9', pat: '~ x x ~ x x ~ x x ~ x x ~ x x ~', speed: 1.0, pan: 0.46, hpf: 5200 },
-  { key: 'krapHigh', group: 'krap', s: 'claves', note: 'c6', pat: 'x ~ ~ ~ ~ ~ x ~ x ~ ~ ~ ~ ~ x ~', speed: 1.0, pan: 0.35, hpf: 1200 },
-  { key: 'krapLow', group: 'krap', s: 'claves', note: 'g6', pat: '~ ~ x ~ ~ ~ ~ ~ ~ ~ x ~ ~ ~ ~ ~', speed: 1.0, pan: 0.65, hpf: 1000 },
-  { key: 'gongVongA', group: 'gong', s: 'gong', note: 'g2', pat: '~ ~ ~ ~ x ~ ~ ~ ~ ~ x ~ ~ ~ ~ ~', speed: 0.9, pan: 0.4, hpf: 80 },
-  { key: 'gongVongB', group: 'gong', s: 'gong', note: 'c2', pat: '~ ~ ~ ~ x ~ ~ ~ ~ ~ x ~ ~ ~ ~ ~', speed: 0.8, pan: 0.6, hpf: 60 },
-  { key: 'gongThomA', group: 'gong', s: 'gong', note: 'c2', pat: 'x ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~', speed: 0.7, pan: 0.5, hpf: 30 },
-  { key: 'gongThomB', group: 'gong', s: 'gong', note: 'g2', pat: 'x ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~', speed: 0.65, pan: 0.5, hpf: 30 },
-  { key: 'gongAxis', group: 'gong', s: 'gong', note: 'gb2', pat: '~ ~ ~ ~ x ~ ~ ~ ~ ~ ~ ~ x ~ ~ ~', speed: 0.7, pan: 0.55, hpf: 30 },
-  { key: 'gongHigh', group: 'gong', s: 'gong', note: 'c3', pat: 'x ~ ~ x ~ ~ x ~ ~ ~ x ~ ~ x ~ ~', speed: 0.95, pan: 0.35, hpf: 100 },
-  { key: 'woodblock', group: 'wood', s: 'tok', n: '0 1 2 3', pat: 'x ~ ~ x ~ ~ x ~ x ~ ~ x ~ ~ x ~', speed: 1.0, pan: 0.45, hpf: 800 },
-  { key: 'shime', group: 'wood', s: 'chin', n: '0 1 2 3', pat: 'x ~ x ~ ~ x ~ x x ~ x ~ ~ x ~ x', speed: 1.0, pan: 0.55, hpf: 700 },
 ]
 
 const percLayers = PERC.map((p) => {
@@ -806,14 +709,14 @@ const percLayers = PERC.map((p) => {
   return base
     .struct(m(p.pat))
     .speed(p.speed)
-    .gain(perc[p.key].vol.mul(unmuted(MUTES[p.group])))
+    .gain(perc[p.key].vol.mul(unmuted(MUTES[p.group])).mul(percLevel))
     .lpf(perc[p.key].cut).hpf(p.hpf)
     .clip(perc[p.key].clip)
     .pan(p.pan)
 })
 
-// Все 30 идут через один delay + reverb. Это дешевле и честнее,
-// чем 30 отдельных хвостов: храм один, а не 30 храмов.
+// Все 18 идут через один delay + reverb. Это дешевле и честнее,
+// чем 18 отдельных хвостов: храм один, а не 18 храмов.
 $: stack(...percLayers)
   .delay(percEcho)
   .delaytime(fx.dub.time)
@@ -827,8 +730,8 @@ $: stack(...percLayers)
 //  гармония:  Fm9 → Gbmaj9 (bII), roots f f f f gb gb gb gb
 //  режимы:   0 dub / 1 strip / 2 pressure / 3 click
 //  гармония:  0 warm / 1 air (защёлка 8 тактов)
-//  mutes:     skor · sampho · chhing · krap · gong · wood
-//  перкуссия: 30 каналов, общий delay/reverb; vol/cut/clip у каждого
+//  mutes:     skor · sampho · chhing
+//  перкуссия: 18 каналов, общий delay/reverb; vol/cut/clip у каждого
 //  реверб:    verb 0…1, verbSize 1…20, percEcho 0…0.8, percVerb 0…1
 //  даб:       fx.dub.time 0.375, feedback 0.45–0.65
 //  низ:       bass.sub.cut ≤80, bass.dub.cut ≤80, kick.cut 270
