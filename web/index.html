@@ -149,7 +149,14 @@
   #timeline .tl-cap { color: var(--text); }
   #timeline .sp { flex: 1; }
   #timeline #tlStatus { color: var(--dim); text-transform: none; letter-spacing: 0; }
-  #timeline #tlAdd { padding: 3px 8px; font-size: 10px; }
+  #timeline #tlAdd, #timeline #tlApply, #timeline #tlLoop, #timeline #tlStop { padding: 3px 8px; font-size: 10px; }
+  #timeline #tlLoop.on { background: var(--accent); border-color: var(--accent); color: #0d0f0c; font-weight: 700; }
+  #timeline #tlStop { border-color: var(--bad); color: #f0b1a8; }
+  .row.is-vol { grid-template-columns: 74px 1fr 42px 46px; }
+  .mx-tools { display: flex; gap: 2px; justify-content: flex-end; }
+  .mx-tools button { padding: 1px 4px; font-size: 9px; line-height: 1.2; min-width: 18px; }
+  .mx-tools button.on.m { background: var(--bad); border-color: var(--bad); color: #0d0f0c; font-weight: 700; }
+  .mx-tools button.on.s { background: var(--warn); border-color: var(--warn); color: #0d0f0c; font-weight: 700; }
   #timeline .tl-body { display: flex; gap: 10px; padding: 0 12px 10px; align-items: stretch; }
   #timeline .tl-track {
     flex: 1;
@@ -440,8 +447,11 @@
 <details id="timeline" open>
   <summary>
     <span class="tl-cap">Timeline</span>
-    <span id="tlStatus">no @timeline</span>
+    <span id="tlStatus">no TIMELINE</span>
     <span class="sp"></span>
+    <button id="tlApply" type="button" title="apply TIMELINE (re-evaluate the track)">APPLY</button>
+    <button id="tlLoop" type="button" class="on" title="loop timeline / stop at the end">LOOP</button>
+    <button id="tlStop" type="button" title="stop playback">STOP</button>
     <button id="tlAdd" type="button" title="add a section at the end">+ section</button>
   </summary>
   <div class="tl-body">

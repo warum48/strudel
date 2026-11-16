@@ -26,7 +26,7 @@
 //  • mode: dub / strip / pressure / click — меняет только верх.
 //  • harmony: warm / air — защёлка на 8 тактов.
 //  • Никаких райзеров, sidechain-пумпа, snare на 2/4 и дропов.
-//  • @timeline меняет только уровни инструментов; reverb/delay/mode/
+//  • TIMELINE меняет только уровни инструментов; reverb/delay/mode/
 //    harmony не дёргаются на границах, иначе рвутся хвосты.
 // ══════════════════════════════════════════════════════════════════
 
@@ -394,7 +394,26 @@ const phrase = (bars) => m('<' + bars.join(' ') + '>')
 
 // @roots f f ab ab db db gb gb
 // @scenes {"intro":{"mode":0,"harmony":0},"theme":{"mode":2,"harmony":0}}
-// @timeline [{"at":0,"length":8,"name":"INTRO","values":{"drums.kick.vol":0,"bass.sub.vol":0,"bass.dub.vol":0,"chords.pad.vol":0.08,"chords.stab.vol":0,"chords.organ.vol":0,"chords.skank.vol":0,"chords.horns.vol":0,"moog.note.vol":0,"moog.arp.vol":0,"percLevel":0.6}},{"at":8,"length":16,"name":"DUB","values":{"drums.kick.vol":0.36,"bass.sub.vol":0.5,"bass.dub.vol":0.36,"chords.pad.vol":0.16,"chords.stab.vol":0.4,"chords.organ.vol":0.16,"chords.skank.vol":0.14,"chords.horns.vol":0.12,"moog.note.vol":0.18,"moog.arp.vol":0.09,"percLevel":1}},{"at":24,"length":8,"name":"BREAK","values":{"drums.kick.vol":0,"bass.sub.vol":0.15,"bass.dub.vol":0,"chords.pad.vol":0.1,"chords.stab.vol":0,"chords.organ.vol":0,"chords.skank.vol":0,"chords.horns.vol":0,"moog.note.vol":0.18,"moog.arp.vol":0.06,"percLevel":1}},{"at":32,"length":16,"name":"DUB 2","values":{"drums.kick.vol":0.36,"bass.sub.vol":0.5,"bass.dub.vol":0.38,"chords.pad.vol":0.18,"chords.stab.vol":0.42,"chords.organ.vol":0.18,"chords.skank.vol":0.16,"chords.horns.vol":0.14,"moog.note.vol":0.2,"moog.arp.vol":0.1,"percLevel":1}},{"at":48,"length":16,"name":"OUT","values":{"drums.kick.vol":0,"bass.sub.vol":0,"bass.dub.vol":0,"chords.pad.vol":0.12,"chords.stab.vol":0,"chords.organ.vol":0.08,"chords.skank.vol":0,"chords.horns.vol":0,"moog.note.vol":0.08,"moog.arp.vol":0.04,"percLevel":0.55}}]
+
+const TIMELINE = JSON.parse('[{"at":0,"len":8,"name":"INTRO","values":{"kick":0,"sub":0,"dub":0,"pad":0.5,"stab":0,"organ":0,"skank":0,"horns":0,"moog":0,"arp":0,"perc":0.6}},{"at":8,"len":16,"name":"DUB","values":{"kick":1,"sub":1,"dub":1,"pad":1,"stab":1,"organ":1,"skank":1,"horns":1,"moog":1,"arp":1,"perc":1}},{"at":24,"len":8,"name":"BREAK","values":{"kick":0,"sub":0.3,"dub":0,"pad":0.625,"stab":0,"organ":0,"skank":0,"horns":0,"moog":1,"arp":0.667,"perc":1}},{"at":32,"len":16,"name":"DUB 2","values":{"kick":1,"sub":1,"dub":1.056,"pad":1.125,"stab":1.05,"organ":1.125,"skank":1.143,"horns":1.167,"moog":1.111,"arp":1.111,"perc":1}},{"at":48,"len":16,"name":"OUT","values":{"kick":0,"sub":0,"dub":0,"pad":0.75,"stab":0,"organ":0.5,"skank":0,"horns":0,"moog":0.444,"arp":0.444,"perc":0.55}}]')
+
+const TL_TOTAL = Math.max(...TIMELINE.map((s) => s.at + s.len))
+
+// Каркас: множители к слайдерам. Слайдеры остаются hot; таймлайн
+// применяется при Ctrl+Enter, потому что это уже часть паттерна.
+const tlCurve = (key) => {
+  let last = 0
+  const segs = []
+  for (let i = 0; i < TIMELINE.length; i++) {
+    const sec = TIMELINE[i]
+    if (Object.prototype.hasOwnProperty.call(sec.values, key)) last = sec.values[key]
+    const next = i + 1 < TIMELINE.length ? TIMELINE[i + 1].at : TL_TOTAL
+    const len = next - sec.at
+    if (len > 0) segs.push([len, pure(last)])
+  }
+  return arrange(...segs)
+}
+
 
 const ROOT = phrase([
   '[f1]', '[f1]', '[ab1]', '[ab1]',
@@ -521,7 +540,7 @@ $: s("wind:0")
 //  ДАБОВЫЙ НАБОР
 // ══════════════════════════════════════════════════════════════════
 $: s("bd*4")
-  .gain(drums.kick.vol)
+  .gain(drums.kick.vol.mul(tlCurve('kick')))
   .lpf(drums.kick.cut).lpq(1)
   .shape(drums.kick.shape)
   .decay(drums.kick.decay).sustain(0).release(0.08)
@@ -572,7 +591,7 @@ $: s("sh*16")
 $: note(ROOT)
   .s("sine")
   .struct("~ x ~ ~ ~ x ~ ~")
-  .gain(bass.sub.vol)
+  .gain(bass.sub.vol.mul(tlCurve('sub')))
   .lpf(bass.sub.cut).lpq(1)
   .shape(0.2)
   .attack(0.01).decay(bass.sub.decay).sustain(0.6).release(0.3)
@@ -580,7 +599,7 @@ $: note(ROOT)
 
 $: note(BASS)
   .s("triangle")
-  .gain(bass.dub.vol)
+  .gain(bass.dub.vol.mul(tlCurve('dub')))
   .lpf(bass.dub.cut).lpq(1.2)
   .decay(bass.dub.decay).sustain(0.5).release(0.2)
   .filter(audible)
@@ -588,7 +607,7 @@ $: note(BASS)
 $: note(PAD_A)
   .s("sawtooth").partials([1, 0.45, 0.25, 0.1, 0.05])
   .unison(2).detune(chords.pad.det)
-  .gain(chords.pad.vol.mul(hA))
+  .gain(chords.pad.vol.mul(hA).mul(tlCurve('pad')))
   .lpf(chords.pad.cut).hpf(chords.pad.hpf).lpq(chords.pad.q).ftype("24db")
   .lpdepth(chords.pad.lfo).lpsync(0.125).lpdc(0)
   .chorus(0.4)
@@ -599,7 +618,7 @@ $: note(PAD_A)
 $: note(PAD_B)
   .s("triangle").partials([1, 0.3, 0.15, 0.06])
   .unison(3).detune(chords.pad.det.mul(1.4))
-  .gain(chords.pad.vol.mul(hB))
+  .gain(chords.pad.vol.mul(hB).mul(tlCurve('pad')))
   .lpf(chords.pad.cut.mul(1.2)).hpf(300).lpq(chords.pad.q.mul(0.7))
   .lpdepth(chords.pad.lfo).lpsync(0.125).lpdc(0)
   .chorus(0.5)
@@ -609,7 +628,7 @@ $: note(PAD_B)
 
 $: note(STAB)
   .s("sawtooth").unison(2).detune(0.06)
-  .gain(chords.stab.vol)
+  .gain(chords.stab.vol.mul(tlCurve('stab')))
   .lpf(chords.stab.cut).lpq(chords.stab.res).ftype("24db")
   .decay(chords.stab.decay).sustain(0).release(0.4)
   .delay(fx.dub.send)
@@ -620,7 +639,7 @@ $: note(STAB)
 
 $: note(ORGAN)
   .s("square").unison(2).detune(0.04)
-  .gain(chords.organ.vol)
+  .gain(chords.organ.vol.mul(tlCurve('organ')))
   .lpf(chords.organ.cut).hpf(200).lpq(2).ftype("24db")
   .decay(chords.organ.decay).sustain(0).release(0.3)
   .delay(chords.organ.echo.mul(fx.dub.send)).delaytime(fx.dub.time)
@@ -630,7 +649,7 @@ $: note(ORGAN)
 
 $: note(SKANK)
   .s("triangle").unison(2).detune(0.05)
-  .gain(chords.skank.vol)
+  .gain(chords.skank.vol.mul(tlCurve('skank')))
   .lpf(chords.skank.cut).hpf(400).lpq(2)
   .decay(chords.skank.decay).sustain(0).release(0.2)
   .delay(chords.skank.echo.mul(fx.dub.send)).delaytime(fx.dub.time)
@@ -640,7 +659,7 @@ $: note(SKANK)
 
 $: note(HORNS)
   .s("sawtooth").unison(2).detune(0.03)
-  .gain(chords.horns.vol)
+  .gain(chords.horns.vol.mul(tlCurve('horns')))
   .lpf(chords.horns.cut).hpf(120).lpq(1.5)
   .decay(chords.horns.decay).sustain(0).release(0.5)
   .delay(chords.horns.echo.mul(fx.dub.send)).delaytime(fx.dub.time)
@@ -654,7 +673,7 @@ $: note(HORNS)
 $: note(MOOG)
   .add(note(moog.note.octave.fmap((o) => o * 12)))
   .s("sawtooth").unison(2).detune(moog.note.det)
-  .gain(moog.note.vol)
+  .gain(moog.note.vol.mul(tlCurve('moog')))
   .lpf(moog.note.cut).hpf(180).lpq(moog.note.q).ftype("24db")
   .lpdepth(moog.note.lfo).lpsync(moog.note.sync).lpdc(0)
   .shape(moog.note.shape)
@@ -669,7 +688,7 @@ $: note(MOOG)
 $: note(MOOG_ARP_CHORDS)
   .arp(run(moog.arp.pace))
   .s("sawtooth").unison(2).detune(moog.arp.det)
-  .gain(moog.arp.vol)
+  .gain(moog.arp.vol.mul(tlCurve('arp')))
   .lpf(moog.arp.cut).hpf(300).lpq(moog.arp.q).ftype("24db")
   .lpdepth(moog.arp.lfo).lpsync(moog.arp.sync).lpdc(0)
   .shape(moog.arp.shape)
@@ -709,7 +728,7 @@ const percLayers = PERC.map((p) => {
   return base
     .struct(m(p.pat))
     .speed(p.speed)
-    .gain(perc[p.key].vol.mul(unmuted(MUTES[p.group])).mul(percLevel))
+    .gain(perc[p.key].vol.mul(unmuted(MUTES[p.group])).mul(percLevel).mul(tlCurve('perc')))
     .lpf(perc[p.key].cut).hpf(p.hpf)
     .clip(perc[p.key].clip)
     .pan(p.pan)

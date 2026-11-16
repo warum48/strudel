@@ -492,9 +492,11 @@ const fmt = (x) => {
 let knobs = []; // { idx, path, name, anchor, min, max, step, value }
 let timeline = []; // @timeline sections: { at, length, name, values }
 let timelineSel = -1;
-let timelineLast = -1;
 let timelineTimer = null;
 let timelineBar = 0;
+let timelineLoop = true;
+const muted = new Set();
+const soloed = new Set();
 const knobByAnchor = new Map(); // widget id → { input, out }
 const openState = new Map(); // 'group' / 'group.inst' → свёрнуто ли
 
@@ -571,6 +573,7 @@ function render() {
 
   $('mixCount').textContent = `${[...groups.values()].reduce((a, m) => a + m.size, 0)} inst`;
   $('toneCount').textContent = `${groups.size} groups`;
+  applyMixerState();
 }
 
 function renderGlobals(list) {
@@ -692,35 +695,46 @@ function renderMutes(list) {
   }
 }
 
-// ── TIMELINE: @timeline + horizontal editor + playback ────────────
+// ── TIMELINE: native const TIMELINE + horizontal editor ─────────
+// Данные живут в треке как обычный JS-массив. Панель его читает/пишет,
+// рисует секции и playhead. Автоматизация — нативная (tlCurve/arrange);
+// правки применяются по Ctrl+Enter. Слайдеры остаются hot.
+const TL_LANES = ['kick', 'sub', 'dub', 'pad', 'stab', 'organ', 'skank', 'horns', 'moog', 'arp', 'perc'];
+
+function timelineLiteral(src) {
+  const m = /const\s+TIMELINE\s*=\s*JSON\.parse\(\s*'((?:[^'\\]|\\.)*)'\s*\)/.exec(src);
+  if (!m) return null;
+  const raw = m[1];
+  const json = raw.replace(/\\'/g, "'").replace(/\\\\/g, '\\');
+  const start = m.index + m[0].indexOf("'") + 1;
+  return { start, end: start + raw.length, json };
+}
+
 function scanTimeline(src) {
-  const line = /^[ \t]*\/\/[ \t]*@timeline[ \t]+(.+)$/m.exec(src);
-  if (!line) return [];
-  try {
-    const arr = JSON.parse(line[1].trim());
-    if (!Array.isArray(arr)) return [];
-    return arr
-      .filter((s) => s && Number.isFinite(Number(s.at)))
-      .map((s) => ({
-        at: Math.max(0, Number(s.at) || 0),
-        length: Math.max(1, Number(s.length) || 8),
-        name: String(s.name || 'section'),
-        values: s.values && typeof s.values === 'object' ? s.values : {},
-      }));
-  } catch {
-    return [];
+  let arr = null;
+  const lit = timelineLiteral(src);
+  if (lit) {
+    try { arr = JSON.parse(lit.json); } catch { arr = null; }
   }
+  if (!Array.isArray(arr)) {
+    const line = /^[ \t]*\/\/[ \t]*@timeline[ \t]+(.+)$/m.exec(src);
+    if (line) {
+      try { arr = JSON.parse(line[1].trim()); } catch { arr = null; }
+    }
+  }
+  if (!Array.isArray(arr)) return [];
+  return arr
+    .filter((s) => s && Number.isFinite(Number(s.at)))
+    .map((s) => ({
+      at: Math.max(0, Number(s.at) || 0),
+      length: Math.max(1, Number(s.len ?? s.length) || 8),
+      name: String(s.name || 'section'),
+      values: s.values && typeof s.values === 'object' ? s.values : {},
+    }));
 }
 
 const tlTotal = () => Math.max(8, ...timeline.map((s) => s.at + s.length));
-const tlKeyLabel = (key) => {
-  const k = knobs.find((x) => knobKey(x) === key);
-  return k ? (k.path.length ? k.path.join('.') : k.name) : key;
-};
-const tlCurrent = (key) => {
-  const k = knobs.find((x) => knobKey(x) === key);
-  return k ? Number(k.value) : 0;
-};
+const tlKeyLabel = (key) => key;
 
 function updatePlayhead(bar = timelineBar) {
   const el = $('tlPlayhead');
@@ -767,7 +781,7 @@ function renderTimeline() {
   });
   $('tlStatus').textContent = timeline.length
     ? `${timeline.length} sections · ${total} bars`
-    : 'no @timeline';
+    : 'no TIMELINE';
   updatePlayhead();
   renderTimelineInspector();
 }
@@ -826,7 +840,7 @@ function renderTimelineInspector() {
     const row = document.createElement('div');
     row.className = 'tl-val';
     const lab = document.createElement('span');
-    lab.textContent = tlKeyLabel(key);
+    lab.textContent = tlKeyLabel(key) + ' ×';
     lab.title = key;
     const inp = document.createElement('input');
     inp.type = 'number';
@@ -854,18 +868,20 @@ function renderTimelineInspector() {
   const add = document.createElement('div');
   add.className = 'tl-add';
   const sel = document.createElement('select');
-  for (const k of [...knobs].sort((a, b) => knobKey(a).localeCompare(knobKey(b)))) {
+  const lanes = [...new Set([...TL_LANES, ...Object.keys(sec.values || {})])];
+  for (const key of lanes) {
     const o = document.createElement('option');
-    o.value = knobKey(k);
-    o.textContent = knobKey(k);
+    o.value = key;
+    o.textContent = key;
     sel.appendChild(o);
   }
+  sel.value = lanes[0];
   const val = document.createElement('input');
   val.type = 'number';
   val.step = '0.01';
-  val.value = tlCurrent(sel.value);
+  val.value = sec.values[sel.value] ?? 1;
   sel.addEventListener('change', () => {
-    val.value = tlCurrent(sel.value);
+    val.value = sec.values[sel.value] ?? 1;
   });
   const addBtn = document.createElement('button');
   addBtn.type = 'button';
@@ -903,18 +919,30 @@ function commitTimeline() {
 
 function writeTimeline() {
   if (!mirror) return;
-  const json = JSON.stringify(timeline);
+  const data = timeline.map((s) => ({
+    at: s.at,
+    len: s.length,
+    name: s.name,
+    values: s.values,
+  }));
+  const json = JSON.stringify(data);
+  const escaped = json.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
   const src = mirror.editor.state.doc.toString();
-  const m = /^([ \t]*\/\/[ \t]*@timeline[ \t]+)(.*)$/m.exec(src);
-  if (m) {
-    const from = m.index + m[1].length;
-    mirror.editor.dispatch({ changes: { from, to: m.index + m[0].length, insert: json } });
+  const lit = timelineLiteral(src);
+  if (lit) {
+    mirror.editor.dispatch({ changes: { from: lit.start, to: lit.end, insert: escaped } });
   } else {
-    const a = /^[ \t]*\/\/[ \t]*@scenes.*$/m.exec(src);
-    const pos = a ? a.index + a[0].length : 0;
-    mirror.editor.dispatch({ changes: { from: pos, to: pos, insert: `\n// @timeline ${json}` } });
+    const m = /^([ \t]*\/\/[ \t]*@timeline[ \t]+)(.*)$/m.exec(src);
+    if (m) {
+      const from = m.index + m[1].length;
+      mirror.editor.dispatch({ changes: { from, to: m.index + m[0].length, insert: json } });
+    } else {
+      const c = /^.*setcpm\(.*\).*$/m.exec(src);
+      const pos = c ? c.index + c[0].length : 0;
+      mirror.editor.dispatch({ changes: { from: pos, to: pos, insert: `\nconst TIMELINE = JSON.parse('${escaped}')\n` } });
+    }
   }
-  setStatus('timeline saved');
+  setStatus('timeline saved — Ctrl+Enter or APPLY');
 }
 
 function addTimelineSection() {
@@ -927,13 +955,11 @@ function addTimelineSection() {
 
 function startTimeline() {
   stopTimeline();
-  timelineLast = -1;
   timelineTimer = setInterval(timelineTick, 120);
 }
 function stopTimeline() {
   if (timelineTimer) clearInterval(timelineTimer);
   timelineTimer = null;
-  timelineLast = -1;
   timelineBar = 0;
   updatePlayhead(0);
 }
@@ -941,19 +967,28 @@ function timelineTick() {
   if (!playing || !mirror) return;
   const now = mirror.repl?.scheduler?.now?.();
   if (typeof now !== 'number' || !Number.isFinite(now)) return;
-  timelineBar = Math.max(0, Math.floor(now));
-  updatePlayhead(timelineBar);
-  if (!timeline.length) return;
-  let idx = -1;
-  for (let i = 0; i < timeline.length; i++) {
-    if (timeline[i].at <= timelineBar) idx = i;
+  const total = tlTotal();
+  if (!timelineLoop && now >= total) {
+    stop();
+    timelineBar = total;
+    updatePlayhead(total);
+    setSceneStatus('timeline end — stopped');
+    return;
   }
-  if (idx === timelineLast) return;
-  timelineLast = idx;
-  if (idx >= 0) {
-    const sec = timeline[idx];
-    const n = applyTimelineValues(sec.values || {}, `timeline: ${sec.name}`);
-    if (!n) setSceneStatus(`timeline: ${sec.name} (no matching knobs)`);
+  timelineBar = timelineLoop ? Math.floor(now) % total : Math.min(total, Math.floor(now));
+  updatePlayhead(timelineBar);
+}
+
+async function applyTimeline() {
+  if (!mirror) return;
+  setStatus('applying timeline…');
+  try {
+    await mirror.evaluate();
+    buildKnobs();
+    setStatus('timeline applied');
+    setSceneStatus('timeline applied');
+  } catch (e) {
+    setStatus(e.message, true);
   }
 }
 
@@ -961,6 +996,23 @@ $('tlAdd')?.addEventListener('click', (e) => {
   e.preventDefault();
   e.stopPropagation();
   addTimelineSection();
+});
+$('tlApply')?.addEventListener('click', (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+  applyTimeline();
+});
+$('tlLoop')?.addEventListener('click', (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+  timelineLoop = !timelineLoop;
+  e.currentTarget.classList.toggle('on', timelineLoop);
+  setSceneStatus(`timeline: ${timelineLoop ? 'loop' : 'stop at end'}`);
+});
+$('tlStop')?.addEventListener('click', (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+  stop();
 });
 
 function bindPadKeys() {
@@ -1028,43 +1080,6 @@ function applyValues(values, label = 'scene') {
   renderScenes();
   setSceneStatus(`${label}: ${pairs.length}/${entries.length} values`);
   return pairs.length;
-}
-
-// Timeline применяет только значения, не перестраивая весь сайдбар:
-// перерисовка 149 ручек в момент смены секции — это и был слышимый провал.
-// Меняем число, шлём cm-slider и обновляем конкретный input.
-function applyTimelineValues(values, label = 'timeline') {
-  const byKey = new Map(knobs.map((k) => [knobKey(k), k]));
-  const entries = Object.entries(values || {});
-  const pairs = [];
-  for (const [key, raw] of entries) {
-    const k = byKey.get(key);
-    const v = Number(raw);
-    if (!k || !Number.isFinite(v)) continue;
-    pairs.push([k, Math.min(k.max, Math.max(k.min, v))]);
-  }
-  pairs.sort((a, b) => b[0].idx - a[0].idx);
-  let applied = 0;
-  let needsFull = false;
-  for (const [k, v] of pairs) {
-    if (Math.abs(Number(k.value) - v) < 1e-9) {
-      applied++;
-      continue;
-    }
-    k.value = v;
-    setKnob(k, v);
-    const ui = knobByAnchor.get('slider_' + k.anchor);
-    if (ui) {
-      ui.input.value = v;
-      ui.out.textContent = fmt(v);
-    } else if (isSwitch(k)) {
-      needsFull = true;
-    }
-    applied++;
-  }
-  if (needsFull) render();
-  setSceneStatus(`${label}: ${applied}/${entries.length} values`);
-  return applied;
 }
 
 function applyScene(name) {
@@ -1137,6 +1152,29 @@ function renderMixer(groups) {
       if (!vol) continue;
       const row = makeRow(vol, instLabel(g, inst));
       row.classList.add('is-vol');
+      const id = `${g}.${inst}`;
+      const tools = document.createElement('span');
+      tools.className = 'mx-tools';
+      for (const [kind, label, set, cls] of [
+        ['m', 'M', muted, 'm'],
+        ['s', 'S', soloed, 's'],
+      ]) {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.textContent = label;
+        b.title = kind === 'm' ? 'mute instrument' : 'solo instrument';
+        b.classList.add(cls);
+        b.classList.toggle('on', set.has(id));
+        b.addEventListener('click', (e) => {
+          e.stopPropagation();
+          if (set.has(id)) set.delete(id);
+          else set.add(id);
+          b.classList.toggle('on', set.has(id));
+          applyMixerState();
+        });
+        tools.appendChild(b);
+      }
+      row.appendChild(tools);
       rows.appendChild(row);
     }
   }
@@ -1210,6 +1248,28 @@ function makeRow(k, label) {
   return row;
 }
 
+const instId = (k) => (k.path.length >= 3 ? `${k.path[0]}.${k.path[1]}` : null);
+
+// Mute/solo живут в панели, не в коде: пишем base в документ, а движку шлём
+// эффективную громкость. Так mute/solo не портят трек и снимаются сразу.
+function effectiveVol(k, base = Number(k.value)) {
+  const id = instId(k);
+  if (!id) return base;
+  if (muted.has(id)) return 0;
+  if (soloed.size && !soloed.has(id)) return 0;
+  return base;
+}
+
+function applyMixerState() {
+  for (const k of knobs) {
+    if (k.name !== 'vol' || k.path.length < 3) continue;
+    window.postMessage(
+      { type: 'cm-slider', id: 'slider_' + k.anchor, value: effectiveVol(k) },
+      null,
+    );
+  }
+}
+
 // A knob is the same drag a widget gets: the number into the document + a message
 // to the engine. Позицию числа НЕ запоминаем: после любой правки всё правее
 // сдвигается, а id виджета (`slider_<offset>`) живёт до следующего eval.
@@ -1224,7 +1284,8 @@ function setKnob(k, v) {
       mirror.editor.dispatch({ changes: { from, to: from + head[1].length, insert: fmt(v) } });
     }
   }
-  window.postMessage({ type: 'cm-slider', id: 'slider_' + k.anchor, value: Number(v) }, null);
+  const out = k.name === 'vol' && k.path.length >= 3 ? effectiveVol(k, Number(v)) : Number(v);
+  window.postMessage({ type: 'cm-slider', id: 'slider_' + k.anchor, value: out }, null);
 }
 
 // ── 5. editor theme and visualizer ────────────────────────────────
@@ -1447,6 +1508,11 @@ async function loadTrack(p) {
   setStatus('reading track…');
   const src = await readTrack(p);
   stop(); // старый паттерн глушим: иначе два трека играют разом
+  muted.clear();
+  soloed.clear();
+  timelineLoop = true;
+  $('tlLoop')?.classList.add('on');
+  timelineSel = -1;
   track = p;
   code = src;
   importedScenes = null;

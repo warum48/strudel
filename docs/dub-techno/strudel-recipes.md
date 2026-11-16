@@ -348,3 +348,29 @@ $: stack(...percLayers)
 `PERC` — 30 спек: `east`/`hand`/`tabla`/`metal`/`tok`/`chin`/`claves`/`gong`.
 У каждого канала в дереве `vol/cut/clip`, у групп — mute. Ноты/паттерны
 держат ритм, а не мелодию.
+
+## Native timeline (18)
+
+Таймлайн, который играется в обычном Strudel. Таблица — множители к
+hot-слайдерам; правки в панели применяются по Ctrl+Enter.
+
+```js
+const TIMELINE = JSON.parse('[{"at":0,"len":8,"name":"INTRO","values":{"kick":0}},{"at":8,"len":8,"name":"DUB","values":{"kick":1}}]')
+const TL_TOTAL = Math.max(...TIMELINE.map((s) => s.at + s.len))
+const tlCurve = (key) => {
+  let last = 0
+  const segs = []
+  for (let i = 0; i < TIMELINE.length; i++) {
+    const sec = TIMELINE[i]
+    if (key in sec.values) last = sec.values[key]
+    const next = i + 1 < TIMELINE.length ? TIMELINE[i + 1].at : TL_TOTAL
+    if (next > sec.at) segs.push([next - sec.at, pure(last)])
+  }
+  return arrange(...segs)
+}
+
+$: s("bd*4").gain(drums.kick.vol.mul(tlCurve('kick')))
+```
+
+Важно: strudel.cc-транспайлер не любит двойные кавычки в JS-коде,
+поэтому JSON лежит в `JSON.parse('…')` с одинарными кавычками.

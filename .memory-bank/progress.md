@@ -186,3 +186,14 @@
   light `applyTimelineValues` that updates only 11 instrument levels and never
   re-renders the whole 149-slider sidebar. Section changes no longer restart the
   UI or reset reverb/delay tails.
+- Switched 18 to a native Strudel timeline: `const TIMELINE = JSON.parse('…')`
+  + `tlCurve`/`arrange`; values are multipliers over hot sliders. Works in
+  ordinary Strudel; panel edits the table and applies on Ctrl+Enter. Discovered
+  strudel.cc transpiler rejects double-quoted JS strings in code; use JSON.parse
+  with a single-quoted string. Panel parses/writes that literal; section gains
+  verified (kick 0 at bar 0, 0.36 at bar 8).
+- Panel: added APPLY/LOOP/STOP to the timeline header. LOOP wraps playhead
+  modulo TL_TOTAL; LOOP off stops at the end. APPLY re-evaluates the track.
+- Mixer: per-instrument M/S buttons on all 35 channels. Mute/solo send
+  effective `cm-slider` values to the engine and do not rewrite track code.
+- Native timeline remains source of truth; Ctrl+Enter/APPLY applies table edits.
