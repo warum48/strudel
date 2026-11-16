@@ -16,7 +16,7 @@
 - [x] tracks/khmer/02-skors.js — 96 BPM percussion/xylophones: 16 tracks, 86 sliders, real Dirt-Samples + VSCO 2 CE (CC0), scenes change rhythm only, `// @mutes` row under scenes, no pads, no sralai
 - [x] tracks/khmer/03-skors-ritual.js — 76 BPM percussion + low xylophone: 11 tracks, 58 sliders, skor high .33, sampho low .34/high .28/ghost .23, chhing .23/open .21, krap .19, fills .18, kong thom .22, roneat low .24; low xylo only, no high xylo/sralai, rhythm-only scenes, mutes, fifth/axis gong, no pads
 - [x] tracks/khmer/04-confluence.js — 108 BPM mix of 01–03: 16 tracks, 79 sliders, 12 rhythm scenes, percussion/gongs without melodic xylophones, acid bass + arp with `pace`, verb up to 1.2, verbSize up to 16, mutes, no pads
-- [x] tracks/techno/18-khmer-dub.js — 122 BPM dub techno + Khmer percussion: 19 tracks (18 perc channels in one bus), 149 sliders, Fm9→Abmaj9→Dbmaj9→Gbmaj9, full dub set + Moog lead/arp, all 18 Khmer drums through shared delay/reverb, native `TIMELINE` 5 sections/64 bars (Ctrl+Enter or APPLY, LOOP/STOP), mix M/S, mutes, no pads
+- [x] tracks/techno/18-khmer-dub.js — 122 BPM dub techno + Khmer percussion: 19 tracks (18 perc channels in one bus), 149 sliders, Fm9→Abmaj9→Dbmaj9→Gbmaj9, full dub set + Moog lead/arp, all 18 Khmer drums through shared delay/reverb, native `TIMELINE` 5 sections/64 bars (Ctrl+Enter or APPLY, LOOP/STOP, contiguous + seek), mix M/S, mutes, no pads
 - [x] Web panel: `// @mutes` row (ordinary 0/1 buttons under scenes, not momentary)
 - [x] docs/khmer/ — README + instruments + tuning/rhythm + Strudel + sources + samples (RU + EN)
 - [x] README index + per-track notes for khmer/01

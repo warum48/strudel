@@ -31,7 +31,7 @@ scenes, percussion/gongs without melodic xylophones, acid bass + arp with
 techno/18-khmer-dub is 122 BPM dub techno + Khmer percussion: 19 tracks (30
 percussion channels in one bus), 149 sliders, Fm9→Abmaj9→Dbmaj9→Gbmaj9,
 full dub set + Moog lead/arp, 18 Khmer drums through shared delay/reverb,
-native `TIMELINE` 5 sections / 64 bars, APPLY/LOOP/STOP, no melodic Khmer lines.
+native `TIMELINE` 5 sections / 64 bars, APPLY/LOOP/STOP, contiguous sections, click ruler to seek, no melodic Khmer lines.
 Reference: `docs/breakcore/`, `docs/idm/` and `docs/khmer/` (RU + EN);
 play guides in `docs/breakcore/10-panel.md`, `docs/idm/README.md` and
 `docs/khmer/README.md`.
@@ -71,7 +71,7 @@ play guides in `docs/breakcore/10-panel.md`, `docs/idm/README.md` and
 - techno/18-khmer-dub: verify ok (19 tracks, 149 sliders, 111 hits on INTRO),
   tension clean, modes 4/4, latch bar 8, gains silent, doubles no collisions,
   cpu 0 on INTRO / 15 per bar (8/s) in DUB, live eval ok; panel timeline e2e:
-  5 sections, native gains at bar 8 = 0.36, add-section writes TIMELINE, 35 MIXER rows with M/S.
+  5 sections, native gains at bar 8 = 0.36, add-section writes TIMELINE, 35 MIXER rows with M/S; length edit ripples at; ruler seek works.
 - Panel scenes e2e (headless Chromium): title `STRUDEL EXTENSION`, v2 90 knobs;
   Intro applies 19/19 values, Theme 22/22, Export reports 90, Import applies 2.
 - `npm run tension` — dnb/01 clean; dnb/02 clean with 62 intentional tritones; dnb/02-v2 clean with 112; techno/16, 17 and 17-v2 clean.

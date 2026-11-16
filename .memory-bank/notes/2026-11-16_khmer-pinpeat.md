@@ -63,7 +63,7 @@
 - Added Moog lead/arp in the spirit of 17 with c4/eb4/g4/bb4/f4/ab4/db5/bb4.
 - Tension gotchas: Ab pad g3 vs ab3, Db pad c4 vs db4, Gb pad f4 vs gb4;
   fix by octave displacement.
-- Panel: per-instrument M/S uses effective `cm-slider` values without touching code; timeline APPLY re-evals, LOOP wraps playhead, LOOP off stops at end.
+- Panel: timeline sections are contiguous (reflow on length/order), ruler click seeks (scheduler internals), LOOP/STOP, APPLY. Per-instrument M/S uses effective `cm-slider` values without touching code; timeline APPLY re-evals, LOOP wraps playhead, LOOP off stops at end.
 - Native timeline: `const TIMELINE = JSON.parse('…')` + `tlCurve`/`arrange`; sliders hot, edits via Ctrl+Enter. Strudel transpiler rejects double-quoted JS strings, so the JSON table is inside a single-quoted `JSON.parse` string.
 - Timeline dropout fix: never call full `render()` from the timeline tick and
   never automate effect-bus params at section boundaries. Light apply updates

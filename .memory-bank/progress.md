@@ -197,3 +197,8 @@
 - Mixer: per-instrument M/S buttons on all 35 channels. Mute/solo send
   effective `cm-slider` values to the engine and do not rewrite track code.
 - Native timeline remains source of truth; Ctrl+Enter/APPLY applies table edits.
+- Timeline sections now reflow: length edit shifts `at` of all following;
+  up/down reorder; `at` is read-only. Ruler click seeks (native scheduler
+  cursor hack; visual + audio while playing, pending when stopped).
+- Panel e2e: DUB length 16→20 shifted BREAK 24→28, DUB2 32→36, OUT 48→52;
+  seek to bar 7 moved scheduler and playhead.

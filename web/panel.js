@@ -495,6 +495,7 @@ let timelineSel = -1;
 let timelineTimer = null;
 let timelineBar = 0;
 let timelineLoop = true;
+let pendingSeek = null;
 const muted = new Set();
 const soloed = new Set();
 const knobByAnchor = new Map(); // widget id → { input, out }
@@ -734,6 +735,15 @@ function scanTimeline(src) {
 }
 
 const tlTotal = () => Math.max(8, ...timeline.map((s) => s.at + s.length));
+
+// Секции всегда идут подряд: длина одной сдвигает at всех следующих.
+function reflowTimeline() {
+  let at = 0;
+  for (const sec of timeline) {
+    sec.at = at;
+    at += sec.length;
+  }
+}
 const tlKeyLabel = (key) => key;
 
 function updatePlayhead(bar = timelineBar) {
@@ -741,6 +751,37 @@ function updatePlayhead(bar = timelineBar) {
   if (!el) return;
   const total = tlTotal();
   el.style.left = `${Math.max(0, Math.min(100, (bar / total) * 100))}%`;
+}
+
+// Перемотка. В main-thread scheduler у Strudel нет setCycle, поэтому
+// двигаем его внутренний курсор (lastEnd/lastBegin/num_cycles...). Если
+// появится setCycle, используем его. Это единственное место, где лезем
+// во внутренности планировщика.
+function seekTimeline(bar) {
+  if (!mirror) return;
+  const total = tlTotal();
+  const target = Math.max(0, Math.min(Math.max(0, total - 1), Math.round(bar)));
+  const s = mirror.repl?.scheduler;
+  if (s) {
+    if (typeof s.setCycle === 'function') {
+      s.setCycle(target);
+    } else if ('lastEnd' in s) {
+      s.lastEnd = target;
+      s.lastBegin = target;
+      s.num_cycles_at_cps_change = target;
+      s.num_ticks_since_cps_change = 0;
+      const dur = Number(s.clock?.duration) || 0.1;
+      if (typeof s.getTime === 'function') s.lastTick = s.getTime() - dur;
+    }
+  }
+  timelineBar = target;
+  updatePlayhead(target);
+  if (!playing) {
+    pendingSeek = target;
+    setSceneStatus(`seek: bar ${target} (on play)`);
+    return;
+  }
+  setSceneStatus(`seek: bar ${target}`);
 }
 
 function renderTimeline() {
@@ -773,7 +814,8 @@ function renderTimeline() {
     mt.className = 'mt';
     mt.textContent = `${sec.at}–${sec.at + sec.length} · ${Object.keys(sec.values).length} v`;
     b.append(nm, mt);
-    b.addEventListener('click', () => {
+    b.addEventListener('click', (e) => {
+      e.stopPropagation();
       timelineSel = i;
       renderTimeline();
     });
@@ -816,22 +858,49 @@ function renderTimelineInspector() {
     return row;
   };
 
-  root.append(
-    textRow('name', sec.name, (v) => {
-      sec.name = String(v || 'section');
-      commitTimeline();
-    }),
-    textRow('at', sec.at, (v) => {
-      const n = Math.max(0, Number(v) || 0);
-      sec.at = n;
-      commitTimeline();
-    }, 'number'),
-    textRow('length', sec.length, (v) => {
-      const n = Math.max(1, Number(v) || 1);
-      sec.length = n;
-      commitTimeline();
-    }, 'number'),
-  );
+  const nameRow = textRow('name', sec.name, (v) => {
+    sec.name = String(v || 'section');
+    commitTimeline();
+  });
+  const atRow = textRow('at', sec.at, () => {}, 'number');
+  const atInput = atRow.querySelector('input');
+  if (atInput) {
+    atInput.disabled = true;
+    atInput.title = 'auto: sections are contiguous';
+  }
+  const lenRow = textRow('length', sec.length, (v) => {
+    const n = Math.max(1, Number(v) || 1);
+    sec.length = n;
+    commitTimeline();
+  }, 'number');
+  root.append(nameRow, atRow, lenRow);
+
+  const moveRow = document.createElement('div');
+  moveRow.className = 'tl-row';
+  const moveLab = document.createElement('label');
+  moveLab.textContent = 'order';
+  const up = document.createElement('button');
+  up.type = 'button';
+  up.textContent = '↑';
+  up.title = 'move section earlier';
+  const down = document.createElement('button');
+  down.type = 'button';
+  down.textContent = '↓';
+  down.title = 'move section later';
+  up.addEventListener('click', () => {
+    if (timelineSel <= 0) return;
+    [timeline[timelineSel - 1], timeline[timelineSel]] = [timeline[timelineSel], timeline[timelineSel - 1]];
+    timelineSel--;
+    commitTimeline();
+  });
+  down.addEventListener('click', () => {
+    if (timelineSel >= timeline.length - 1) return;
+    [timeline[timelineSel + 1], timeline[timelineSel]] = [timeline[timelineSel], timeline[timelineSel + 1]];
+    timelineSel++;
+    commitTimeline();
+  });
+  moveRow.append(moveLab, up, down);
+  root.appendChild(moveRow);
 
   const vals = document.createElement('div');
   vals.className = 'tl-vals';
@@ -911,7 +980,7 @@ function renderTimelineInspector() {
 
 function commitTimeline() {
   const sel = timeline[timelineSel];
-  timeline.sort((a, b) => a.at - b.at);
+  reflowTimeline();
   timelineSel = sel ? timeline.indexOf(sel) : -1;
   writeTimeline();
   renderTimeline();
@@ -996,6 +1065,17 @@ $('tlAdd')?.addEventListener('click', (e) => {
   e.preventDefault();
   e.stopPropagation();
   addTimelineSection();
+});
+$('tlTrack')?.addEventListener('click', (e) => {
+  if (e.target.closest?.('.tl-block')) return;
+  const r = e.currentTarget.getBoundingClientRect();
+  if (!r.width) return;
+  seekTimeline(((e.clientX - r.left) / r.width) * tlTotal());
+});
+$('tlRuler')?.addEventListener('click', (e) => {
+  const r = e.currentTarget.getBoundingClientRect();
+  if (!r.width) return;
+  seekTimeline(((e.clientX - r.left) / r.width) * tlTotal());
 });
 $('tlApply')?.addEventListener('click', (e) => {
   e.preventDefault();
@@ -1511,6 +1591,7 @@ async function loadTrack(p) {
   muted.clear();
   soloed.clear();
   timelineLoop = true;
+  pendingSeek = null;
   $('tlLoop')?.classList.add('on');
   timelineSel = -1;
   track = p;
@@ -1623,6 +1704,11 @@ async function play() {
   $('play').classList.add('on');
   buildKnobs();
   startTimeline();
+  if (pendingSeek != null) {
+    const target = pendingSeek;
+    pendingSeek = null;
+    setTimeout(() => seekTimeline(target), 300);
+  }
   setStatus(`${knobs.length} knobs · playing`);
 }
 
