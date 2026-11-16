@@ -184,8 +184,8 @@ const instruments = {
     name: 'Chords',
     pad: {
       name: 'Pad',
-      vol: slider(0.24, 0, 0.7, 0.01),
-      cut: slider(950, 80, 5000, 10),
+      vol: slider(0.16, 0, 0.7, 0.01),
+      cut: slider(850, 80, 5000, 10),
       hpf: slider(100, 20, 600, 10),
       q: slider(1.4, 0, 20, 0.5),
       lfo: slider(0.45, 0, 6, 0.1),
@@ -193,11 +193,11 @@ const instruments = {
     },
     stab: {
       name: 'Dub stab',
-      vol: slider(0.44, 0, 0.9, 0.01),
-      cut: slider(1100, 100, 6000, 10),
+      vol: slider(0.4, 0, 0.9, 0.01),
+      cut: slider(900, 100, 6000, 10),
       res: slider(4, 0, 18, 0.5),
-      decay: slider(0.3, 0.03, 1.2, 0.01),
-      room: slider(0.45, 0, 1, 0.01),
+      decay: slider(0.22, 0.03, 1.2, 0.01),
+      room: slider(0.4, 0, 1, 0.01),
     },
     organ: {
       name: 'Organ',
@@ -219,6 +219,44 @@ const instruments = {
       cut: slider(900, 80, 4000, 10),
       decay: slider(0.35, 0.05, 1.2, 0.01),
       echo: slider(0.32, 0, 0.8, 0.01),
+    },
+  },
+  moog: {
+    name: 'Moog',
+    note: {
+      name: 'Moog note',
+      vol: slider(0.18, 0, 0.6, 0.01),
+      octave: slider(0, -2, 2, 1),
+      cut: slider(780, 100, 4000, 10),
+      q: slider(3.5, 0, 18, 0.5),
+      det: slider(0.07, 0, 0.3, 0.01),
+      attack: slider(0.35, 0.005, 1, 0.005),
+      decay: slider(2.1, 0.2, 4, 0.01),
+      sustain: slider(0.45, 0, 1, 0.01),
+      release: slider(2.8, 0.1, 6, 0.01),
+      shape: slider(0.11, 0, 0.8, 0.01),
+      lfo: slider(1.2, 0, 4, 0.05),
+      sync: slider(0.4375, 0.0625, 2, 0.0625),
+      echo: slider(0.82, 0, 1, 0.01),
+      room: slider(0.9, 0, 1, 0.01),
+      slide: slider(0.14, 0, 0.3, 0.005),
+    },
+    arp: {
+      name: 'Moog arp',
+      vol: slider(0.09, 0, 0.5, 0.01),
+      cut: slider(650, 200, 5000, 10),
+      q: slider(4.5, 0, 18, 0.5),
+      det: slider(0.05, 0, 0.3, 0.01),
+      attack: slider(0.02, 0.005, 0.5, 0.005),
+      decay: slider(0.3, 0.03, 1.5, 0.01),
+      sustain: slider(0.12, 0, 1, 0.01),
+      release: slider(1.6, 0.05, 3, 0.01),
+      shape: slider(0.06, 0, 0.8, 0.01),
+      lfo: slider(1.4, 0, 4, 0.05),
+      sync: slider(1.3125, 0.0625, 2, 0.0625),
+      echo: slider(0.78, 0, 1, 0.01),
+      room: slider(0.88, 0, 1, 0.01),
+      pace: slider(8, 4, 16, 1),
     },
   },
   perc: {
@@ -419,7 +457,7 @@ const instruments = {
   },
 }
 
-const { atmos, drums, bass, chords, perc, fx } = instruments
+const { atmos, drums, bass, chords, moog, perc, fx } = instruments
 const MUTES = {
   skor: muteSkor,
   sampho: muteSampho,
@@ -440,46 +478,48 @@ const unmuted = (m) => m.fmap((v) => (v ? 0 : 1))
 // ══════════════════════════════════════════════════════════════════
 const phrase = (bars) => m('<' + bars.join(' ') + '>')
 
-// @roots f f f f gb gb gb gb
+// @roots f f ab ab db db gb gb
 // @scenes {"intro":{"mode":0,"harmony":0},"theme":{"mode":2,"harmony":0}}
 
 const ROOT = phrase([
-  '[f1]', '[f1]', '[f1]', '[f1]',
-  '[gb1]', '[gb1]', '[gb1]', '[gb1]',
+  '[f1]', '[f1]', '[ab1]', '[ab1]',
+  '[db2]', '[db2]', '[gb1]', '[gb1]',
 ])
 
 const BASS = phrase([
   '[f1 ~ ~ c2 ~ ~ eb2 ~]',
   '[~ f1 ~ ~ ab1 ~ ~ c2]',
-  '[f1 ~ ~ ~ c2 ~ eb2 ~]',
-  '[~ ~ ab1 ~ ~ c2 ~ f1]',
+  '[ab1 ~ ~ c2 ~ ~ eb2 ~]',
+  '[~ ab1 ~ ~ c2 ~ eb2 ~]',
+  '[db2 ~ ~ ab1 ~ ~ f1 ~]',
+  '[~ db2 ~ ~ ab1 ~ ~ bb1]',
   '[gb1 ~ ~ db2 ~ ~ bb1 ~]',
-  '[~ f1 ~ ~ ab1 ~ ~ db2]',
-  '[gb1 ~ ~ ~ bb1 ~ f1 ~]',
-  '[~ ~ eb2 ~ ~ ab1 ~ gb1]',
+  '[~ gb1 ~ ~ db2 ~ ~ f1]',
 ])
 
+// Fm9 → Abmaj9 → Dbmaj9 → Gbmaj9: два такта на аккорд, 9-е и
+// открытые укладки. Это не 1–2–4–5 и не «два аккорда на восемь».
 const PAD_A = phrase([
   '[f2,ab2,c3,eb3,g4]', '[f2,ab2,c3,eb3,g4]',
-  '[f2,ab2,c3,eb3,g4]', '[f2,ab2,c3,eb3,g4]',
-  '[gb2,bb2,db3,ab4]', '[gb2,bb2,db3,ab4]',
-  '[gb2,bb2,db3,ab4]', '[gb2,bb2,db3,ab4]',
+  '[ab2,c3,eb3,g4,bb3]', '[ab2,c3,eb3,g4,bb3]',
+  '[db3,f3,ab3,c4,eb5]', '[db3,f3,ab3,c4,eb5]',
+  '[gb2,bb2,db3,f4,ab4]', '[gb2,bb2,db3,f4,ab4]',
 ])
 
 const PAD_B = phrase([
   '[f3,c4,g4]', '[f3,c4,g4]',
-  '[f3,c4,g4]', '[f3,c4,g4]',
-  '[gb3,db4,ab4]', '[gb3,db4,ab4]',
+  '[ab3,eb4,bb3]', '[ab3,eb4,bb3]',
+  '[db4,ab4,eb5]', '[db4,ab4,eb5]',
   '[gb3,db4,ab4]', '[gb3,db4,ab4]',
 ])
 
 const STAB = phrase([
   '[~ [f3,ab3,c4,eb4] ~ ~ ~ ~ ~ ~]',
   '[~ [f3,ab3,c4,eb4] ~ ~ ~ ~ ~ ~]',
-  '[~ [f3,ab3,c4,eb4] ~ ~ ~ ~ ~ ~]',
-  '[~ [f3,ab3,c4,eb4] ~ ~ ~ ~ ~ ~]',
-  '[~ [gb3,bb3,db4,f4] ~ ~ ~ ~ ~ ~]',
-  '[~ [gb3,bb3,db4,f4] ~ ~ ~ ~ ~ ~]',
+  '[~ [ab3,c4,eb4,g4] ~ ~ ~ ~ ~ ~]',
+  '[~ [ab3,c4,eb4,g4] ~ ~ ~ ~ ~ ~]',
+  '[~ [db3,f3,ab3,eb4] ~ ~ ~ ~ ~ ~]',
+  '[~ [db3,f3,ab3,eb4] ~ ~ ~ ~ ~ ~]',
   '[~ [gb3,bb3,db4,f4] ~ ~ ~ ~ ~ ~]',
   '[~ [gb3,bb3,db4,f4] ~ ~ ~ ~ ~ ~]',
 ])
@@ -487,10 +527,10 @@ const STAB = phrase([
 const ORGAN = phrase([
   '[~ ~ [f3,ab3,c4] ~ ~ ~ ~ ~]',
   '[~ ~ [f3,ab3,c4] ~ ~ ~ ~ ~]',
-  '[~ ~ [f3,ab3,c4] ~ ~ ~ ~ ~]',
-  '[~ ~ [f3,ab3,c4] ~ ~ ~ ~ ~]',
-  '[~ ~ [gb3,bb3,db4] ~ ~ ~ ~ ~]',
-  '[~ ~ [gb3,bb3,db4] ~ ~ ~ ~ ~]',
+  '[~ ~ [ab3,c4,eb4] ~ ~ ~ ~ ~]',
+  '[~ ~ [ab3,c4,eb4] ~ ~ ~ ~ ~]',
+  '[~ ~ [db3,f3,ab3] ~ ~ ~ ~ ~]',
+  '[~ ~ [db3,f3,ab3] ~ ~ ~ ~ ~]',
   '[~ ~ [gb3,bb3,db4] ~ ~ ~ ~ ~]',
   '[~ ~ [gb3,bb3,db4] ~ ~ ~ ~ ~]',
 ])
@@ -498,23 +538,44 @@ const ORGAN = phrase([
 const SKANK = phrase([
   '[~ ~ ~ [f4,c5,eb5] ~ ~ ~ ~]',
   '[~ ~ ~ [f4,c5,eb5] ~ ~ ~ ~]',
-  '[~ ~ ~ [f4,c5,eb5] ~ ~ ~ ~]',
-  '[~ ~ ~ [f4,c5,eb5] ~ ~ ~ ~]',
-  '[~ ~ ~ [gb4,bb4,db5] ~ ~ ~ ~]',
-  '[~ ~ ~ [gb4,bb4,db5] ~ ~ ~ ~]',
-  '[~ ~ ~ [gb4,bb4,db5] ~ ~ ~ ~]',
-  '[~ ~ ~ [gb4,bb4,db5] ~ ~ ~ ~]',
+  '[~ ~ ~ [ab5,c5,eb5] ~ ~ ~ ~]',
+  '[~ ~ ~ [ab5,c5,eb5] ~ ~ ~ ~]',
+  '[~ ~ ~ [db5,f4,ab4] ~ ~ ~ ~]',
+  '[~ ~ ~ [db5,f4,ab4] ~ ~ ~ ~]',
+  '[~ ~ ~ [gb5,bb4,db5] ~ ~ ~ ~]',
+  '[~ ~ ~ [gb5,bb4,db5] ~ ~ ~ ~]',
 ])
 
 const HORNS = phrase([
   '[~ ~ ~ ~ [f3,ab3,c4] ~ ~ ~]',
   '[~ ~ ~ ~ [f3,ab3,c4] ~ ~ ~]',
-  '[~ ~ ~ ~ [f3,ab3,c4] ~ ~ ~]',
-  '[~ ~ ~ ~ [f3,ab3,c4] ~ ~ ~]',
+  '[~ ~ ~ ~ [ab3,c4,eb4] ~ ~ ~]',
+  '[~ ~ ~ ~ [ab3,c4,eb4] ~ ~ ~]',
+  '[~ ~ ~ ~ [db3,f3,ab3] ~ ~ ~]',
+  '[~ ~ ~ ~ [db3,f3,ab3] ~ ~ ~]',
   '[~ ~ ~ ~ [gb3,bb3,db4] ~ ~ ~]',
   '[~ ~ ~ ~ [gb3,bb3,db4] ~ ~ ~]',
-  '[~ ~ ~ ~ [gb3,bb3,db4] ~ ~ ~]',
-  '[~ ~ ~ ~ [gb3,bb3,db4] ~ ~ ~]',
+])
+
+// MOOG — линия в духе 17, но в Fm/Ab/Db/Gb. Редкая нота, slide,
+// длинный release; дальше её растягивают delay и reverb.
+const MOOG = phrase([
+  '[~ ~ ~ ~ ~ ~ ~ c4]',
+  '[~ ~ ~ ~ ~ ~ ~ eb4]',
+  '[~ ~ ~ ~ ~ ~ ~ g4]',
+  '[~ ~ ~ ~ ~ ~ ~ bb4]',
+  '[~ ~ ~ ~ ~ ~ ~ f4]',
+  '[~ ~ ~ ~ ~ ~ ~ ab4]',
+  '[~ ~ ~ ~ ~ ~ ~ db5]',
+  '[~ ~ ~ ~ ~ ~ ~ bb4]',
+])
+
+// MOOG_ARP — фигура из нот текущего аккорда; не мелодия, а краска.
+const MOOG_ARP_CHORDS = phrase([
+  '[f4,c5,eb5]', '[f4,c5,eb5]',
+  '[ab5,c5,eb5]', '[ab5,c5,eb5]',
+  '[db5,f4,ab4]', '[db5,f4,ab4]',
+  '[gb5,bb4,db5]', '[gb5,bb4,db5]',
 ])
 
 // ══════════════════════════════════════════════════════════════════
@@ -616,8 +677,8 @@ $: note(PAD_A)
   .lpf(chords.pad.cut).hpf(chords.pad.hpf).lpq(chords.pad.q).ftype("24db")
   .lpdepth(chords.pad.lfo).lpsync(0.125).lpdc(0)
   .chorus(0.4)
-  .attack(4).decay(3).sustain(0.9).release(14)
-  .room(verb).roomsize(verbSize)
+  .attack(1.2).decay(1.6).sustain(0.35).release(3.5)
+  .room(verb.mul(0.5)).roomsize(verbSize)
   .filter(audible)
 
 $: note(PAD_B)
@@ -627,8 +688,8 @@ $: note(PAD_B)
   .lpf(chords.pad.cut.mul(1.2)).hpf(300).lpq(chords.pad.q.mul(0.7))
   .lpdepth(chords.pad.lfo).lpsync(0.125).lpdc(0)
   .chorus(0.5)
-  .attack(6).decay(4).sustain(0.9).release(18)
-  .room(verb).roomsize(verbSize)
+  .attack(2).decay(2).sustain(0.3).release(5)
+  .room(verb.mul(0.55)).roomsize(verbSize)
   .filter(audible)
 
 $: note(STAB)
@@ -670,6 +731,38 @@ $: note(HORNS)
   .delay(chords.horns.echo.mul(fx.dub.send)).delaytime(fx.dub.time)
   .delayfeedback(fx.dub.feedback.mul(0.6))
   .room(verb.mul(0.45)).roomsize(verbSize)
+  .filter(audible)
+
+// ══════════════════════════════════════════════════════════════════
+//  MOOG — мелодия в духе 17, другие ноты
+// ══════════════════════════════════════════════════════════════════
+$: note(MOOG)
+  .add(note(moog.note.octave.fmap((o) => o * 12)))
+  .s("sawtooth").unison(2).detune(moog.note.det)
+  .gain(moog.note.vol)
+  .lpf(moog.note.cut).hpf(180).lpq(moog.note.q).ftype("24db")
+  .lpdepth(moog.note.lfo).lpsync(moog.note.sync).lpdc(0)
+  .shape(moog.note.shape)
+  .slide(moog.note.slide)
+  .attack(moog.note.attack).decay(moog.note.decay)
+  .sustain(moog.note.sustain).release(moog.note.release)
+  .delay(fx.dub.send.mul(moog.note.echo)).delaytime(fx.dub.time)
+  .delayfeedback(fx.dub.feedback)
+  .room(verb.mul(moog.note.room)).roomsize(verbSize)
+  .filter(audible)
+
+$: note(MOOG_ARP_CHORDS)
+  .arp(run(moog.arp.pace))
+  .s("sawtooth").unison(2).detune(moog.arp.det)
+  .gain(moog.arp.vol)
+  .lpf(moog.arp.cut).hpf(300).lpq(moog.arp.q).ftype("24db")
+  .lpdepth(moog.arp.lfo).lpsync(moog.arp.sync).lpdc(0)
+  .shape(moog.arp.shape)
+  .attack(moog.arp.attack).decay(moog.arp.decay)
+  .sustain(moog.arp.sustain).release(moog.arp.release)
+  .delay(fx.dub.send.mul(moog.arp.echo)).delaytime(fx.dub.time)
+  .delayfeedback(fx.dub.feedback.mul(0.7))
+  .room(verb.mul(moog.arp.room)).roomsize(verbSize)
   .filter(audible)
 
 // ══════════════════════════════════════════════════════════════════

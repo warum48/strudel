@@ -61,11 +61,12 @@ tracks/
                       hats, Dm9→Bbmaj9, vowel pad, sub ≤80 + growl, Moog
     17-halfstep-dub-v2.js v2 17: audible Moog note + Moog arp with pace,
                       pad.fb; 17 не тронут
-    18-khmer-dub.js   122 BPM dub techno + Khmer drums: Fm9→Gbmaj9, полный
-                      дабовый набор (kick/hat/rim/click/shaker, sub/dub,
-                      pad/stab/organ/skank/horns, hiss/air/field, delay/reverb)
-                      + 30 кхмерских перкуссионных каналов через общий
-                      delay/reverb; 17 дорожек, 158 слайдеров
+    18-khmer-dub.js   122 BPM dub techno + Khmer drums: Fm9→Abmaj9→Dbmaj9→
+                      Gbmaj9, полный дабовый набор (kick/hat/rim/click/shaker,
+                      sub/dub, pad/stab/organ/skank/horns, hiss/air/field,
+                      delay/reverb) + Moog-линия в духе 17 + 30 кхмерских
+                      перкуссионных каналов через общий delay/reverb;
+                      19 дорожек, 187 слайдеров
   dnb/
     01-atmospheric-jungle.js 174 BPM LTJ Bukem / Aphrodite: Amen + chop,
                       Dm9–Gm9–Bb–A7sus, deep sub / Reese / mentasm
@@ -531,12 +532,13 @@ eval ок, паттерн играет, слайдер синхронизиро�
 нет, `live` — eval ок, паттерн играет, слайдер синхронизирован.
 
 `techno/18-khmer-dub.js` — **новый трек**: 122 BPM, dub techno снизу,
-кхмерская перкуссия сверху. Fm9 → Gbmaj9 (bII), другие ноты, чем в 16/17.
+кхмерская перкуссия сверху. Fm9 → Abmaj9 → Dbmaj9 → Gbmaj9: четыре
+аккорда по два такта, 9-е, другие ноты, чем в 16/17.
 
 - **Дабовый набор.** kick / hat / rim / click / shaker; sub / dub bass;
   pad warm/air; stab; organ; skank; horns; hiss / air / field; dub delay +
-  reverb. Всё в дубовой логике: глухой кик, саб ≤80, стаб в дилее, пэд
-  туманом, без мелодий и дропов.
+  reverb. Пэд короткий (не 5 тактов гула), стаб темнее, гармония
+  джазовее. Плюс Moog-линия и тихое арпеджио в духе 17, но в Fm/Ab/Db/Gb.
 - **30 кхмерских драмов.** 30 отдельных каналов в MIXER (skor low/high/fill,
   sampho low/high/ghost/rim, chhing closed/open/roll, krap, kong, woodblock/
   shime) с vol / cut / clip. В коде — один перкуссионный автобус, чтобы все
@@ -548,9 +550,9 @@ eval ок, паттерн играет, слайдер синхронизиро�
 - **Низ.** `bass.sub.cut` и `bass.dub.cut` ≤80, кик 270. Мелодических
   кхмерских линий нет: только ритм/остинато.
 
-Проверки 18: 17 дорожек / 177 ударов / 158 слайдеров, `tension` — трения
+Проверки 18: 19 дорожек / 186 ударов / 187 слайдеров, `tension` — трения
 нет, `modes` — 4/4 по верху, `latch` — такт 8, `gains` — тихо, `doubles` —
-наложений нет, `cpu` — 6 worklet/такт (3/с), `live` — eval ок.
+наложений нет, `cpu` — 15 worklet/такт (8/с), `live` — eval ок.
 
 `dnb/01-atmospheric-jungle.js` — **новый трек, новая подпапка**: 174 BPM,
 атмосферный jungle / liquid dnb в духе LTJ Bukem + jump-up-режим в духе

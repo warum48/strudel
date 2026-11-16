@@ -135,8 +135,9 @@
 
 ## 9. Khmer dub (`techno/18-khmer-dub.js`)
 
-Дабовый низ + кхмерский верх. 122 BPM, Fm9 → Gbmaj9 (bII), другие ноты,
-чем в 16/17.
+Дабовый низ + кхмерский верх. 122 BPM, Fm9 → Abmaj9 → Dbmaj9 → Gbmaj9
+(четыре аккорда по два такта, 9-е), другие ноты, чем в 16/17. Пэд
+короткий, стаб тёмный, есть Moog-линия и тихое арпеджио.
 
 - **Дабовый набор:** kick / hat / rim / click / shaker, sub / dub bass,
   pad warm/air, stab, organ, skank, horns, hiss / air / field, dub delay
@@ -148,5 +149,5 @@
   `verb` 0…1, `verbSize` 1…20. Это дешевле 30 отдельных хвостов.
 - **Mutes:** skor / sampho / chhing / krap / gong / wood. `mode` — только
   верх, `harmony` — warm/air с защёлкой 8 тактов.
-- **Проверки:** 17 дорожек / 177 ударов / 158 слайдеров, tension clean,
-  cpu 6/такт (3/с), doubles без наложений, live ок.
+- **Проверки:** 19 дорожек / 186 ударов / 187 слайдеров, tension clean,
+  cpu 15/такт (8/с), doubles без наложений, live ок.

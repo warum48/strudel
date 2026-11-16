@@ -170,3 +170,8 @@
 - Audits: verify 17 tracks / 158 sliders / 177 hits/bar, tension clean,
   modes 4/4, latch bar 8, gains silent, doubles no collisions,
   cpu 6/bar (3/s), live eval ok.
+- 18 revision: shortened pad envelope (attack 1.2/2, release 3.5/5, lower
+  volume/send), moved harmony to Fm9→Abmaj9→Dbmaj9→Gbmaj9 (4 chords, 9ths),
+  darker stab, added Moog lead + arp in the spirit of 17 with new notes.
+  Fixed minor seconds/tritones in the new voicings. Now 19 tracks / 187 sliders
+  / 186 hits, cpu 15/bar (8/s), live ok.

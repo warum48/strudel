@@ -13,7 +13,7 @@
 | H-008 | Real samples beat synthesis for Khmer percussion/xylophones; rhythm-only scenes + manual mutes are a better performance model than scene gating/pads | ✅ CONFIRMED | verify / modes / latch / live; sample count | 16 tracks, 26 sliders, 0 worklets, no pad-only parts | khmer/02-skors; docs/khmer/05-samples | — |
 | H-009 | A serious/ethnic Khmer percussion track works better with no high melodic lines: low drums, dark chhing, sparse krap, low gong only | ✅ CONFIRMED | register / density / modes / live | 11 tracks, 58 sliders, 40 hits/bar, 0 worklets | khmer/03-skors-ritual | — |
 | H-010 | A mix of Khmer percussion + acid bass/arp can coexist if Khmer layers stay rhythmic and acid is a separate section with `pace` | ✅ CONFIRMED | verify / tension / latch / cpu / live | 16 tracks, 79 sliders, 12 scenes, 16 worklets/bar with acid | khmer/04-confluence | — |
-| H-011 | Dub techno can carry 30 Khmer percussion channels if they share one delay/reverb bus; Fm9→Gbmaj9 voicings avoid tension | ✅ CONFIRMED | tracks / sliders / tension / cpu / live | 17 tracks, 158 sliders, 30 perc channels, 6 worklets/bar | techno/18-khmer-dub | — |
+| H-011 | Dub techno can carry 30 Khmer percussion channels if they share one delay/reverb bus; Fm9→Abmaj9→Dbmaj9→Gbmaj9 voicings avoid tension | ✅ CONFIRMED | tracks / sliders / tension / cpu / live | 19 tracks, 187 sliders, 30 perc channels, 15 worklets/bar | techno/18-khmer-dub | — |
 
 ## Confirmed Findings
 - LTJ Bukem: breaks at full tempo but mixed back; pads move at quarter speed; melodic bass, not a static sub.
@@ -38,7 +38,7 @@
 - Sample reality check: no public Khmer one-shot bank found; Dirt-Samples has no Khmer instruments; VSCO is Western orchestral; Roneat Studio Pro ships mock samples; Sounds of Angkor has videos, not one-shots; best path = local recordings mapped via `samples({...})` (docs/khmer/05-samples.md).
 - Serious/ethnic Khmer percussion recipe (03): 76 BPM; skor high + sampho low/high/ghost + chhing/open + krap + fills + low kong thom; lower tuning (skor/sam −2), long tails, dark chhing, rare krap; low xylophone only (marimba, octave 0/1/2), no high xylophones/sralai/high melodic lines; scenes rhythm-only; mutes manual; gong fifth/axis latched. Volumes from 01: .33/.34/.28/.23/.23/.21/.19/.18 + gong .22.
 - Mix + acid recipe (04): 108 BPM; SKOR/SAM/CHHING 12 cells each, high/open shifted, ghost/roll `ply`/`degrade`; all Khmer layers ostinato/rhythm, no melodic xylo; acid bass `fast(pace/16)` + acid arp `arp(run(pace))`, `pace` 4…32; `verb` 1.2, `verbSize` 16; 0 worklets without acid, 16/bar with acid.
-- Khmer dub recipe (18): 122 BPM; Fm9→Gbmaj9 (roots f gb); full dub set (kick/hat/rim/click/shaker, sub/dub, pad/stab/organ/skank/horns, hiss/air/field, delay/reverb); 30 Khmer perc channels as one stack through shared delay/reverb; vol/cut/clip per channel; 6 group mutes; no melodic Khmer lines. `tension` clean, 6 worklets/bar.
+- Khmer dub recipe (18): 122 BPM; Fm9→Abmaj9→Dbmaj9→Gbmaj9 (roots f ab db gb); full dub set (kick/hat/rim/click/shaker, sub/dub, pad/stab/organ/skank/horns, hiss/air/field, delay/reverb); 30 Khmer perc channels as one stack through shared delay/reverb; vol/cut/clip per channel; 6 group mutes; no melodic Khmer lines. `tension` clean, 15 worklets/bar; short pad (not a 5-bar hum) + Moog lead/arp in the spirit of 17.
 
 ## Genre Recipe Library (saved 2026-11-15)
 

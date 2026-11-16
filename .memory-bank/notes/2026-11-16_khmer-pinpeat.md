@@ -50,8 +50,16 @@
 - Strong reverb: `verb` 0…1.2, `verbSize` 1…16. CPU 16/bar with acid on.
 
 ## 18-khmer-dub (same day)
-- Dub techno in Fm9→Gbmaj9 (bII), 122 BPM; full dub set + 30 Khmer percussion
+- Dub techno in Fm9→Abmaj9→Dbmaj9→Gbmaj9, 122 BPM; full dub set + Moog lead/arp + 30 Khmer percussion
   channels. The 30 channels are one stack through shared `percEcho`/`percVerb`
   and `verb`/`verbSize`; each has vol/cut/clip and a 6-group mute.
 - Keep Khmer percussion rhythmic/ostinato; no melodic lines. Voicing gotcha:
   Gb pad `f` and skank `gb` are a minor second; use f4 or omit f from pad.
+
+## 18 revision
+- Pad was a 5-bar hum: shortened envelopes, lowered volume/verb send, so the
+  texture (hiss/air/field) is audible.
+- Harmony moved to Fm9→Abmaj9→Dbmaj9→Gbmaj9, 2 bars each; jazzier 9ths.
+- Added Moog lead/arp in the spirit of 17 with c4/eb4/g4/bb4/f4/ab4/db5/bb4.
+- Tension gotchas: Ab pad g3 vs ab3, Db pad c4 vs db4, Gb pad f4 vs gb4;
+  fix by octave displacement.

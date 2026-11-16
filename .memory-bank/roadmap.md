@@ -13,7 +13,7 @@ None.
 - khmer/02-skors — 96 BPM percussion/xylophones, real Dirt+VSCO samples, rhythm-only scenes, `@mutes` row, no pads, docs/khmer.
 - khmer/03-skors-ritual — 76 BPM percussion + low xylophone, no high xylo/sralai, rhythm-only scenes, `@mutes` row, fifth/axis gong, no pads, docs/khmer.
 - khmer/04-confluence — 108 BPM mix of 01–03, 12 rhythms, acid bass/arp with pace, strong reverb, mutes, no pads, docs/khmer.
-- techno/18-khmer-dub — 122 BPM dub techno + 30 Khmer percussion channels, Fm9→Gbmaj9, full dub set, shared delay/reverb, docs/dub-techno.
+- techno/18-khmer-dub — 122 BPM dub techno + 30 Khmer percussion channels, Fm9→Abmaj9→Dbmaj9→Gbmaj9, full dub set + Moog lead/arp, shared delay/reverb, docs/dub-techno.
 - Web panel: `// @mutes` row under scenes.
 - Audit tooling and web panel.
 
