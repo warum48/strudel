@@ -255,108 +255,126 @@ const instruments = {
       vol: slider(0.33, 0, 1, 0.01),
       cut: slider(280, 40, 16000, 10),
       clip: slider(0.5, 0.02, 4, 0.01),
+      mute: 'muteSkor',
     },
     skorHighB: {
       name: 'skorHigh B',
       vol: slider(0.3, 0, 1, 0.01),
       cut: slider(240, 40, 16000, 10),
       clip: slider(0.55, 0.02, 4, 0.01),
+      mute: 'muteSkor',
     },
     skorFillA: {
       name: 'skorFill A',
       vol: slider(0.18, 0, 1, 0.01),
       cut: slider(1600, 40, 16000, 10),
       clip: slider(0.22, 0.02, 4, 0.01),
+      mute: 'muteSkor',
     },
     skorFillB: {
       name: 'skorFill B',
       vol: slider(0.16, 0, 1, 0.01),
       cut: slider(2200, 40, 16000, 10),
       clip: slider(0.18, 0.02, 4, 0.01),
+      mute: 'muteSkor',
     },
     samLowA: {
       name: 'samLow A',
       vol: slider(0.34, 0, 1, 0.01),
       cut: slider(520, 40, 16000, 10),
       clip: slider(0.5, 0.02, 4, 0.01),
+      mute: 'muteSampho',
     },
     samLowB: {
       name: 'samLow B',
       vol: slider(0.3, 0, 1, 0.01),
       cut: slider(450, 40, 16000, 10),
       clip: slider(0.55, 0.02, 4, 0.01),
+      mute: 'muteSampho',
     },
     samHighA: {
       name: 'samHigh A',
       vol: slider(0.28, 0, 1, 0.01),
       cut: slider(1400, 40, 16000, 10),
       clip: slider(0.3, 0.02, 4, 0.01),
+      mute: 'muteSampho',
     },
     samHighB: {
       name: 'samHigh B',
       vol: slider(0.26, 0, 1, 0.01),
       cut: slider(1800, 40, 16000, 10),
       clip: slider(0.26, 0.02, 4, 0.01),
+      mute: 'muteSampho',
     },
     samGhostA: {
       name: 'samGhost A',
       vol: slider(0.23, 0, 1, 0.01),
       cut: slider(1800, 40, 16000, 10),
       clip: slider(0.1, 0.02, 4, 0.01),
+      mute: 'muteSampho',
     },
     samGhostB: {
       name: 'samGhost B',
       vol: slider(0.2, 0, 1, 0.01),
       cut: slider(2400, 40, 16000, 10),
       clip: slider(0.08, 0.02, 4, 0.01),
+      mute: 'muteSampho',
     },
     samRimA: {
       name: 'samRim A',
       vol: slider(0.18, 0, 1, 0.01),
       cut: slider(3000, 40, 16000, 10),
       clip: slider(0.06, 0.02, 4, 0.01),
+      mute: 'muteSampho',
     },
     samRimB: {
       name: 'samRim B',
       vol: slider(0.17, 0, 1, 0.01),
       cut: slider(3600, 40, 16000, 10),
       clip: slider(0.05, 0.02, 4, 0.01),
+      mute: 'muteSampho',
     },
     chhingA: {
       name: 'chhing A',
       vol: slider(0.23, 0, 1, 0.01),
       cut: slider(9000, 40, 16000, 10),
       clip: slider(0.09, 0.02, 4, 0.01),
+      mute: 'muteChhing',
     },
     chhingB: {
       name: 'chhing B',
       vol: slider(0.21, 0, 1, 0.01),
       cut: slider(8000, 40, 16000, 10),
       clip: slider(0.07, 0.02, 4, 0.01),
+      mute: 'muteChhing',
     },
     chhingOpenA: {
       name: 'chhingOpen A',
       vol: slider(0.21, 0, 1, 0.01),
       cut: slider(7000, 40, 16000, 10),
       clip: slider(0.28, 0.02, 4, 0.01),
+      mute: 'muteChhing',
     },
     chhingOpenB: {
       name: 'chhingOpen B',
       vol: slider(0.2, 0, 1, 0.01),
       cut: slider(6500, 40, 16000, 10),
       clip: slider(0.32, 0.02, 4, 0.01),
+      mute: 'muteChhing',
     },
     chhingRollA: {
       name: 'chhingRoll A',
       vol: slider(0.11, 0, 1, 0.01),
       cut: slider(12000, 40, 16000, 10),
       clip: slider(0.05, 0.02, 4, 0.01),
+      mute: 'muteChhing',
     },
     chhingRollB: {
       name: 'chhingRoll B',
       vol: slider(0.1, 0, 1, 0.01),
       cut: slider(13000, 40, 16000, 10),
       clip: slider(0.04, 0.02, 4, 0.01),
+      mute: 'muteChhing',
     },
   },
   fx: {
@@ -395,7 +413,39 @@ const phrase = (bars) => m('<' + bars.join(' ') + '>')
 // @roots f f ab ab db db gb gb
 // @scenes {"intro":{"mode":0,"harmony":0},"theme":{"mode":2,"harmony":0}}
 
-const TIMELINE = JSON.parse('[{"at":0,"len":8,"name":"INTRO","values":{"kick":0,"sub":0,"dub":0,"pad":0.5,"stab":0,"organ":0,"skank":0,"horns":0,"moog":0,"arp":0,"perc":0.6}},{"at":8,"len":16,"name":"DUB","values":{"kick":1,"sub":1,"dub":1,"pad":1,"stab":1,"organ":1,"skank":1,"horns":1,"moog":1,"arp":1,"perc":1}},{"at":24,"len":8,"name":"BREAK","values":{"kick":0,"sub":0.3,"dub":0,"pad":0.625,"stab":0,"organ":0,"skank":0,"horns":0,"moog":1,"arp":0.667,"perc":1}},{"at":32,"len":16,"name":"DUB 2","values":{"kick":1,"sub":1,"dub":1.056,"pad":1.125,"stab":1.05,"organ":1.125,"skank":1.143,"horns":1.167,"moog":1.111,"arp":1.111,"perc":1}},{"at":48,"len":16,"name":"OUT","values":{"kick":0,"sub":0,"dub":0,"pad":0.75,"stab":0,"organ":0.5,"skank":0,"horns":0,"moog":0.444,"arp":0.444,"perc":0.55}}]')
+// Таймлайн: at/len в тактах; values — множители к hot-слайдерам.
+const TIMELINE = [
+  {
+    at: 0,
+    len: 8,
+    name: 'INTRO',
+    values: { kick: 0, sub: 0, dub: 0, pad: 0.5, stab: 0, organ: 0, skank: 0, horns: 0, moog: 0, arp: 0, perc: 0.6 },
+  },
+  {
+    at: 8,
+    len: 16,
+    name: 'DUB',
+    values: { kick: 1, sub: 1, dub: 1, pad: 1, stab: 1, organ: 1, skank: 1, horns: 1, moog: 1, arp: 1, perc: 1 },
+  },
+  {
+    at: 24,
+    len: 8,
+    name: 'BREAK',
+    values: { kick: 0, sub: 0.3, dub: 0, pad: 0.625, stab: 0, organ: 0, skank: 0, horns: 0, moog: 1, arp: 0.667, perc: 1 },
+  },
+  {
+    at: 32,
+    len: 16,
+    name: 'DUB 2',
+    values: { kick: 1, sub: 1, dub: 1.056, pad: 1.125, stab: 1.05, organ: 1.125, skank: 1.143, horns: 1.167, moog: 1.111, arp: 1.111, perc: 1 },
+  },
+  {
+    at: 48,
+    len: 16,
+    name: 'OUT',
+    values: { kick: 0, sub: 0, dub: 0, pad: 0.75, stab: 0, organ: 0.5, skank: 0, horns: 0, moog: 0.444, arp: 0.444, perc: 0.55 },
+  },
+]
 
 const TL_TOTAL = Math.max(...TIMELINE.map((s) => s.at + s.len))
 

@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="icon" href="data:," />
+<title>STRUDEL EXTENSION · HELP</title>
+<style>
+  :root {
+    --bg: #0d0f0c; --panel: #151814; --line: #262b22; --text: #e8e8e8;
+    --dim: #7d8776; --accent: #b3d80d; --warn: #e3f07a;
+    --code: #11140f;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--text); }
+  body {
+    font: 14px/1.6 ui-monospace, SFMono-Regular, Menlo, monospace;
+    padding: 28px 20px 80px;
+  }
+  .wrap { max-width: 920px; margin: 0 auto; }
+  header {
+    display: flex; align-items: center; gap: 14px;
+    padding-bottom: 18px; border-bottom: 1px solid var(--line); margin-bottom: 26px;
+  }
+  h1 { margin: 0; font-size: 15px; letter-spacing: 0.14em; text-transform: uppercase; }
+  h2 { font-size: 14px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); margin: 34px 0 10px; }
+  h3 { font-size: 13px; margin: 22px 0 8px; color: var(--text); }
+  p, li { color: #cfd4c8; }
+  a { color: var(--accent); }
+  code { background: var(--code); border: 1px solid var(--line); border-radius: 3px; padding: 1px 5px; }
+  pre { background: var(--code); border: 1px solid var(--line); border-radius: 4px; padding: 12px 14px; overflow: auto; }
+  pre code { border: 0; padding: 0; background: none; }
+  .btn {
+    display: inline-block; color: var(--text); background: #1d211a; border: 1px solid var(--line);
+    border-radius: 3px; padding: 7px 14px; text-decoration: none; white-space: nowrap;
+  }
+  .btn:hover { border-color: #3a4234; }
+  .spacer { flex: 1; }
+  .lead { font-size: 15px; color: #e2e7da; }
+  .note { border-left: 2px solid var(--accent); padding: 6px 12px; background: #121610; margin: 14px 0; }
+  .warn { border-left: 2px solid var(--warn); padding: 6px 12px; background: #151408; margin: 14px 0; }
+  table { border-collapse: collapse; width: 100%; margin: 10px 0; }
+  th, td { text-align: left; vertical-align: top; border-bottom: 1px solid var(--line); padding: 7px 10px; }
+  th { color: var(--dim); font-weight: 600; font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; }
+  .footer { margin-top: 50px; padding-top: 18px; border-top: 1px solid var(--line); display: flex; }
+  .dim { color: var(--dim); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>Strudel Extension · Help</h1>
+  <span class="spacer"></span>
+  <a class="btn" href="/">← Back to home</a>
+</header>
+
+<p class="lead">
+  This page is a <strong>UI extension for <a href="https://strudel.cc/">Strudel</a></strong>:
+  a live-coding editor plus a control surface (mixer, tone controls, switches,
+  scenes, timeline) that is generated from the track source itself. Nothing is
+  configured by hand — if a track follows the conventions below, the whole UI
+  appears automatically.
+</p>
+<p>
+  The panel does not store track metadata. It reads your <code>.js</code> track,
+  finds sliders and a small set of marker comments, and builds the interface
+  from them. That is why a track that “looks fine” can still have an empty UI:
+  the shape of the code matters.
+</p>
+
+<h2>Quick start</h2>
+<pre><code>npm run web                 # http://127.0.0.1:8080/
+# put a file into tracks/&lt;genre&gt;/&lt;name&gt;.js
+# choose it in the top-left dropdown, press PLAY, then Ctrl+Enter</code></pre>
+<p>
+  The server is a plain static file server. It also exposes
+  <code>/api/tracks</code>, so any <code>.js</code> under <code>tracks/</code>
+  shows up in the dropdown automatically.
+</p>
+
+<h2>The track contract</h2>
+<p>A track that gets the full UI needs four things:</p>
+<ol>
+  <li><code>const instruments = { ... }</code> — the mixer/tone tree.</li>
+  <li>Top-level <code>slider(...)</code> calls — global knobs and switches.</li>
+  <li>Optional marker comments — <code>@switches</code>, <code>@scenes</code>, <code>@mutes</code>.</li>
+  <li>Optional <code>const TIMELINE = [...]</code> — the arrangement view.</li>
+</ol>
+
+<h3>1. Instruments and groups</h3>
+<p>
+  The const must be named exactly <code>instruments</code>. Groups are keys at
+  two spaces, instruments at four, parameters at six. Every parameter must be
+  on its own line, and each instrument must have a <code>name</code> and a
+  <code>vol</code>.
+</p>
+<pre><code>const instruments = {
+  drums: {
+    name: 'Drums',
+    kick: {
+      name: 'Kick',
+      vol: slider(0.4, 0, 1, 0.01),      // mixer row
+      cut: slider(180, 60, 4000, 10),    // tone panel
+      decay: slider(0.3, 0.05, 1, 0.01),
+    },
+    hat: {
+      name: 'Hats',
+      vol: slider(0.2, 0, 1, 0.01),
+      cut: slider(9000, 800, 16000, 100),
+    },
+  },
+  low: {
+    name: 'Low',
+    bass: {
+      name: 'Bass',
+      vol: slider(0.5, 0, 1, 0.01),
+      cut: slider(80, 40, 220, 1),
+    },
+  },
+}
+const { drums, low } = instruments</code></pre>
+<div class="warn">
+  Do not write instruments inline on one line
+  (<code>kick: { name: 'Kick', vol: slider(...) }</code>).
+  The scanner walks line structure and will miss those sliders.
+</div>
+<p>Wire every parameter into sound; otherwise the knob is dead:</p>
+<pre><code>$: s('bd')
+  .gain(drums.kick.vol)
+  .lpf(drums.kick.cut)
+  .decay(drums.kick.decay)</code></pre>
+<p>
+  <code>vol</code> becomes the mixer volume and the Mute/Solo target. All other
+  parameters appear in the <em>Tone</em> column, grouped by group and instrument.
+</p>
+
+<h3>2. Sliders, globals and switches</h3>
+<p>
+  A slider is a normal Strudel slider: <code>slider(value, min, max, step)</code>.
+  The first argument must be a numeric literal — the panel rewrites that literal
+  when you drag, so expressions are not supported.
+</p>
+<pre><code>const verb = slider(0.4, 0, 1, 0.01)   // global knob (no instruments.* path)</code></pre>
+<p>
+  A top-level slider with <code>min: 0</code> and <code>step: 1</code> is drawn
+  as a <strong>switch</strong>. Give it labels with a marker; the marker key must
+  match the variable name:
+</p>
+<pre><code>// @switches mode=boom,break,half,roll harmony=quartal,ninth bass=user,roll
+const mode = slider(0, 0, 3, 1)
+const harmony = slider(0, 0, 1, 1)
+const bass = slider(0, 0, 1, 1)</code></pre>
+<p>
+  Values are indices (0, 1, 2…). Use them to pick patterns:
+</p>
+<pre><code>const words = note('e2 e2 f2 g2')
+const picked = mode.pick([
+  m('x ~ x x ~ x x ~'),
+  m('~ x x ~ x ~ x x'),
+])
+$: s('bd').struct(picked)
+
+// or gate layers:
+const leadOn = harmony.fmap((v) => (v === 1 ? 1 : 0))
+.gain(keys.lead.vol.mul(leadOn))</code></pre>
+
+<h3>3. Scenes</h3>
+<p>
+  Scenes are presets for knob values. They live in a comment as JSON. Paths are
+  either a top-level slider name or <code>group.instrument.param</code>.
+</p>
+<pre><code>// @scenes {"intro":{"mode":2,"harmony":0,"drums.kick.vol":0,"low.bass.vol":0.2},"theme":{"mode":1,"harmony":1,"drums.kick.vol":0.4,"low.bass.vol":0.5}}</code></pre>
+<p>
+  The scene buttons write those values into the document and re-evaluate the
+  track. EXPORT downloads the current slider state in the same format.
+</p>
+
+<h3>4. Mutes</h3>
+<p>
+  <strong>M</strong> and <strong>S</strong> exist for every instrument with a
+  <code>vol</code>; they are handled by the panel (base volume is kept, the
+  engine receives an effective value). No track code is needed.
+</p>
+<p>
+  <strong>G</strong> is a group mute. Declare it in a marker and link instruments
+  to it with a <code>mute</code> field:
+</p>
+<pre><code>// @mutes muteDrums,muteKeys
+const muteDrums = slider(0, 0, 1, 1)
+const muteKeys = slider(0, 0, 1, 1)
+const onDrums = muteDrums.fmap((v) => 1 - v)
+
+// inside the instrument:
+kick: {
+  name: 'Kick',
+  mute: 'muteDrums',
+  vol: slider(0.4, 0, 1, 0.01),
+}
+
+// wire it:
+.gain(drums.kick.vol.mul(onDrums))</code></pre>
+<div class="note">
+  G-mutes are separate from M/S and are written into the document (0/1), so they
+  also survive re-evaluation.
+</div>
+
+<h3>5. Timeline</h3>
+<p>
+  The timeline is optional. It is shown when the track contains a literal
+  <code>const TIMELINE = [...]</code>. Sections are contiguous, measured in bars,
+  and <code>values</code> are multipliers applied to gains (or to any parameter
+  you choose).
+</p>
+<pre><code>const TIMELINE = [
+  { at: 0,  len: 8,  name: 'INTRO', values: { kick: 1, bass: 0, pad: 1 } },
+  { at: 8,  len: 16, name: 'DROP',  values: { kick: 1, bass: 1, pad: 1 } },
+  { at: 24, len: 8,  name: 'OUTRO', values: { kick: 0, bass: 0, pad: 1 } },
+]
+const TL_TOTAL = Math.max(...TIMELINE.map((s) => s.at + s.len))
+
+const tlCurve = (key) => {
+  let last = 0
+  const segs = []
+  for (let i = 0; i &lt; TIMELINE.length; i++) {
+    const sec = TIMELINE[i]
+    if (Object.prototype.hasOwnProperty.call(sec.values, key)) last = sec.values[key]
+    const next = i + 1 &lt; TIMELINE.length ? TIMELINE[i + 1].at : TL_TOTAL
+    if (next - sec.at &gt; 0) segs.push([next - sec.at, pure(last)])
+  }
+  return arrange(...segs)
+}
+
+// use it in gains:
+.gain(drums.kick.vol.mul(tlCurve('kick')))</code></pre>
+<p>
+  The panel draws the sections, lets you edit levels in the inspector, and
+  re-evaluates on APPLY. LOOP loops the arrangement; STOP stops playback.
+</p>
+
+<h3>6. LOOP / SONG</h3>
+<p>
+  A common pattern is a <code>song</code> switch that bypasses the timeline in
+  LOOP and uses it in SONG:
+</p>
+<pre><code>// @switches song=loop,song
+const song = slider(0, 0, 1, 1)
+const songGate = song.fmap((v) => (v &gt; 0.5 ? 1 : 0))
+const loopGate = song.fmap((v) => (v &gt; 0.5 ? 0 : 1))
+const tlOr = (key, loopLevel = pure(1)) =>
+  tlCurve(key).mul(songGate).add(loopLevel.mul(loopGate))
+
+.gain(drums.kick.vol.mul(tlOr('kick')))                    // 1 in LOOP
+.gain(vox.quote.vol.mul(tlOr('vox', pure(0))))             // off in LOOP</code></pre>
+
+<h3>7. Samples</h3>
+<p>
+  Load sample maps only in the browser, so headless checks still run:
+</p>
+<pre><code>if (typeof samples === 'function') {
+  samples({
+    bd: ['bd/11_bd_mot4i.wav'],
+    hh: ['hh/10_hh_switchangel.wav'],
+  }, 'https://cdn.jsdelivr.net/gh/tidalcycles/uzu-drumkit@main/')
+
+  // local files under samples/ are served by the same static server:
+  samples({ quote: ['samples/de-quote/kafka.wav'] }, './')
+}</code></pre>
+<p>
+  Prefer jsDelivr or local files over <code>raw.githubusercontent.com</code>:
+  raw GitHub returns 503 often enough to look like “some samples do not load”.
+</p>
+
+<h2>Checklist</h2>
+<table>
+  <tr><th>UI element</th><th>What the track must contain</th></tr>
+  <tr><td>Mixer rows + M/S</td><td><code>const instruments</code>, one <code>vol</code> per instrument, multi-line objects</td></tr>
+  <tr><td>Tone panel</td><td>Extra params after <code>vol</code> and wired into the pattern</td></tr>
+  <tr><td>Switch row</td><td>Top-level slider, <code>min 0</code>, <code>step 1</code>, name listed in <code>@switches</code></td></tr>
+  <tr><td>Scenes</td><td><code>// @scenes { ... }</code> with valid knob paths</td></tr>
+  <tr><td>Group mutes (G)</td><td><code>// @mutes ...</code> + <code>mute: 'name'</code> + gain multiply by <code>(1 - name)</code></td></tr>
+  <tr><td>Timeline</td><td>Literal <code>const TIMELINE = [...]</code> + <code>tlCurve()</code> in gains</td></tr>
+  <tr><td>Any sound at all</td><td>Patterns actually reach <code>sound</code>/<code>note</code> and are not gated to zero</td></tr>
+</table>
+
+<h2>Debugging an empty UI</h2>
+<ul>
+  <li>Open the browser console and look for <code>panel: N slider( … M widgets</code> — a mismatch means the source scanner lost a slider.</li>
+  <li>Check that <code>instruments</code> is spelled exactly and objects are multi-line.</li>
+  <li>Check that every <code>@switches</code> key matches the slider variable name.</li>
+  <li>Check that <code>TIMELINE</code> is a literal array (no spreads, no helper calls inside it).</li>
+  <li>If the UI works but the sound is silent, check mute/solo, <code>vol</code>, and timeline values.</li>
+</ul>
+
+<h2>Optional headless checks</h2>
+<pre><code>npm run verify  -- tracks/techno/22-dark-trance-160.js
+npm run tension -- tracks/trip-hop/02-acid-jazz-v2.js
+npm run doubles -- tracks/techno/22-dark-trance-160.js
+npm run cpu     -- tracks/techno/22-dark-trance-160.js</code></pre>
+<p class="dim">
+  These scripts are optional. They check parseability, harmonic friction,
+  duplicate hits and worklet load — useful, but the track is not required to
+  pass any particular style rule.
+</p>
+
+<div class="footer">
+  <a class="btn" href="/">← Back to home</a>
+  <span class="spacer"></span>
+  <a class="btn" href="https://strudel.cc/" target="_blank" rel="noreferrer">Strudel ↗</a>
+</div>
+
+</div>
+</body>
+</html>

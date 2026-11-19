@@ -189,6 +189,12 @@ window.addEventListener('message', (e) => {
   if (ui) {
     ui.input.value = d.value;
     ui.out.textContent = fmt(d.value);
+    // Крутили виджет в редакторе — это и есть новая base-громкость.
+    // Посты самой панели (mute/solo) помечены internal и base не трогают.
+    if (!d.internal && ui.knob && ui.knob.name === 'vol') {
+      ui.knob.value = d.value;
+      ui.knob.base = d.value;
+    }
   }
 });
 
@@ -459,6 +465,21 @@ function scanMuteNames(src) {
 }
 let muteNames = new Set();
 
+// Трек может связать инструмент с групповым mute-слайдером:
+//   skorHighA: { ..., mute: 'muteSkor' }
+// Панель тогда рисует G рядом с M/S, а верхний ряд @mutes скрывает.
+function scanInstrumentMutes(src) {
+  const out = new Map();
+  const re = /^ {4}(\w+): \{([\s\S]*?)^ {4}\},/gm;
+  let m;
+  while ((m = re.exec(src))) {
+    const mm = /^\s{6}mute:\s*'([^']+)'/m.exec(m[2]);
+    if (mm) out.set(m[1], mm[1]);
+  }
+  return out;
+}
+let instrumentMutes = new Map();
+
 // SCENES — трек может объявить два пресета прямо в комментарии:
 //   // @scenes {"intro":{...},"theme":{...}}
 // Ключи — пути дерева (`drums.kick.vol`) или имена глобальных ручек
@@ -496,8 +517,9 @@ let timelineTimer = null;
 let timelineBar = 0;
 let timelineLoop = true;
 let pendingSeek = null;
-const muted = new Set();
 const soloed = new Set();
+const muted = new Set();
+let defaultMutesApplied = false;
 const knobByAnchor = new Map(); // widget id → { input, out }
 const openState = new Map(); // 'group' / 'group.inst' → свёрнуто ли
 
@@ -508,6 +530,7 @@ function buildKnobs() {
   switchCaps = scanSwitchCaps(src);
   padNames = scanPadNames(src);
   muteNames = scanMuteNames(src);
+  instrumentMutes = scanInstrumentMutes(src);
   timeline = scanTimeline(src);
   if (timelineSel >= timeline.length) timelineSel = timeline.length - 1;
   scenes = importedScenes || scanScenes(src);
@@ -531,15 +554,19 @@ function buildKnobs() {
       idx: i,
       path,
       name,
-      anchor: w.from,
+      anchor: w.originalFrom ?? w.from,
       min: w.min,
       max: w.max,
       step: w.step,
       value: Number(w.value),
+      base: Number(w.value),   // последняя «человеческая» громкость; mute её не трогает
     });
   }
   renderTimeline();
   render();
+  if (!defaultMutesApplied && /^[ \t]*\/\/[ \t]*@defaultMutes/m.test(src)) {
+    applyDefaultMutes();
+  }
 }
 
 function render() {
@@ -653,6 +680,7 @@ function renderPads(list) {
 }
 
 const cap_ = (s) => s.charAt(0).toUpperCase() + s.slice(1);
+const MUTE_COLORS = ['#e06c5b', '#7fb0ff', '#e3f07a', '#c792ea', '#7bd1a8', '#f2a65a'];
 
 function pressPadAt(i, on) {
   const p = padButtons.get(i);
@@ -668,6 +696,9 @@ function pressPadAt(i, on) {
 function renderMutes(list) {
   const root = $('mutes');
   root.innerHTML = '';
+  const linked = new Set(instrumentMutes.values());
+  const allLinked = list.length > 0 && list.every((k) => linked.has(k.name));
+  root.style.display = allLinked ? 'none' : '';
   if (!list.length) return;
   const cap = document.createElement('span');
   cap.className = 'cap';
@@ -703,19 +734,61 @@ function renderMutes(list) {
 const TL_LANES = ['kick', 'sub', 'dub', 'pad', 'stab', 'organ', 'skank', 'horns', 'moog', 'arp', 'perc'];
 
 function timelineLiteral(src) {
-  const m = /const\s+TIMELINE\s*=\s*JSON\.parse\(\s*'((?:[^'\\]|\\.)*)'\s*\)/.exec(src);
+  const m = /const\s+TIMELINE\s*=\s*/.exec(src);
   if (!m) return null;
-  const raw = m[1];
-  const json = raw.replace(/\\'/g, "'").replace(/\\\\/g, '\\');
-  const start = m.index + m[0].indexOf("'") + 1;
-  return { start, end: start + raw.length, json };
+  const start = m.index + m[0].length;
+  if (src[start] !== '[') return null;
+  let depth = 0;
+  let inStr = false;
+  let quote = '';
+  let esc = false;
+  for (let i = start; i < src.length; i++) {
+    const c = src[i];
+    if (inStr) {
+      if (esc) esc = false;
+      else if (c === '\\') esc = true;
+      else if (c === quote) inStr = false;
+      continue;
+    }
+    if (c === '"' || c === "'" || c === '`') { inStr = true; quote = c; continue; }
+    if (c === '[') depth++;
+    else if (c === ']') {
+      depth--;
+      if (depth === 0) return { start, end: i + 1, json: src.slice(start, i + 1) };
+    }
+  }
+  return null;
+}
+
+function tlQuote(v) {
+  return "'" + String(v).replace(/\\/g, '\\\\').replace(/'/g, "\\'") + "'";
+}
+
+function formatTimelineLiteral() {
+  const lines = ['['];
+  for (const sec of timeline) {
+    lines.push('  {');
+    lines.push(`    at: ${sec.at},`);
+    lines.push(`    len: ${sec.length},`);
+    lines.push(`    name: ${tlQuote(sec.name)},`);
+    const vals = Object.entries(sec.values || {})
+      .map(([k, v]) => `${k}: ${v}`)
+      .join(', ');
+    lines.push(`    values: { ${vals} },`);
+    lines.push('  },');
+  }
+  lines.push(']');
+  return lines.join('\n');
 }
 
 function scanTimeline(src) {
   let arr = null;
   const lit = timelineLiteral(src);
   if (lit) {
-    try { arr = JSON.parse(lit.json); } catch { arr = null; }
+    try { arr = Function('"use strict"; return (' + lit.json + ')')(); } catch { arr = null; }
+    if (!Array.isArray(arr)) {
+      try { arr = JSON.parse(lit.json); } catch { arr = null; }
+    }
   }
   if (!Array.isArray(arr)) {
     const line = /^[ \t]*\/\/[ \t]*@timeline[ \t]+(.+)$/m.exec(src);
@@ -995,11 +1068,11 @@ function writeTimeline() {
     values: s.values,
   }));
   const json = JSON.stringify(data);
-  const escaped = json.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+  const literal = formatTimelineLiteral();
   const src = mirror.editor.state.doc.toString();
   const lit = timelineLiteral(src);
   if (lit) {
-    mirror.editor.dispatch({ changes: { from: lit.start, to: lit.end, insert: escaped } });
+    mirror.editor.dispatch({ changes: { from: lit.start, to: lit.end, insert: literal } });
   } else {
     const m = /^([ \t]*\/\/[ \t]*@timeline[ \t]+)(.*)$/m.exec(src);
     if (m) {
@@ -1008,7 +1081,7 @@ function writeTimeline() {
     } else {
       const c = /^.*setcpm\(.*\).*$/m.exec(src);
       const pos = c ? c.index + c[0].length : 0;
-      mirror.editor.dispatch({ changes: { from: pos, to: pos, insert: `\nconst TIMELINE = JSON.parse('${escaped}')\n` } });
+      mirror.editor.dispatch({ changes: { from: pos, to: pos, insert: `\nconst TIMELINE = ${literal}\n` } });
     }
   }
   setStatus('timeline saved — Ctrl+Enter or APPLY');
@@ -1235,14 +1308,14 @@ function renderMixer(groups) {
       const id = `${g}.${inst}`;
       const tools = document.createElement('span');
       tools.className = 'mx-tools';
-      for (const [kind, label, set, cls] of [
-        ['m', 'M', muted, 'm'],
-        ['s', 'S', soloed, 's'],
+      for (const [label, set, cls] of [
+        ['M', muted, 'm'],
+        ['S', soloed, 's'],
       ]) {
         const b = document.createElement('button');
         b.type = 'button';
         b.textContent = label;
-        b.title = kind === 'm' ? 'mute instrument' : 'solo instrument';
+        b.title = cls === 'm' ? 'mute instrument' : 'solo instrument';
         b.classList.add(cls);
         b.classList.toggle('on', set.has(id));
         b.addEventListener('click', (e) => {
@@ -1253,6 +1326,32 @@ function renderMixer(groups) {
           applyMixerState();
         });
         tools.appendChild(b);
+      }
+      const gm = instrumentMutes.get(inst);
+      if (gm) {
+        const gmKnob = knobs.find((k) => k.path.length === 0 && k.name === gm);
+        if (gmKnob) {
+          const b = document.createElement('button');
+          b.type = 'button';
+          b.className = 'g';
+          b.dataset.gmute = gm;
+          b.textContent = 'G';
+          b.title = `group mute: ${gm}`;
+          const groups2 = [...new Set(instrumentMutes.values())].sort();
+          b.style.setProperty('--g', MUTE_COLORS[groups2.indexOf(gm) % MUTE_COLORS.length]);
+          const paint = () => b.classList.toggle('on', Number(gmKnob.value) > 0.5);
+          paint();
+          b.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const next = Number(gmKnob.value) > 0.5 ? gmKnob.min : gmKnob.max;
+            gmKnob.value = next;
+            setKnob(gmKnob, next);
+            document
+              .querySelectorAll(`.mx-tools button.g[data-gmute="${gm}"]`)
+              .forEach((x) => x.classList.toggle('on', next > 0.5));
+          });
+          tools.appendChild(b);
+        }
       }
       row.appendChild(tools);
       rows.appendChild(row);
@@ -1324,15 +1423,15 @@ function makeRow(k, label) {
     setKnob(k, v);
   });
   row.append(lab, input, out);
-  knobByAnchor.set('slider_' + k.anchor, { input, out });
+  knobByAnchor.set('slider_' + k.anchor, { input, out, knob: k });
   return row;
 }
 
 const instId = (k) => (k.path.length >= 3 ? `${k.path[0]}.${k.path[1]}` : null);
 
-// Mute/solo живут в панели, не в коде: пишем base в документ, а движку шлём
-// эффективную громкость. Так mute/solo не портят трек и снимаются сразу.
-function effectiveVol(k, base = Number(k.value)) {
+// Mute/solo живут в панели, не в коде: в документе остаётся base-громкость,
+// движку уходит эффективная. Так solo не сбрасывает vol и снимается сразу.
+function effectiveVol(k, base = Number(k.base ?? k.value)) {
   const id = instId(k);
   if (!id) return base;
   if (muted.has(id)) return 0;
@@ -1344,10 +1443,27 @@ function applyMixerState() {
   for (const k of knobs) {
     if (k.name !== 'vol' || k.path.length < 3) continue;
     window.postMessage(
-      { type: 'cm-slider', id: 'slider_' + k.anchor, value: effectiveVol(k) },
+      { type: 'cm-slider', id: 'slider_' + k.anchor, value: effectiveVol(k), internal: true },
       null,
     );
   }
+}
+
+function applyDefaultMutes() {
+  if (defaultMutesApplied) return;
+  const gates = knobs.filter((k) => k.name === 'gate' && k.path.length >= 3);
+  const vols = knobs.filter((k) => k.name === 'vol' && k.path.length >= 3);
+  const targets = [...vols, ...gates];
+  if (!targets.length) return;
+  for (const k of targets.sort((a, b) => b.idx - a.idx)) {
+    if (Number(k.value) !== 0) {
+      k.value = 0;
+      setKnob(k, 0);
+    }
+  }
+  defaultMutesApplied = true;
+  render();
+  setStatus('default: all volumes 0 and muted — raise vol + click M');
 }
 
 // A knob is the same drag a widget gets: the number into the document + a message
@@ -1364,8 +1480,9 @@ function setKnob(k, v) {
       mirror.editor.dispatch({ changes: { from, to: from + head[1].length, insert: fmt(v) } });
     }
   }
-  const out = k.name === 'vol' && k.path.length >= 3 ? effectiveVol(k, Number(v)) : Number(v);
-  window.postMessage({ type: 'cm-slider', id: 'slider_' + k.anchor, value: out }, null);
+  if (k.name === 'vol' && k.path.length >= 3) k.base = Number(v)
+  const out = k.name === 'vol' && k.path.length >= 3 ? effectiveVol(k, Number(v)) : Number(v)
+  window.postMessage({ type: 'cm-slider', id: 'slider_' + k.anchor, value: out, internal: true }, null);
 }
 
 // ── 5. editor theme and visualizer ────────────────────────────────
@@ -1588,8 +1705,9 @@ async function loadTrack(p) {
   setStatus('reading track…');
   const src = await readTrack(p);
   stop(); // старый паттерн глушим: иначе два трека играют разом
-  muted.clear();
   soloed.clear();
+  muted.clear();
+  defaultMutesApplied = false;
   timelineLoop = true;
   pendingSeek = null;
   $('tlLoop')?.classList.add('on');

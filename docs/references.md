@@ -13,6 +13,40 @@
 Справочник по функциям — не по ссылке, а в самом REPL: слева иконка «?» /
 вкладка с функциями, там же живой поиск. Прямой URL отдаёт 403 ботам.
 
+## Транс / техно — первые источники (код и рецепты)
+
+Если нужен жирный транс или техно — сначала сюда. Это короткие рабочие
+треки/рецепты на Strudel, а не статьи:
+
+- https://github.com/DanielTRZ/strudel-trance — один файл `trance.js` (~90
+  строк): `bd*4`, супер-пила стабом, saw-бас 16-ми, райзер, рум/дилей.
+  Отсюда взяты `distort` на бочке и структура слоёв.
+- https://github.com/honcoops/strudel_trance — `TIPS_AND_TRICKS.md` и
+  `examples/`: роллинг-бас, sidechain-пульс, supersaw-лид, дилей/рум,
+  euclid-грув. Самый понятный учебник по трансу на Strudel.
+- https://github.com/frixdk/strudeltechno — `lausfødselsdagstechno.js`:
+  `distort("3:.3")`, `duck("2:3:4")`, `rib`, `arrange` как секвенсор.
+- https://github.com/dotcomdudee/strudel-tracks — `germantechno3/4.js`:
+  `stut`, `perlin`-фильтры, `supersaw` + `hpf`, «немецкое» техно.
+- https://github.com/iemmolo/trance-strudel и
+  https://github.com/mikejcsmith/strudel-basic-trance — маленькие примеры
+  для быстрого старта.
+- https://github.com/terryds/awesome-strudel — индекс: если нужен другой
+  жанр, отсюда ведут ссылки на исходники треков.
+
+### Психоделик-транс: бас
+
+- https://psychedelicisland.com/en/articles/how-to-create-the-perfect-bassline-for-psytrance —
+  классика «KBBB»: кик на доле, бас на трёх 16-х после него.
+- https://lofimonster.com/blog/psytrance-bass-ableton — то же KBBB с разбором
+  сетки и длины нот.
+- https://www.psytrance-blueprint.com/tutorials/triplet-bass/ — триоли/свинг,
+  чтобы прямой 16-й бас не звучал жёстко.
+
+Рецепты, которые реально дают «жир»: 4-on-floor + `distort` + `duck`,
+роллинг-бас 16-ми с `lpenv`/`shape`, `supersaw` с `unison 5-7` и `jux(rev)`,
+райзер из `white` с `hpf(sine…)`, и `perlin` на срезах вместо статики.
+
 ## Форумы и сообщества
 
 - https://club.tidalcycles.org — Tidal Club, главный форум сцены. Tidal, но 90%
@@ -95,7 +129,36 @@ Switch Angel: он считает интервал от предыдущей н�
 - `docs/idm/04-sources.md` — источники и что именно взято.
 - Живой пример: `tracks/idm/01-splinter.js` (136 BPM, glitch/granular).
 
+## Experimental / Buchla
+
+- `docs/experimental/README.md` — серия, 5 пар, как играть, гейты.
+- `docs/experimental/01-buchla.md` — Buchla / West Coast: complex oscillator,
+  FM/AM, waveshaping, LPG/vactrol, 100/200/200e, философия.
+- `docs/experimental/02-track.md` — карта `01-complex-bass`, пары, ручки.
+- `docs/experimental/03-strudel.md` — вейвтейблы, FM/матрица, ducking, грабли.
+- `docs/experimental/04-sources.md` — Wikipedia/SOS/AKWF/Strudel.
+- `tracks/experimental/01-complex-bass.js` — 160 BPM, 5 пар WT+FM, 10
+  осцилляторов, 206 слайдеров, у каждого баса `oct` и `pace`.
+
+## Trip-hop / acid jazz
+
+- `docs/trip-hop/README.md` — характер, гармония (d–eb–bb–f–g–eb–c–d),
+  восемь брейков без выключения слоёв, два голоса Moog, ритм-секция, проверки.
+- `tracks/trip-hop/01-acid-jazz.js` — 84 BPM, 17 дорожек, 73 слайдера,
+  квартовые укладки / 9-13, Moog bass (cut ≤80 + env + glide) и Moog lead
+  (square, LFO, дилей), Rhodes-компинг на восьми рисунках.
+- `tracks/trip-hop/02-acid-jazz-v2.js` — 82 BPM, 24 дорожки, 98 слайдеров:
+  версия 01 как композиция на 96 тактов, TIMELINE-аранжировка, соло-фразы,
+  spark 32-ми, томы/табла/каубелл/ghost/rolls/spot-FX; дабовый бас и три
+  состояния лида (искры / плавно / тема), LOOP/SONG и реальные громкости.
+- Практика жанра: MusicRadar (trip-hop beats; 90 BPM max), Plugg Supply
+  (шаффл 55–65%, два снейра, hip hop tuning), Siesta Audio (Portishead:
+  запись → винил → ресемпл), Wikipedia/AllMusic (acid jazz: грув,
+  длинные композиции), mDecks/VoicingLab (кварты и верхние структуры).
+
 ## Кхмерская музыка
+
+
 
 - `docs/khmer/README.md` — характер, карта пинпета, переключатели, пэды
   (01) и mutes (02), сцены, как играть, гейты.

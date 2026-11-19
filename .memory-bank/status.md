@@ -2,7 +2,7 @@
 
 ## Current Phase
 Track library. Techno 01–18 (+ 17-v2), dnb 01–02, breakcore 01–02,
-IDM 01 and Khmer 01–04 are green.
+IDM 01, Khmer 01–04 and Experimental 01 are green.
 breakcore/01 exists in two variants (chop 4/8/16/32; 16th fragments with no pitch shift).
 breakcore/02 is 200 BPM stems/gabber in F phrygian: parallel dry/wet kick (909 + saturated
 band + noise click), metal ring from a tuned feedback delay, synthesized noise textures with
@@ -31,13 +31,17 @@ scenes, percussion/gongs without melodic xylophones, acid bass + arp with
 techno/18-khmer-dub is 122 BPM dub techno + Khmer percussion: 19 tracks (30
 percussion channels in one bus), 149 sliders, Fm9→Abmaj9→Dbmaj9→Gbmaj9,
 full dub set + Moog lead/arp, 18 Khmer drums through shared delay/reverb,
-native `TIMELINE` 5 sections / 64 bars, APPLY/LOOP/STOP, contiguous sections, click ruler to seek, no melodic Khmer lines.
+native `TIMELINE` 5 sections / 64 bars, APPLY/LOOP/STOP, contiguous sections,
+click ruler to seek, no melodic Khmer lines.
+experimental/01-complex-bass is 160 BPM Buchla-style complex bass: 5 WT+FM
+pairs (10 oscillators), 5 LFOs, hardcore kick, drone/dirt, 12 riffs, per-bass oct/pace, 18 tracks, 206 sliders, dark
+wavetables, FM/AM/waveshaping/ducking, modes clean/grit/fold/scream.
 Reference: `docs/breakcore/`, `docs/idm/` and `docs/khmer/` (RU + EN);
 play guides in `docs/breakcore/10-panel.md`, `docs/idm/README.md` and
 `docs/khmer/README.md`.
 
 ## Key Metrics
-- `npm run verify` — 34 tracks load and run, 0 errors.
+- `npm run verify` — 35 tracks load and run, 0 errors.
 - breakcore/01 (both variants): verify ok, tension clean, gains silent, cpu ≤20/bar, modes 5/5, live ok.
 - breakcore/02: verify ok (20 tracks, 78 sliders), tension clean, gains silent, doubles no collisions,
   cpu ≤19/bar (16/s), modes 5/5, live eval ok (slider sync ok).
@@ -71,7 +75,7 @@ play guides in `docs/breakcore/10-panel.md`, `docs/idm/README.md` and
 - techno/18-khmer-dub: verify ok (19 tracks, 149 sliders, 111 hits on INTRO),
   tension clean, modes 4/4, latch bar 8, gains silent, doubles no collisions,
   cpu 0 on INTRO / 15 per bar (8/s) in DUB, live eval ok; panel timeline e2e:
-  5 sections, native gains at bar 8 = 0.36, add-section writes TIMELINE, 35 MIXER rows with M/S; length edit ripples at; ruler seek works.
+  5 sections, native gains at bar 8 = 0.36, add-section writes TIMELINE, 35 MIXER rows with M/S; 18 G group-mute buttons (color-coded by `mute:` group, top @mutes hidden); length edit ripples at; ruler seek works.
 - Panel scenes e2e (headless Chromium): title `STRUDEL EXTENSION`, v2 90 knobs;
   Intro applies 19/19 values, Theme 22/22, Export reports 90, Import applies 2.
 - `npm run tension` — dnb/01 clean; dnb/02 clean with 62 intentional tritones; dnb/02-v2 clean with 112; techno/16, 17 and 17-v2 clean.
@@ -121,6 +125,8 @@ play guides in `docs/breakcore/10-panel.md`, `docs/idm/README.md` and
   keep the Khmer layers rhythmic, not melodic.
 - Tune techno/18 by ear: 18 percussion channel gains/cuts/clips, percEcho/percVerb,
   stab/organ/skank/horns, Fm/Gb voicings.
+- Tune experimental/01 by ear: WT warp/pos, FM index/ratio, shape, duck,
+  mode grit/fold/scream; keep it dark, not cartoon.
 
 ### 🔮 Horizon
 - A third dnb character (e.g. halftime / autonomic) only as a new file, never as a rewrite of 01/02.

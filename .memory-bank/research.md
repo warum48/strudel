@@ -14,6 +14,7 @@
 | H-009 | A serious/ethnic Khmer percussion track works better with no high melodic lines: low drums, dark chhing, sparse krap, low gong only | ✅ CONFIRMED | register / density / modes / live | 11 tracks, 58 sliders, 40 hits/bar, 0 worklets | khmer/03-skors-ritual | — |
 | H-010 | A mix of Khmer percussion + acid bass/arp can coexist if Khmer layers stay rhythmic and acid is a separate section with `pace` | ✅ CONFIRMED | verify / tension / latch / cpu / live | 16 tracks, 79 sliders, 12 scenes, 16 worklets/bar with acid | khmer/04-confluence | — |
 | H-011 | Dub techno can carry 18 Khmer percussion channels if they share one delay/reverb bus; Fm9→Abmaj9→Dbmaj9→Gbmaj9 voicings avoid tension | ✅ CONFIRMED | tracks / sliders / tension / cpu / live | 19 tracks, 149 sliders, 18 perc channels, 15 worklets/bar | techno/18-khmer-dub | — |
+| H-012 | A Buchla-style complex-bass track with 5 WT+FM pairs can be fat and gritty without cartoon timbres; FM inside the voice, WT scan/ducking between pairs | ✅ CONFIRMED | tracks / sliders / tension / modes / live | 18 tracks, 206 sliders, 106 hits/bar, 112 worklets/bar (150/s at pace 32) | experimental/01-complex-bass; docs/experimental | — |
 
 ## Confirmed Findings
 - LTJ Bukem: breaks at full tempo but mixed back; pads move at quarter speed; melodic bass, not a static sub.
@@ -39,6 +40,7 @@
 - Serious/ethnic Khmer percussion recipe (03): 76 BPM; skor high + sampho low/high/ghost + chhing/open + krap + fills + low kong thom; lower tuning (skor/sam −2), long tails, dark chhing, rare krap; low xylophone only (marimba, octave 0/1/2), no high xylophones/sralai/high melodic lines; scenes rhythm-only; mutes manual; gong fifth/axis latched. Volumes from 01: .33/.34/.28/.23/.23/.21/.19/.18 + gong .22.
 - Mix + acid recipe (04): 108 BPM; SKOR/SAM/CHHING 12 cells each, high/open shifted, ghost/roll `ply`/`degrade`; all Khmer layers ostinato/rhythm, no melodic xylo; acid bass `fast(pace/16)` + acid arp `arp(run(pace))`, `pace` 4…32; `verb` 1.2, `verbSize` 16; 0 worklets without acid, 16/bar with acid.
 - Khmer dub recipe (18): 122 BPM; Fm9→Abmaj9→Dbmaj9→Gbmaj9 (roots f ab db gb); full dub set (kick/hat/rim/click/shaker, sub/dub, pad/stab/organ/skank/horns, hiss/air/field, delay/reverb); 18 Khmer perc channels as one stack through shared delay/reverb; vol/cut/clip per channel; 6 group mutes; no melodic Khmer lines. `tension` clean, 15 worklets/bar; short pad (not a 5-bar hum) + Moog lead/arp in the spirit of 17.
+- Buchla complex-bass recipe (experimental/01): 160 BPM; 5 pairs of dark WT + 2-op FM; LFO scans WT pos/warp and FM index; all basses on orbit 7, kick ducks it via `duckorbit(7)`; each bass has oct 0…4 and pace 4…32; `.shape`/`warp` waveshaping; drone D–A/Ab; modes clean/grit/fold/scream; 12 riffs (one selected riff for all bass layers); hardcore bd*4 kick + sub + hats + sidechain; 18 tracks, 206 sliders, 112 worklets/bar. Wavetable is a sampler source, so cross-layer audio-rate FM is impossible; be explicit.
 
 ## Genre Recipe Library (saved 2026-11-15)
 

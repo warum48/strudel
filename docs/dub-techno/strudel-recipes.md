@@ -351,11 +351,26 @@ $: stack(...percLayers)
 
 ## Native timeline (18)
 
-Таймлайн, который играется в обычном Strudel. Таблица — множители к
-hot-слайдерам; правки в панели применяются по Ctrl+Enter.
+Таймлайн, который играется в обычном Strudel. Таблица — читаемый массив
+объектов; значения — множители к hot-слайдерам. Правки в панели применяются
+по Ctrl+Enter или APPLY.
 
 ```js
-const TIMELINE = JSON.parse('[{"at":0,"len":8,"name":"INTRO","values":{"kick":0}},{"at":8,"len":8,"name":"DUB","values":{"kick":1}}]')
+const TIMELINE = [
+  {
+    at: 0,
+    len: 8,
+    name: 'INTRO',
+    values: { kick: 0, sub: 0, pad: 0.5, perc: 0.6 },
+  },
+  {
+    at: 8,
+    len: 16,
+    name: 'DUB',
+    values: { kick: 1, sub: 1, pad: 1, perc: 1 },
+  },
+]
+
 const TL_TOTAL = Math.max(...TIMELINE.map((s) => s.at + s.len))
 const tlCurve = (key) => {
   let last = 0
@@ -372,5 +387,5 @@ const tlCurve = (key) => {
 $: s("bd*4").gain(drums.kick.vol.mul(tlCurve('kick')))
 ```
 
-Важно: strudel.cc-транспайлер не любит двойные кавычки в JS-коде,
-поэтому JSON лежит в `JSON.parse('…')` с одинарными кавычками.
+Важно: строки в таблице — в **одинарных** кавычках. Транспайлер strudel.cc
+падает на двойных кавычках в JS-коде (`Unexpected string`).

@@ -202,3 +202,52 @@
   cursor hack; visual + audio while playing, pending when stopped).
 - Panel e2e: DUB length 16→20 shifted BREAK 24→28, DUB2 32→36, OUT 48→52;
   seek to bar 7 moved scheduler and playhead.
+- Mixer G buttons: explicit `mute:` field on Khmer instruments maps each channel
+  to muteSkor/muteSampho/muteChhing. G sits next to M/S, colored per group;
+  toggling writes the group mute slider (native/hot). Top @mutes row hides when
+  all group mutes are linked. E2E: 18 G buttons, 3 colors, skor G toggles all 4.
+- Timeline is now a readable multiline `const TIMELINE = [{ at, len, name, values }]`
+  object array (single-quoted strings). Panel parses it with a balanced-bracket
+  extractor + Function, writes it back pretty-printed. Verified live eval and
+  panel reflow; no more one-line JSON string.
+
+## 2026-11-16 — experimental/01-complex-bass
+- Added `tracks/experimental/01-complex-bass.js`: 92 BPM Buchla-style complex
+  bass. 5 pairs = 10 oscillators: wt_dbass+sine, wt_distorted+saw,
+  wt_ebass+square, wt_raw+triangle, wt_bitreduced+sine. 5 control LFOs +
+  drone + dirt; 14 tracks, 148 sliders.
+- FM/AM inside each pair (2-op), WT `wt`/`warp` scanned by LFO, FM voice
+  ducks WT via `duckorbit`; `.shape` waveshaping; modes clean/grit/fold/scream.
+- Dark wavetables only (no flute/birds/vgame); D1…G2 bass, @dark.
+- Docs: `docs/experimental/` (README, Buchla, track, Strudel, sources; RU+EN);
+  README/references/memory bank.
+- Audits: verify 14 tracks / 148 sliders / 34 hits, tension clean (37 deliberate
+  tritones), modes air 4/12/24/28, latch bar 8, gains silent, doubles no
+  collisions, cpu 24/bar (9/s), live ok.
+- Riff pass: replaced per-pair melodic phrases with 12 selectable 16-step
+  acid riffs (acid/roll/dnb/prod/off/oct/stair/two/pedal/stab/skip/crawl).
+  All 10 bass layers play the same `RIFF`; `riff` 0…11 switches the pattern,
+  not timbre. Added shared ACCENT pattern, WT slide, BPM 160. Counts now
+  154 sliders / 96 hits / 90 worklets per bar (60/s).
+- Added hardcore `bd*4` kick on every beat + `sub` body layer; counts now
+  16 tracks / 165 sliders / 104 hits, cpu 102/bar (68/s), live ok.
+- Fixed mute/solo slider IDs: use `w.originalFrom` (the engine's slider id)
+  instead of mapped `w.from`; applyMixerState is forced only on M/S changes,
+  so play no longer sends all volumes / jumps to midpoint. E2E: 13 M buttons,
+  13 unique ids, all values 0, no mid values after PLAY.
+- Added hardcore hats (hh 16ths, oh offbeats) and `sidechain` saw ducking
+  of all WT/FM basses from the 4-on-floor kick. Counts now 18 tracks /
+  191 sliders / 116 hits, cpu 112/bar (75/s). Panel gates make mute remove
+  events; default panel state is all volumes 0 + M on.
+- Added per-bass octave switch `oct` 0…4 (0=as is, 1…4=+1…+4 octaves)
+  to all 10 WT/FM basses; sliders now 201. Defaults 0; live/doubles/cpu pass.
+- Modes now change kick and hats too: 0 quarter hats + 4-on-floor, 1 8th hats,
+  2 broken 16ths, 3 hardcore 16ths + kick only on beat 4 of every 2nd bar.
+  Default mode 0; verify 108 hits. Panel default zero/mute unchanged.
+- Replaced the LFO-saw sidechain with a true one: `duckorbit(7)` on the kick,
+  all 10 WT/FM basses moved to orbit 7, depth = `sidechain`, attack 0.02.
+  Removed per-bass `duck` sliders (201 → 196).
+- Added `pace` 4…32 to each of the 10 basses (`note(RIFF).fast(pace / 16)`;
+  16 = 1×, 4 = 4× slower, 32 = 2× faster; independent per bass). Sliders now
+  206. verify: 18 tracks / 106 hits / 206 sliders; cpu 112/bar (75/s), ~150/s
+  at max pace; doubles/gains/tension/modes/latch/live unchanged.

@@ -15,7 +15,7 @@
     --accent: #b3d80d;
     --warn: #e3f07a;
     --bad: #e06c5b;
-    --mix-w: 258px;
+    --mix-w: 338px;
     --tone-w: 344px;
   }
   * { box-sizing: border-box; }
@@ -54,6 +54,12 @@
     cursor: pointer;
   }
   button:hover { border-color: #3a4234; }
+  a.help {
+    font: inherit; color: var(--text); background: #1d211a;
+    border: 1px solid var(--line); border-radius: 3px;
+    padding: 6px 14px; text-decoration: none; white-space: nowrap;
+  }
+  a.help:hover { border-color: #3a4234; }
   button.on { background: var(--accent); border-color: var(--accent); color: #0d0f0c; font-weight: 700; }
   button.ghost { background: transparent; }
   /* переключатели режимов: те же кнопки, только мелкие */
@@ -152,11 +158,13 @@
   #timeline #tlAdd, #timeline #tlApply, #timeline #tlLoop, #timeline #tlStop { padding: 3px 8px; font-size: 10px; }
   #timeline #tlLoop.on { background: var(--accent); border-color: var(--accent); color: #0d0f0c; font-weight: 700; }
   #timeline #tlStop { border-color: var(--bad); color: #f0b1a8; }
-  .row.is-vol { grid-template-columns: 74px 1fr 42px 46px; }
-  .mx-tools { display: flex; gap: 2px; justify-content: flex-end; }
+  .row.is-vol { grid-template-columns: 74px 1fr 42px 66px; }
+  .mx-tools { display: flex; gap: 2px; justify-content: flex-start; }
   .mx-tools button { padding: 1px 4px; font-size: 9px; line-height: 1.2; min-width: 18px; }
   .mx-tools button.on.m { background: var(--bad); border-color: var(--bad); color: #0d0f0c; font-weight: 700; }
   .mx-tools button.on.s { background: var(--warn); border-color: var(--warn); color: #0d0f0c; font-weight: 700; }
+  .mx-tools button.g { border-color: var(--g); color: var(--g); }
+  .mx-tools button.g.on { background: var(--g); border-color: var(--g); color: #0d0f0c; font-weight: 700; }
   #timeline .tl-body { display: flex; gap: 10px; padding: 0 12px 10px; align-items: stretch; }
   #timeline .tl-track {
     flex: 1;
@@ -421,6 +429,7 @@
   <button id="stop" class="ghost">STOP</button>
   <button id="samples" class="ghost" title="download and decode every sample used by this track">SAMPLES</button>
   <span id="sampleStatus"></span>
+  <a id="help" class="help" href="/web/help.html" title="how to make a track work with this UI">HELP</a>
 </header>
 
 <!-- ── SCENES / JSON: первая зона — пресеты, вторая — обмен JSON ── -->

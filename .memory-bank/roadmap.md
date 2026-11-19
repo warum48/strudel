@@ -14,6 +14,7 @@ None.
 - khmer/03-skors-ritual — 76 BPM percussion + low xylophone, no high xylo/sralai, rhythm-only scenes, `@mutes` row, fifth/axis gong, no pads, docs/khmer.
 - khmer/04-confluence — 108 BPM mix of 01–03, 12 rhythms, acid bass/arp with pace, strong reverb, mutes, no pads, docs/khmer.
 - techno/18-khmer-dub — 122 BPM dub techno + 18 Khmer percussion channels, Fm9→Abmaj9→Dbmaj9→Gbmaj9, full dub set + Moog lead/arp, native `TIMELINE`, shared delay/reverb, docs/dub-techno.
+- experimental/01-complex-bass — 160 BPM Buchla-style complex bass, 5 WT+FM pairs, 10 oscillators, 12 riffs, hardcore kick, dark wavetables, docs/experimental.
 - Web panel: `// @mutes` row under scenes.
 - Audit tooling and web panel.
 
@@ -28,6 +29,7 @@ None.
 - Tune khmer/03 by ear: skor/sam pitch and decay, chhing darkness, gong decay; keep it sparse and low.
 - Tune khmer/04 by ear: 12 scene rhythms, acid cut/res/env/pace, verb/verbSize.
 - Tune techno/18 by ear: 18 percussion channel gains/cuts/clips, percEcho/percVerb, stab/organ/skank/horns.
+- Tune experimental/01 by ear: WT warp/pos, FM index/ratio, shape, duck, modes.
 
 ## Horizon
 - Halftime / autonomic character as a separate track.
