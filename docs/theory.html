@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="icon" href="data:," />
+<title>Theory · Strudel</title>
+<style>
+  :root { --bg:#0d0f0c; --panel:#151814; --line:#262b22; --text:#e8e8e8;
+          --dim:#7d8776; --accent:#b3d80d; --warn:#e3f07a; --code:#11140f; }
+  * { box-sizing:border-box; }
+  html,body { margin:0; background:var(--bg); color:var(--text); }
+  body { font:14px/1.65 ui-monospace,SFMono-Regular,Menlo,monospace; padding:28px 20px 80px; }
+  .wrap { max-width:980px; margin:0 auto; }
+  h1 { font-size:16px; letter-spacing:.12em; text-transform:uppercase; margin:0 0 6px; }
+  h2 { font-size:14px; letter-spacing:.08em; text-transform:uppercase; color:var(--accent); margin:38px 0 10px; }
+  h3 { font-size:13px; margin:24px 0 8px; }
+  p,li { color:#cfd4c8; }
+  a { color:var(--accent); }
+  code { background:var(--code); border:1px solid var(--line); border-radius:3px; padding:1px 5px; }
+  pre { background:var(--code); border:1px solid var(--line); border-radius:4px; padding:12px 14px; overflow:auto; }
+  pre code { border:0; padding:0; background:none; }
+  .lead { font-size:15px; color:#e2e7da; }
+  .note { border-left:2px solid var(--accent); padding:6px 12px; background:#121610; margin:14px 0; }
+  .warn { border-left:2px solid var(--warn); padding:6px 12px; background:#151408; margin:14px 0; }
+  .dim { color:var(--dim); }
+  table { border-collapse:collapse; width:100%; margin:12px 0; }
+  th,td { text-align:left; vertical-align:top; border-bottom:1px solid var(--line); padding:7px 10px; }
+  th { color:var(--dim); font-size:12px; letter-spacing:.06em; text-transform:uppercase; }
+  .toc { border:1px solid var(--line); border-radius:4px; padding:12px 16px; background:var(--panel); }
+  .toc a { display:block; padding:2px 0; text-decoration:none; }
+  .toc a:hover { text-decoration:underline; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>Theory · Strudel от А до Я</h1>
+<p class="lead">
+  Конспект всего, что мы разбирали: mini-notation, ноты и сэмплы, слайдеры,
+  фильтры, структура трека, таймлайн и грануляр. Это не замена официальной
+  документации, а сжатая теория с примерами.
+</p>
+<p>
+  Официальная теория и справочник:
+  <a href="https://strudel.cc/learn/mini-notation/" target="_blank" rel="noreferrer">strudel.cc/learn/mini-notation</a>
+  (mini-notation), <a href="https://strudel.cc/learn/" target="_blank" rel="noreferrer">strudel.cc/learn</a>
+  (оглавление), <a href="https://strudel.cc/workshop/" target="_blank" rel="noreferrer">workshop</a>.
+</p>
+
+<div class="toc">
+  <a href="#cycle">1. Цикл = такт</a>
+  <a href="#mini">2. Mini-notation: ритм и группировка</a>
+  <a href="#chords">3. Аккорд, арпеджио и почему «не звучит как аккорд»</a>
+  <a href="#sound">4. note / s / sound: питч и источник звука</a>
+  <a href="#sliders">5. Слайдеры: const и inline</a>
+  <a href="#filters">6. Фильтры и катофф</a>
+  <a href="#stack">7. stack, $: и слои</a>
+  <a href="#structure">8. Форма: arrange и TIMELINE</a>
+  <a href="#granular">9. Грануляр: striate / chop</a>
+  <a href="#space">10. Реверб, дилей, jux</a>
+  <a href="#kick">11. Бочка: пропуски, «и» 4-й, every/mask</a>
+  <a href="#loop">12. LOOP / SONG</a>
+  <a href="#samples">13. Сэмплы и почему «не грузится»</a>
+</div>
+
+<h2 id="cycle">1. Цикл = такт</h2>
+<p>
+  В Strudel всё живёт в <strong>циклах</strong>. В наших треках цикл = один такт
+  (4/4), потому что стоит <code>setcpm(BPM / 4)</code> или <code>setcpm(160/4)</code>.
+  Если поменять на <code>setcpm(BPM)</code>, цикл станет 4 такта. Отсюда все
+  «на такт» и «раз в 4 такта».
+</p>
+<pre><code>setcpm(140 / 4)   // 140 BPM, 1 цикл = 1 такт</code></pre>
+
+<h2 id="mini">2. Mini-notation: ритм и группировка</h2>
+<table>
+  <tr><th>Запись</th><th>Что делает</th></tr>
+  <tr><td><code>a b c</code></td><td>Три события внутри одного цикла, поровну.</td></tr>
+  <tr><td><code>~</code></td><td>Пауза (rest).</td></tr>
+  <tr><td><code>a*4</code></td><td>Повторить 4 раза за цикл (ускорить).</td></tr>
+  <tr><td><code>a/2</code></td><td>Замедлить: событие на 2 цикла.</td></tr>
+  <tr><td><code>[a b]</code></td><td>Сгруппировать несколько шагов в один элемент.</td></tr>
+  <tr><td><code>[a,b]</code></td><td>Одновременно (аккорд).</td></tr>
+  <tr><td><code>&lt;a b&gt;</code></td><td>Чередование: по одному элементу за цикл.</td></tr>
+  <tr><td><code>a@2</code></td><td>Длительность ×2 (вес шага).</td></tr>
+  <tr><td><code>a!</code></td><td>Повторить событие.</td></tr>
+</table>
+<p>
+  Ключевое: <strong>пробел = последовательность, запятая = одновременность,
+  угловые скобки = переключение по циклам</strong>.
+</p>
+<pre><code>note("d5 ~ f5 ~ a5 ~ f5 ~")       // 8 восьмых в одном такте, с паузами
+
+note("&lt;d4 f4 a4&gt;")               // такт 1: d4, такт 2: f4, такт 3: a4
+
+note("&lt;[c4 ~ ~ ~] [g3 ~ b3 ~]&gt;")  // две фразы по 4 шага, меняются по тактам</code></pre>
+<div class="note">
+  Квадратные скобки в <code>&lt;...&gt;</code> нужны, чтобы чередовать не отдельные
+  ноты, а целые фразы. Без скобок <code>&lt;c4 ~ ~ ~ g3 ~ b3 ~&gt;</code> — это
+  8 циклов по одному событию.
+</div>
+
+<h2 id="chords">3. Аккорд, арпеджио и почему «не звучит как аккорд»</h2>
+<p>
+  <code>[c4 ~ ~ ~]</code> — это <strong>последовательность</strong> (c4, потом три
+  паузы), а не аккорд. Аккорд — запятые:
+</p>
+<pre><code>note("[c4,e4,g4]")                 // три ноты одновременно, весь такт
+note("[a3 c4 ~ e4]")               // последовательность: a3, c4, пауза, e4
+note("&lt;[c4,e4,g4] [g3,b3,d4]&gt;")  // аккорд меняется по тактам</code></pre>
+<p>
+  Если слышишь арпеджио — значит внутри группы стоят пробелы, а не запятые.
+  Для аккордового символа есть <code>chord("Cmaj7")</code>, но с ручными нотами
+  проще и предсказуемее.
+</p>
+
+<h2 id="sound">4. note / s / sound: питч и источник звука</h2>
+<ul>
+  <li><code>note("c4 e4")</code> — задаёт высоту.</li>
+  <li><code>s("bd*4")</code> — источник: сэмпл, синтезатор или шум.</li>
+  <li><code>sound</code> — тот же <code>s</code>, просто полная запись.</li>
+</ul>
+<pre><code>s("bd*4")                          // сэмпл kick, 4 удара
+note("d2*8").sound("sawtooth")     // пила играет ноту d2
+note("d2*8").s("sawtooth")         // то же самое</code></pre>
+<p>
+  Источники: <code>sine</code>, <code>triangle</code>, <code>square</code>,
+  <code>sawtooth</code>, <code>supersaw</code>, шумы <code>white</code> /
+  <code>pink</code>; сэмплы — <code>bd</code>, <code>sd</code>, <code>hh</code>,
+  <code>oh</code>, <code>cp</code>, <code>rim</code>, <code>sh</code> (если
+  загружены через <code>samples(...)</code>).
+</p>
+
+<h2 id="sliders">5. Слайдеры: const и inline</h2>
+<p>Синтаксис: <code>slider(value, min, max, step)</code> — четыре числа.</p>
+<pre><code>const cut = slider(810, 100, 5000, 10)
+
+// в const — один слайдер, можно переиспользовать по имени
+note("c2*8").s("sawtooth").lpf(cut)
+
+// inline — отдельная ручка прямо в цепочке, тоже живая
+note("c5 e5 g5").s("sawtooth").lpf(slider(3000, 300, 9000, 20))</code></pre>
+<table>
+  <tr><th></th><th>const</th><th>inline</th></tr>
+  <tr><td>Имя в UI</td><td>есть (<code>cut</code>)</td><td>техническое</td></tr>
+  <tr><td>Переиспользовать</td><td>да</td><td>нет, каждый вызов — своя ручка</td></tr>
+  <tr><td>Для быстрых набросков</td><td>—</td><td>удобно</td></tr>
+</table>
+<div class="warn">
+  Первый аргумент — только литерал-число. Выражения (<code>600 * 2</code>) не
+  поддерживаются: панель перезаписывает именно это число. Если слайдер «не
+  рисуется», смотри консоль: чаще всего <code>ReferenceError</code> (например,
+  используешь <code>leadCut</code>, который не объявлен).
+</div>
+
+<h2 id="filters">6. Фильтры и катофф</h2>
+<pre><code>.lpf(600)        // low-pass cutoff, Гц
+.lpq(8)          // resonance
+.hpf(200)        // high-pass
+.lpenv(3)        // огибающая фильтра в октавах
+.lpa(0.004)      // attack огибающей
+.lpd(0.12)       // decay
+.lpsustain(0.1)  // sustain</code></pre>
+<p>
+  У баса катофф часто держат низко (у нас правило ≤80 по умолчанию), а «яркость»
+  дают огибающей (<code>lpenv</code>), а не ручкой. Медленный LFO на срез —
+  <code>lpdepth</code>/<code>lpsync</code>.
+</p>
+
+<h3>Медленное LFO на фильтр</h3>
+<p>
+  Два способа. Первый — LFO поверх базового среза (ручка остаётся базой):
+</p>
+<pre><code>.lpf(600).lpq(8)
+.lpdepth(1.2)     // глубина: множитель к lpf (600 ± 1.2×600)
+.lpsync(0.25)     // скорость: 0.25 цикла LFO за цикл = 1 качель на 4 такта
+.lpdc(0)          // униполярно: только открывает вверх, не режет ниже базы</code></pre>
+<p>
+  <code>lpsync(n)</code> — n качелей за цикл (наш цикл = такт);
+  <code>lprate(hz)</code> — в герцах, не привязано к темпу.
+  <code>lpdc(0)</code> убирает ход в минус, <code>lpdepth</code> задаёт амплитуду.
+</p>
+<p>
+  Второй — явный сигнал вместо базового среза (точные границы):
+</p>
+<pre><code>.lpf(sine.slow(8).range(250, 2200))  // один проход LFO за 8 тактов</code></pre>
+<p>
+  <code>sine.slow(8)</code> — один цикл синуса на 8 циклов трека;
+  <code>range(min, max)</code> задаёт низ и верх среза.
+</p>
+<p>
+  Если <strong>3300 — это максимум</strong>, а LFO должен идти только вниз,
+  проще вычитать сигнал, чем бороться со знаком <code>lpdc</code>:
+</p>
+<pre><code>.lpf(3300 - sine.range(0, 2500).slow(8))
+// диапазон 800…3300, выше 3300 не уходит</code></pre>
+<p>
+  Или с базой-слайдером: <code>.lpf(cut.sub(sine.range(0, 2500).slow(8)))</code>.
+</p>
+<div class="warn">
+  <code>3300 - sine.range(...)</code> — это <strong>обычная JS-арифметика</strong>,
+  а не паттерн: получается <code>NaN</code>, и фильтр замолкает. Арифметика
+  должна быть паттерновой:
+  <code>pure(3300).sub(sine.range(0, 2500).slow(8))</code>
+  или <code>sine.range(800, 3300).slow(8)</code>.
+</div>
+
+<h2 id="stack">7. stack, $: и слои</h2>
+<pre><code>stack(
+  s("bd*4").gain(0.8),
+  s("hh*16").gain(0.3),
+  note("c2*8").s("sawtooth").lpf(600).gain(0.5)
+)</code></pre>
+<p>
+  <code>stack</code> играет всё одновременно. <code>$:</code> — то же, но
+  несколькими независимыми блоками (удобно для микшера и отдельных дорожек).
+  Оба варианта валидны; <code>stack</code> компактнее.
+</p>
+
+<h2 id="structure">8. Форма: arrange и TIMELINE</h2>
+<p>Простейшая форма — <code>arrange</code> (длина в тактах, паттерн):</p>
+<pre><code>arrange(
+  [8,  stack(kick, hats, pad)],
+  [16, stack(kick, bass, hats, pad, lead)],
+  [8,  stack(pad, air)]
+)</code></pre>
+<p>
+  В панели форма рисуется, если есть <code>const TIMELINE = [...]</code>:
+  секции <code>{ at, len, name, values }</code>, а <code>values</code> —
+  множители к громкостям через <code>tlCurve('слой')</code>. 0 = слой молчит.
+</p>
+<pre><code>const TIMELINE = [
+  { at: 0, len: 8, name: 'INTRO', values: { kick: 1, bass: 0 } },
+  { at: 8, len: 16, name: 'DROP', values: { kick: 1, bass: 1 } },
+]
+.gain(drums.kick.vol.mul(tlCurve('kick')))</code></pre>
+
+<h2 id="granular">9. Грануляр: striate / chop</h2>
+<pre><code>s('quote').striate(24)   // разбить на 24 гранулы за цикл
+s('quote').chop(16)      // нарезать на 16 кусков по порядку
+.begin(0.1).end(0.8)     // играть только часть сэмпла
+.speed(0.8)              // скорость
+.clip(0.4)               // короче гранула</code></pre>
+<p>
+  <code>striate</code> — «облако» осколков, <code>chop</code> — последовательная
+  нарезка. <code>begin/end</code> задают окно в сэмпле (0…1), это удобно, чтобы
+  не тянуть всю цитату.
+</p>
+
+<h2 id="space">10. Реверб, дилей, jux</h2>
+<pre><code>.room(0.6).roomsize(10)          // send и размер
+.delay(0.4).delaytime(0.375).delayfeedback(0.5)</code></pre>
+<p>
+  <code>delaytime</code> — в циклах, не в секундах: 0.375 = ⅜ такта (триольная
+  восьмая), 0.25 = ¼.
+</p>
+<p>
+  <code>jux(f)</code> — стерео-трюк: оригинал влево, <code>f(паттерн)</code>
+  вправо. <code>jux(rev)</code> = правый канал играет цикл назад.
+  <code>juxBy(0.2, rev)</code> — то же, но ширина меньше. Помни: это удваивает
+  голоса (и нагрузку).
+</p>
+
+<h2 id="kick">11. Бочка: пропуски, «и» 4-й, every/mask</h2>
+<p>Основной рисунок:</p>
+<pre><code>s('bd').struct('x*4')          // 4-on-floor</code></pre>
+<p>Пропуски: либо перестроить такт, либо заглушить слой:</p>
+<pre><code>// иногда (12%) такт превращается в «~ ~ x ~»
+s('bd').struct('x*4').sometimesBy(0.12, (x) => x.struct('~ ~ x ~'))
+
+// убрать 10% ударов, не меняя сетку
+s('bd').struct('x*4').degradeBy(0.1)</code></pre>
+<p>
+  «И» 4-й доли — шаг 14 на 16-сетке. Дополнительный удар каждый 4-й такт:
+</p>
+<pre><code>$: s('bd')
+  .struct('~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ x ~')
+  .mask('&lt;0 0 0 1&gt;')   // 3 такта тишины, 4-й — играет
+</code></pre>
+<p>
+  <code>every(4, fn)</code> применяет функцию к каждому 4-му циклу, но
+  <strong>заменяет</strong> рисунок на этом такте; чтобы «добавить», нужен
+  отдельный слой с <code>mask</code> или <code>stack</code>.
+</p>
+
+<h2 id="loop">12. LOOP / SONG</h2>
+<pre><code>// @switches song=loop,song
+const song = slider(0, 0, 1, 1)
+const songGate = song.fmap((v) => (v &gt; 0.5 ? 1 : 0))
+const loopGate = song.fmap((v) => (v &gt; 0.5 ? 0 : 1))
+const tlOr = (key, loopLevel = pure(1)) =&gt;
+  tlCurve(key).mul(songGate).add(loopLevel.mul(loopGate))
+
+.gain(drums.kick.vol.mul(tlOr('kick')))       // LOOP — 1, SONG — по таймлайну
+.gain(vox.quote.vol.mul(tlOr('vox', pure(0)))) // в LOOP выключен</code></pre>
+<p>
+  LOOP игнорирует TIMELINE и играет постоянный микс; SONG идёт по форме.
+</p>
+
+<h2 id="samples">13. Сэмплы и почему «не грузится»</h2>
+<pre><code>if (typeof samples === 'function') {
+  samples({ bd: ['bd/11_bd_mot4i.wav'] }, 'https://cdn.jsdelivr.net/gh/tidalcycles/uzu-drumkit@main/')
+  samples({ quote: ['samples/de-quote/kafka.wav'] }, './')
+}</code></pre>
+<ul>
+  <li><code>raw.githubusercontent.com</code> часто отдаёт 503 — часть сэмплов
+    молчит. jsDelivr или локальные файлы надёжнее.</li>
+  <li>Проверь консоль/Network: 404/503 = сэмпл, а не ритм.</li>
+  <li>В node-проверках <code>samples()</code> нет — поэтому вызов под
+    <code>typeof</code>.</li>
+</ul>
+
+<h2>Ссылки на официальную теорию</h2>
+<ul>
+  <li><a href="https://strudel.cc/learn/mini-notation/" target="_blank" rel="noreferrer">Mini-notation</a> — ритм, группы, аккорды, альтерации.</li>
+  <li><a href="https://strudel.cc/learn/" target="_blank" rel="noreferrer">Strudel tutorial</a> — оглавление основ.</li>
+  <li><a href="https://strudel.cc/learn/synths/" target="_blank" rel="noreferrer">Synths</a> — sawtooth, supersaw, FM, unison.</li>
+  <li><a href="https://strudel.cc/learn/effects/" target="_blank" rel="noreferrer">Effects</a> — фильтры, дилей, реверб, дисторшн.</li>
+  <li><a href="https://strudel.cc/workshop/" target="_blank" rel="noreferrer">Workshop</a> — циклы и паттерн-функции.</li>
+  <li><a href="https://tidalcycles.org/docs/" target="_blank" rel="noreferrer">Tidal Cycles docs</a> — та же mini-notation, глубже.</li>
+</ul>
+
+</div>
+</body>
+</html>

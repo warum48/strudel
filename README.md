@@ -90,6 +90,10 @@ tracks/
                       wt_dbass/distorted/ebass/raw/bitreduced; FM/AM,
                       waveshaping, ducking; 12 риффов, у каждого баса pace 4…32
                       + hardcore kick/hats + sidechain; 18 дорожек, 206 слайдеров
+  coldwave/
+    01-cold-rooms.js  108 BPM coldwave: механические барабаны, обрезанный
+                      бас, Juno-пэд, угловатая гитара, моно-лид; 4 моды,
+                      64-тактный TIMELINE, LOOP/SONG, авто-смена барабанных мод; 13 дорожек, 58 слайдеров
   trip-hop/
     01-acid-jazz.js  84 BPM trip-hop / acid jazz: D дорийский с bII,
                       roots d–eb–bb–f–g–eb–c–d, квартовые PAD_A и 9/13
@@ -898,6 +902,29 @@ DROP 16 → BREAK 8 → DROP2 16 → OUTRO 8. Каждый слой — своя
 Проверки: `verify` (13 дорожек / 66 слайдеров; LOOP 143 удара, SONG 71), `cpu` — 4
 worklet/такт (2/с).
 
+### Coldwave 01: Cold Rooms (`coldwave/01-cold-rooms.js`) — новая серия
+
+108 BPM, Dm, 13 дорожек, 58 слайдеров. Холодный пост-панк/минимал-вейв:
+механическая драм-машина (kick 1/3, snare/rim 2/4, ровные 8-е хэты, томы
+заполнениями), обрезанный повторяющийся бас, Juno-пэд с долгой атакой,
+угловатая гитара с chorus и моно-лид с dotted-eighth delay. Гармония почти
+статична: Dm + Bb/Gm, без поп-кадансов.
+
+- **4 моды** (`mode=machine,offbeat,half,toms`): меняются рисунки kick/snare/
+  hats/bass, все слои остаются. В SONG мода переключается по секциям
+  (INTRO/CHORUS/BREAK/OUTRO — разные), в LOOP — ручкой `mode`.
+- **TIMELINE 64 такта**: INTRO → VERSE → CHORUS → BREAK → VERSE 2 → OUTRO.
+- **LOOP / SONG** (`song`, по умолчанию SONG): SONG идёт по форме, LOOP
+  игнорирует таймлайн.
+- **Вторая стена:** к середине (CHORUS/VERSE 2) входит `String wall` — пэд
+  октавой выше, гейтится lane `wall`.
+- **Микс**: тёмный верх, один общий `roomsize`, длинные румы/дилей, лента и
+  воздух; `tape` — количество шипения.
+
+Гайд и источники: `docs/coldwave/README.md` (Sound Atlas, BeatKey, Wikipedia,
+Dummy Mag). Проверки: `verify` (13 дорожек / 43 удара в SONG / 58 слайдеров),
+`modes` — 4 рисунка, `doubles` — наложений нет, `cpu` — без worklet'ов.
+
 ### Trip-hop v2: Acid Jazz Breaks как композиция (`trip-hop/02-acid-jazz-v2.js`)
 
 `trip-hop/02-acid-jazz-v2.js` — 82 BPM, 24 дорожки, 98 слайдеров.
@@ -1064,6 +1091,7 @@ npm run web            # http://127.0.0.1:8080/
 npm run web -- 9000    # другой порт
 # HELP в топбаре → http://127.0.0.1:8080/web/help.html — как оформить трек,
 # чтобы панель собрала микшер, тон, свитчи, сцены и TIMELINE
+# REFS: скачанные скрипты из refs/strudel/ тоже в дропдауне, ниже делимитера
 ```
 
 Сервер нужен потому, что панель тянет файл трека через `fetch` — с `file://`

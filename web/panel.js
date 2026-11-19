@@ -1666,6 +1666,7 @@ let playing = false;
 async function fillTrackSelect() {
   const sel = $('track');
   let list = [];
+  let refs = [];
   try {
     const res = await fetch('/api/tracks');
     if (!res.ok) throw new Error(String(res.status));
@@ -1673,14 +1674,34 @@ async function fillTrackSelect() {
   } catch {
     list = [DEFAULT_TRACK]; // без сервера список не собрать — грузим дефолт
   }
+  try {
+    const res = await fetch('/api/refs');
+    if (res.ok) refs = await res.json();
+  } catch {
+    refs = [];
+  }
   for (const p of list) {
     const o = document.createElement('option');
     o.value = p;
     o.textContent = trackName(p);
     sel.appendChild(o);
   }
+  if (refs.length) {
+    // delimiter between our tracks and downloaded reference scripts
+    const sep = document.createElement('option');
+    sep.disabled = true;
+    sep.textContent = '──────── REFS ────────';
+    sel.appendChild(sep);
+    for (const p of refs) {
+      const o = document.createElement('option');
+      o.value = p;
+      o.textContent = 'ref · ' + p.replace('/refs/strudel/', '');
+      sel.appendChild(o);
+    }
+  }
+  const all = [...list, ...refs];
   const fromHash = decodeURIComponent(location.hash.slice(1));
-  const want = list.includes(fromHash) ? fromHash : DEFAULT_TRACK;
+  const want = all.includes(fromHash) ? fromHash : DEFAULT_TRACK;
   sel.value = want;
   return want;
 }

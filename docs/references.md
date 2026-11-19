@@ -140,6 +140,13 @@ Switch Angel: он считает интервал от предыдущей н�
 - `tracks/experimental/01-complex-bass.js` — 160 BPM, 5 пар WT+FM, 10
   осцилляторов, 206 слайдеров, у каждого баса `oct` и `pace`.
 
+## Coldwave
+
+- `docs/coldwave/README.md` — холодный пост-панк: ритм, бас, Juno-пэд,
+  гитара, форма, ошибки, источники (Sound Atlas, BeatKey, Wikipedia, Dummy).
+- `tracks/coldwave/01-cold-rooms.js` — 108 BPM, Dm, 4 моды, 64-тактный
+  TIMELINE, LOOP/SONG, 12 дорожек / 52 слайдера.
+
 ## Trip-hop / acid jazz
 
 - `docs/trip-hop/README.md` — характер, гармония (d–eb–bb–f–g–eb–c–d),

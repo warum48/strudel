@@ -1,0 +1,19 @@
+# Reference scripts that are NOT used as examples.
+# One path per line, relative to the repository root. `#` starts a comment.
+# The loader can read this later to hide/block these entries.
+refs/strudel/github/DanielTRZ/
+refs/strudel/github/eefano/
+refs/strudel/github/switchangel/
+refs/strudel/github/terryds/
+refs/strudel/github/tzwaan/
+refs/strudel/github/dotcomdudee/strudel-tracks/Binaural1.js
+refs/strudel/github/dotcomdudee/strudel-tracks/WorldAudio-Alpha-v0.1.js
+refs/strudel/github/dotcomdudee/strudel-tracks/ambient_breaks-dnb.js
+refs/strudel/github/dotcomdudee/strudel-tracks/crisp_mountains.js
+refs/strudel/github/dotcomdudee/strudel-tracks/deep_meditation-dnb.js
+refs/strudel/github/dotcomdudee/strudel-tracks/germantechno3.js
+refs/strudel/github/dotcomdudee/strudel-tracks/germantechno4.js
+refs/strudel/github/dotcomdudee/strudel-tracks/germantechno5.js
+refs/strudel/github/dotcomdudee/strudel-tracks/strangerthings_drumandbass.js
+refs/strudel/github/honcoops/strudel_trance/examples/example_09_extended.js
+refs/strudel/github/honcoops/strudel_trance/examples/example_10_extended.js

@@ -46,6 +46,42 @@ const server = http.createServer((req, res) => {
     return;
   }
 
+  // Local reference scripts (git-ignored): loadable/listenable from the panel.
+  if (url === '/api/refs') {
+    const out = [];
+    const base = path.join(root, 'refs', 'strudel');
+    let ignored = [];
+    try {
+      ignored = fs
+        .readFileSync(path.join(root, 'refs-ignore.txt'), 'utf8')
+        .split('\n')
+        .map((l) => l.trim())
+        .filter((l) => l && !l.startsWith('#'));
+    } catch {}
+    const isIgnored = (rel) =>
+      ignored.some((l) => rel === l || rel.startsWith(l.endsWith('/') ? l : l + '/') || rel.startsWith(l));
+    const walk = (dir) => {
+      if (!fs.existsSync(dir)) return;
+      for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
+        if (e.name.startsWith('.')) continue;
+        const p = path.join(dir, e.name);
+        if (e.isDirectory()) walk(p);
+        else if (/\.(js|strudel|mjs)$/.test(e.name)) {
+          const rel = path.relative(root, p).split(path.sep).join('/');
+          if (!isIgnored(rel)) out.push('/' + rel);
+        }
+      }
+    };
+    walk(base);
+    out.sort();
+    res.writeHead(200, {
+      'content-type': 'application/json; charset=utf-8',
+      'cache-control': 'no-store',
+    });
+    res.end(JSON.stringify(out));
+    return;
+  }
+
   let rel = url === '/' ? '/web/index.html' : url;
   const full = path.join(root, rel);
   // никакого выхода за пределы репозитория
