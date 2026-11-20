@@ -1280,6 +1280,27 @@ function scrollEditorToLine(line) {
   } catch {}
 }
 
+function scrollToInstrumentPattern(group, inst) {
+  if (!mirror || !mirror.editor) return;
+  try {
+    const src = mirror.editor.state.doc.toString();
+    const lines = src.split('\n');
+    const needle = `${group}.${inst}.`;
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      if (!line.includes(needle)) continue;
+      if (/^\s*\/\//.test(line) || line.includes('path:') || line.includes('values:')) continue;
+      let j = i;
+      while (j >= 0 && !/^\s*\$:/.test(lines[j])) j--;
+      scrollEditorToLine(j >= 0 ? j + 1 : i + 1);
+      return;
+    }
+    // fallback: instrument's vol slider
+    const k = knobs.find((x) => x.path.length >= 3 && x.path[0] === group && x.path[1] === inst);
+    if (k) scrollEditorToLine(mirror.editor.state.doc.lineAt(k.anchor).number);
+  } catch {}
+}
+
 function startTimeline() {
   stopTimeline();
   timelineTimer = setInterval(timelineTick, 120);
@@ -1594,7 +1615,16 @@ function makeRow(k, label) {
   row.className = 'row' + (k.name === 'vol' ? ' is-vol' : '') + (k.name === 'cut' ? ' is-cut' : '');
   const lab = document.createElement('label');
   lab.textContent = label || k.name;
-  lab.title = k.path.length ? k.path.join('.') : k.name;
+  lab.title = k.path.length >= 3
+    ? `${k.path.join('.')} — click: jump to pattern`
+    : (k.path.length ? k.path.join('.') : k.name);
+  lab.style.cursor = k.path.length >= 3 ? 'pointer' : '';
+  if (k.path.length >= 3) {
+    lab.addEventListener('click', (e) => {
+      e.stopPropagation();
+      scrollToInstrumentPattern(k.path[0], k.path[1]);
+    });
+  }
   const input = document.createElement('input');
   input.type = 'range';
   input.min = k.min;
