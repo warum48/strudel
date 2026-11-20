@@ -1745,6 +1745,21 @@ function setKnob(k, v) {
 // theme into `:root` as `--background/--foreground/--caret/...` variables. Our own
 // variables are --bg/--panel/--text/--accent, they do not collide, so the panel
 // keeps its lime accent whatever theme the code wears.
+function paintCmSliders() {
+  document.querySelectorAll('.cm-slider input[type="range"]').forEach((sl) => {
+    const min = Number(sl.min);
+    const max = Number(sl.max);
+    const val = Number(sl.value);
+    const pct = max > min ? Math.max(0, Math.min(100, ((val - min) / (max - min)) * 100)) : 0;
+    sl.style.setProperty('--p', pct + '%');
+    if (!sl._paintBound) {
+      sl._paintBound = true;
+      sl.addEventListener('input', () => paintCmSliders());
+    }
+  });
+}
+setInterval(paintCmSliders, 250);
+
 function fillThemes() {
   const sel = $('theme');
   const names = Object.keys(cm.themes || {}).filter((n) => n !== ROOMV);

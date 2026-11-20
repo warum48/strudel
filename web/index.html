@@ -379,10 +379,36 @@
   html[data-theme="RoomVDark"] .ͼf0 { color: #515864 !important; }
   /* numbers in RoomVDark: was sublime orange #fbac52 */
   html[data-theme="RoomVDark"] .ͼf6 { color: #fb7752 !important; }
-  /* inline CodeMirror sliders: monochrome, no blue */
+  /* inline CodeMirror sliders: grey thumb, dark-grey fill, near-black empty */
   html[data-theme="RoomVDark"] .cm-slider input[type="range"] {
-    accent-color: #ffffff;
-    filter: grayscale(1);
+    -webkit-appearance: none;
+    appearance: none;
+    height: 8px;
+    border: 1px solid #3a3a3a;
+    border-radius: 4px;
+    background-color: #0a0a0a;
+    background-image: linear-gradient(#4a4a4a, #4a4a4a);
+    background-repeat: no-repeat;
+    background-size: var(--p, 0%) 100%;
+  }
+  html[data-theme="RoomVDark"] .cm-slider input[type="range"]::-webkit-slider-runnable-track {
+    height: 8px; background: transparent;
+  }
+  html[data-theme="RoomVDark"] .cm-slider input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 12px; height: 12px; margin-top: -2px;
+    border-radius: 50%;
+    background: #8a8a8a;
+    border: 1px solid #555;
+  }
+  html[data-theme="RoomVDark"] .cm-slider input[type="range"]::-moz-range-track {
+    height: 8px; background: #0a0a0a; border: 1px solid #3a3a3a; border-radius: 4px;
+  }
+  html[data-theme="RoomVDark"] .cm-slider input[type="range"]::-moz-range-progress {
+    height: 8px; background: #4a4a4a; border-radius: 4px;
+  }
+  html[data-theme="RoomVDark"] .cm-slider input[type="range"]::-moz-range-thumb {
+    width: 12px; height: 12px; border-radius: 50%; background: #8a8a8a; border: 1px solid #555;
   }
   #right .bar {
     flex: none;
