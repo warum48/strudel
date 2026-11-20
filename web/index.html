@@ -177,6 +177,13 @@
   #timeline #tlLoop { padding: 3px 8px; font-size: 10px; }
   #timeline #tlLoop.on { background: var(--accent); border-color: var(--accent); color: #0d0f0c; font-weight: 700; }
   #timeline .tl-transport { width: 26px; height: 22px; padding: 0; font-size: 12px; line-height: 1; display: inline-flex; align-items: center; justify-content: center; }
+  /* две визуально объединённые группы в таймлайне: mode + транспорт */
+  #timeline .tl-group { display: inline-flex; align-items: center; gap: 4px; padding: 2px 6px; border: 1px solid #39402f; border-radius: 7px; background: #0b0d0a; }
+  #timeline .tl-group .cap { color: var(--dim); font-size: 9px; letter-spacing: 0.1em; }
+  #playMode { display: inline-flex; gap: 2px; }
+  #playMode button { padding: 3px 8px; font-size: 10px; letter-spacing: 0.04em; background: transparent; }
+  #playMode button.on { background: var(--accent); border-color: var(--accent); color: #0d0f0c; font-weight: 700; }
+  #switches:empty { display: none; }
   #timeline #play.on { background: var(--accent); border-color: var(--accent); color: #0d0f0c; }
   .sw.toggle { display: inline-flex; align-items: center; gap: 6px; }
   .sw.toggle .tgl { position: relative; display: inline-flex; width: 104px; height: 22px; padding: 0; border: 1px solid var(--line); border-radius: 11px; overflow: hidden; background: #0b0d0a; }
@@ -221,6 +228,7 @@
   }
   #timeline button.tl-block:hover { border-color: var(--warn); }
   #timeline button.tl-block.sel { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); background: #1d2417; }
+  #timeline button.tl-block.hold { border-color: var(--warn); box-shadow: inset 0 0 0 1px var(--warn); background: #241d14; }
   #timeline button.tl-block .nm { display: block; font-weight: 700; letter-spacing: 0.04em; }
   #timeline button.tl-block .mt { display: block; color: var(--dim); font-size: 9px; margin-top: 2px; }
   #timeline .tl-playhead { position: absolute; top: 20px; bottom: 0; width: 2px; left: 0; background: var(--accent); box-shadow: 0 0 8px var(--accent); pointer-events: none; }
@@ -529,6 +537,10 @@
 <details id="timeline" open>
   <summary>
     <span class="tl-cap">Timeline</span>
+    <span class="tl-group" id="playModeGroup">
+      <span class="cap">mode</span>
+      <span id="playMode"></span>
+    </span>
     <span class="sp"></span>
     <button id="play" class="tl-transport" title="play (Ctrl+Enter)">▶</button>
     <button id="stop" class="tl-transport" title="stop">■</button>

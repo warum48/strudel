@@ -534,6 +534,40 @@ const soloed = new Set();
 const muted = new Set();
 let defaultMutesApplied = false;
 const knobByAnchor = new Map(); // widget id → { input, out }
+// HOLD: номер секции (0 = выкл) и такт для снимка AUTOMATION. Панель пишет
+// их только в движок (без правки документа) — это перформанс-состояние.
+const knobByName = (name) => knobs.find((k) => k.name === name && k.path.length === 0)
+const holdBarKnob = () => knobByName('holdBar')
+const playKnob = () => knobByName('play') || knobByName('song')
+// 0 LOOP, 1 SONG, 2 HOLD. Старая ручка `song` (0/1) читается как LOOP/SONG.
+const playState = () => {
+  const k = playKnob();
+  if (!k) return 1;
+  const v = Math.round(Number(k.value));
+  return k.name === 'song' ? (v > 0.5 ? 1 : 0) : Math.max(0, Math.min(2, v));
+}
+const inHold = () => playState() === 2
+const holdBarValue = () => { const k = holdBarKnob(); return k ? Math.round(Number(k.value)) : 0; }
+const sectionIndexAtBar = (bar) => {
+  if (!timeline.length) return -1;
+  for (let i = 0; i < timeline.length; i++) {
+    if (bar < timeline[i].at + timeline[i].length) return i;
+  }
+  return timeline.length - 1;
+}
+const heldSection = () => (inHold() ? sectionIndexAtBar(holdBarValue()) : -1)
+let holdBarCache = 0;
+function setKnobLive(k, v) {
+  if (!k) return;
+  k.value = Number(v);
+  window.postMessage({ type: 'cm-slider', id: 'slider_' + k.anchor, value: Number(v), internal: true }, null);
+}
+// HOLD-такт: только в движок (в документ не пишем — это перформанс-состояние).
+function setHoldBar(bar) {
+  const v = Math.max(0, Math.min(Math.max(0, tlTotal() - 1), Math.round(bar)));
+  holdBarCache = v;
+  setKnobLive(holdBarKnob(), v);
+}
 const openState = new Map(); // 'group' / 'group.inst' → свёрнуто ли
 
 function buildKnobs() {
@@ -581,6 +615,7 @@ function buildKnobs() {
   }
   renderTimeline();
   render();
+  if (inHold()) setKnobLive(holdBarKnob(), holdBarCache);
   if (!defaultMutesApplied && /^[ \t]*\/\/[ \t]*@defaultMutes/m.test(src)) {
     applyDefaultMutes();
   }
@@ -596,6 +631,7 @@ function render() {
   const groups = new Map(); // group → Map(instrument → knobs[])
   for (const k of knobs) {
     if (k.path.length === 0) {
+      if (k.name === 'hold' || k.name === 'holdBar') continue;
       if (muteNames.has(k.name)) mutes.push(k);
       else if (padNames.has(k.name)) pads.push(k);
       else (isSwitch(k) ? switches : globals).push(k);
@@ -630,40 +666,51 @@ function renderGlobals(list) {
 
 // Переключатели — не ползунки: у mode 4 положения, у harmony 2. Рисуем кнопки,
 // значение всё равно пишется в документ тем же setKnob.
+// Режим (LOOP/SONG/HOLD) живёт в шапке таймлайна, остальные свитчи — в #switches.
+function renderModeSwitch(k, root) {
+  root.innerHTML = '';
+  const caps = switchCaps[k.name] || [];
+  const vals = [];
+  for (let v = k.min; v <= k.max + 1e-9; v += 1) vals.push(v);
+  const btns = [];
+  const cur = Math.round(k.value);
+  vals.forEach((v, i) => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.textContent = (caps[i] || String(v)).toUpperCase();
+    b.title = caps[i] || `${k.name} ${v}`;
+    b.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      k.value = v;
+      setKnob(k, v);
+      if (v === 2) setHoldBar(timelineBar);
+      renderTimeline();
+      btns.forEach((o, j) => o.classList.toggle('on', vals[j] === v));
+    });
+    btns.push(b);
+    root.appendChild(b);
+  });
+  btns.forEach((b, i) => b.classList.toggle('on', vals[i] === cur));
+}
+
 function renderSwitches(list) {
   const root = $('switches');
+  const modeRoot = $('playMode');
+  const modeGroup = $('playModeGroup');
   root.innerHTML = '';
+  if (modeRoot) modeRoot.innerHTML = '';
   for (const k of list) {
+    if (modeRoot && (k.name === 'play' || k.name === 'song')) {
+      renderModeSwitch(k, modeRoot);
+      continue;
+    }
     const box = document.createElement('span');
     box.className = 'sw';
     const cap = document.createElement('span');
     cap.className = 'cap';
     cap.textContent = k.name;
     box.appendChild(cap);
-    if (k.name === 'song') {
-      box.classList.add('toggle');
-      const tgl = document.createElement('button');
-      tgl.type = 'button';
-      tgl.className = 'tgl';
-      tgl.innerHTML = '<span>LOOP</span><span>SONG</span><i></i>';
-      const [loop, song] = tgl.querySelectorAll('span');
-      const paint = () => {
-        const v = Number(k.value) > 0.5 ? 1 : 0;
-        tgl.classList.toggle('on', v === 1);
-        loop.classList.toggle('on', v === 0);
-        song.classList.toggle('on', v === 1);
-      };
-      tgl.addEventListener('click', () => {
-        const next = Number(k.value) > 0.5 ? 0 : 1;
-        k.value = next;
-        setKnob(k, next);
-        paint();
-      });
-      paint();
-      box.appendChild(tgl);
-      root.appendChild(box);
-      continue;
-    }
     const vals = [];
     for (let v = k.min; v <= k.max + 1e-9; v += 1) vals.push(v);
     const caps = switchCaps[k.name] || [];
@@ -671,11 +718,15 @@ function renderSwitches(list) {
     vals.forEach((v, i) => {
       const b = document.createElement('button');
       b.type = 'button';
-      b.textContent = String(v);
+      b.textContent = (caps[i] || String(v)).toUpperCase();
       b.title = caps[i] || `${k.name} ${v}`;
       b.addEventListener('click', () => {
         k.value = v;
         setKnob(k, v);
+        if (k.name === 'play' || k.name === 'song') {
+          if (v === 2) setHoldBar(timelineBar);
+          renderTimeline();
+        }
         for (const other of btns) other.classList.toggle('on', other === b);
       });
       btns.push(b);
@@ -685,6 +736,7 @@ function renderSwitches(list) {
     btns.forEach((b, i) => b.classList.toggle('on', vals[i] === cur));
     root.appendChild(box);
   }
+  if (modeGroup) modeGroup.style.display = modeRoot && modeRoot.childElementCount ? '' : 'none';
 }
 
 // ПЭДЫ: кнопка = мгновенное значение. pointerdown → max, pointerup/cancel/
@@ -914,10 +966,11 @@ function renderTimeline() {
   }
   const secs = $('tlSections');
   secs.innerHTML = '';
+  const held = heldSection();
   timeline.forEach((sec, i) => {
     const b = document.createElement('button');
     b.type = 'button';
-    b.className = 'tl-block' + (i === timelineSel ? ' sel' : '');
+    b.className = 'tl-block' + (i === timelineSel ? ' sel' : '') + (i === held ? ' hold' : '');
     b.style.left = `${(sec.at / total) * 100}%`;
     b.style.width = `${Math.max(1.5, (sec.length / total) * 100)}%`;
     b.title = `${sec.name} · bars ${sec.at}–${sec.at + sec.length}`;
@@ -931,8 +984,26 @@ function renderTimeline() {
     b.addEventListener('click', (e) => {
       e.stopPropagation();
       timelineSel = i;
+      if (inHold()) {
+        setHoldBar(sec.at);
+        seekTimeline(sec.at);
+        setSceneStatus(`hold: ${sec.name} @${sec.at}`);
+      }
       renderTimeline();
       scrollEditorToLine(timelineLines[i]);
+    });
+    // Двойной клик — войти в HOLD на этой секции (если ещё не в нём).
+    b.addEventListener('dblclick', (e) => {
+      e.stopPropagation();
+      e.preventDefault();
+      const pk = playKnob();
+      if (!pk) return;
+      if (playState() !== 2) setKnob(pk, 2);
+      setHoldBar(sec.at);
+      timelineSel = i;
+      seekTimeline(sec.at);
+      renderTimeline();
+      setSceneStatus(`hold: ${sec.name} @${sec.at}`);
     });
     secs.appendChild(b);
   });
@@ -1217,11 +1288,12 @@ function restoreAutomation() {
 
 function applyAutomation(bar) {
   if (!automation.length) return;
-  updateAutoPlayhead(bar);
-  const songKnob = knobs.find((k) => k.name === 'song' && k.path.length === 0);
-  const inSong = !songKnob || Number(songKnob.value) > 0.5;
+  const held = inHold();
+  const at = held ? holdBarValue() : bar;
+  updateAutoPlayhead(at);
+  const inSong = playState() === 1;
   automation.forEach((a, i) => {
-    const v = inSong ? autoValue(a.points, bar) : null;
+    const v = inSong || held ? autoValue(a.points, at) : null;
     const row = document.querySelector(`.auto-row[data-auto="${i}"]`);
     if (row) {
       row.classList.toggle('active', v != null);
@@ -1357,6 +1429,14 @@ function timelineTick() {
     setSceneStatus('timeline end — stopped');
     return;
   }
+  const st = playState();
+  if (st !== 1) {
+    const bar = st === 2 ? holdBarValue() : 0;
+    timelineBar = bar;
+    updatePlayhead(bar);
+    applyAutomation(bar);
+    return;
+  }
   timelineBar = timelineLoop ? Math.floor(now) % total : Math.min(total, Math.floor(now));
   updatePlayhead(timelineBar);
   applyAutomation(timelineBar);
@@ -1384,12 +1464,16 @@ $('tlTrack')?.addEventListener('click', (e) => {
   if (e.target.closest?.('.tl-block')) return;
   const r = e.currentTarget.getBoundingClientRect();
   if (!r.width) return;
-  seekTimeline(((e.clientX - r.left) / r.width) * tlTotal());
+  const bar = ((e.clientX - r.left) / r.width) * tlTotal();
+  if (inHold()) { setHoldBar(bar); renderTimeline(); }
+  seekTimeline(bar);
 });
 $('tlRuler')?.addEventListener('click', (e) => {
   const r = e.currentTarget.getBoundingClientRect();
   if (!r.width) return;
-  seekTimeline(((e.clientX - r.left) / r.width) * tlTotal());
+  const bar = ((e.clientX - r.left) / r.width) * tlTotal();
+  if (inHold()) { setHoldBar(bar); renderTimeline(); }
+  seekTimeline(bar);
 });
 $('tlApply')?.addEventListener('click', (e) => {
   e.preventDefault();
@@ -2137,8 +2221,8 @@ function stop() {
   setStatus(`${knobs.length} knobs · stopped`);
 }
 
-$('play').addEventListener('click', () => play().catch((e) => setStatus(e.message, true)));
-$('stop').addEventListener('click', () => stop());
+$('play').addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); play().catch((err) => setStatus(err.message, true)); });
+$('stop').addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); stop(); });
 
 // ── TRACK CODE export/import (same idea as JSON scenes) ──────────
 function exportTrack() {

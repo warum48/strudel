@@ -21,9 +21,11 @@ if (typeof samples === 'function') {
 }
 
 // ── переключатели ────────────────────────────────────────────────
-// @switches song=loop,song mode=machine,offbeat,half,toms
-const song = slider(1, 0, 1, 1)   // SONG по форме; LOOP — без TIMELINE
+// @switches play=loop,song,hold mode=machine,offbeat,half,toms
+const play = slider(1, 0, 2, 1)   // 0 LOOP (без TIMELINE), 1 SONG, 2 HOLD
 const mode = slider(0, 0, 3, 1)   // четыре механических рисунка
+// HOLD: такт-снимок; секция определяется по этому такту (ставит панель).
+const holdBar = slider(0, 0, 127, 1)
 
 // ── глобальные ───────────────────────────────────────────────────
 const verb = slider(0.8, 0, 1, 0.01)
@@ -274,11 +276,44 @@ const tlCurve = (key) => {
   }
   return arrange(...segs)
 }
-const songGate = song.fmap((v) => (v > 0.5 ? 1 : 0))
-const loopGate = song.fmap((v) => (v > 0.5 ? 0 : 1))
-const tlOr = (key, loopLevel = pure(1)) => tlCurve(key).mul(songGate).add(loopLevel.mul(loopGate))
-// В SONG рисунок барабанов ведёт TIMELINE, в LOOP — ручка mode.
-const modeAuto = tlCurve('mode').mul(songGate).add(mode.mul(loopGate))
+const state = play.fmap((v) => Math.round(v))
+const songGate = state.fmap((v) => (v === 1 ? 1 : 0))
+const loopGate = state.fmap((v) => (v === 0 ? 1 : 0))
+const holdGate = state.fmap((v) => (v === 2 ? 1 : 0))
+// Секция, в которую попадает holdBar (HOLD держит её состояние).
+const sectionAt = (bar) => {
+  for (let i = 0; i < TIMELINE.length; i++) {
+    if (bar < TIMELINE[i].at + TIMELINE[i].len) return i
+  }
+  return TIMELINE.length - 1
+}
+const holdIndex = holdBar.fmap((bar) => sectionAt(Math.max(0, Math.round(bar))))
+const sectionValue = (key) =>
+  holdIndex.pick(TIMELINE.map((sec) => pure(sec.values[key] ?? 0)))
+// SONG → TIMELINE, LOOP → loopLevel, HOLD → значения секции.
+const tlOr = (key, loopLevel = pure(1)) => {
+  const base = tlCurve(key).mul(songGate).add(loopLevel.mul(loopGate))
+  return base.add(sectionValue(key).mul(holdGate))
+}
+// Рисунок барабанов: SONG — TIMELINE, LOOP — mode, HOLD — mode секции.
+const modeAuto = tlCurve('mode')
+  .mul(songGate).add(mode.mul(loopGate))
+  .add(sectionValue('mode').mul(holdGate))
+// AUTOMATION: HOLD замирает на holdBar, иначе обычная кривая.
+const autoValueAt = (path, bar) => {
+  const pts = AUTOMATION.find((a) => a.path === path)?.points || []
+  if (!pts.length) return 1
+  if (bar < pts[0][0]) return 1
+  for (let i = 0; i < pts.length - 1; i++) {
+    const [a, va] = pts[i]
+    const [b, vb] = pts[i + 1]
+    if (bar <= b) return a === b ? vb : va + ((vb - va) * (bar - a)) / (b - a)
+  }
+  return pts[pts.length - 1][1]
+}
+const autoAt = (path) =>
+  autoCurve(path).mul(pure(1).sub(holdGate))
+    .add(holdBar.fmap((b) => autoValueAt(path, b)).mul(holdGate))
 const audible = (hap) => {
   const g = hap.value?.gain
   return typeof g !== 'number' || g > 0.001
@@ -363,7 +398,7 @@ $: note(m('<d1 d1 d1 d1>')).struct(bassPat)
   .sometimesBy(0.18, (x) => x.add(note(12)))
   .s('sawtooth').unison(1)
   .gain(low.bass.vol.mul(tlOr('bass')))
-  .lpf(low.bass.cut.mul(autoCurve('low.bass.cut')).mul(perlin.slow(8).range(0.85, 1))).lpq(low.bass.res).ftype('24db')
+  .lpf(low.bass.cut.mul(autoAt('low.bass.cut')).mul(perlin.slow(8).range(0.85, 1))).lpq(low.bass.res).ftype('24db')
   .lpenv(low.bass.env).lpa(0.003).lpd(low.bass.decay).lpsustain(0.2)
   .clip(0.9).decay(0.1).sustain(0.5).release(0.05)
   .orbit(2)
@@ -373,7 +408,7 @@ $: note(m('<d1 d1 d1 d1>')).struct(bassPat)
 $: chords.slow(2)
   .s('sawtooth').unison(3).detune(keys.pad.det)
   .gain(keys.pad.vol.mul(tlOr('pad')))
-  .lpf(keys.pad.cut.mul(autoCurve('keys.pad.cut')).mul(perlin.slow(16).range(0.8, 1.2))).lpq(keys.pad.q)
+  .lpf(keys.pad.cut.mul(autoAt('keys.pad.cut')).mul(perlin.slow(16).range(0.8, 1.2))).lpq(keys.pad.q)
   .attack(keys.pad.atk).decay(1.4).sustain(0.85).release(keys.pad.rel)
   .chorus(0.35)
   .room(verb).roomsize(fx.reverb.size)
@@ -385,7 +420,7 @@ const guitarVoice = (rhythm) =>
   riff.struct(rhythm)
     .sometimesBy(0.2, (x) => x.rev())
     .s('sawtooth').unison(1)
-    .lpf(keys.guitar.cut.mul(autoCurve('keys.guitar.cut'))).lpq(3)
+    .lpf(keys.guitar.cut.mul(autoAt('keys.guitar.cut'))).lpq(3)
     .chorus(keys.guitar.chorus)
     .attack(0.002).decay(keys.guitar.decay).sustain(0).release(0.08)
     .delay(keys.guitar.echo).delaytime(0.375).delayfeedback(0.35)
@@ -430,7 +465,7 @@ $: stack(droneBody, droneTri)
 $: riff.slow(2).struct('x ~ ~ ~ ~ x ~ ~')
   .s('square').unison(1)
   .gain(keys.lead.vol.mul(tlOr('lead')))
-  .lpf(keys.lead.cut.mul(autoCurve('keys.lead.cut'))).lpq(keys.lead.q)
+  .lpf(keys.lead.cut.mul(autoAt('keys.lead.cut'))).lpq(keys.lead.q)
   .attack(0.01).decay(keys.lead.decay).sustain(0.3).release(0.2)
   .delay(keys.lead.echo).delaytime(0.375).delayfeedback(0.45)
   .room(verb.mul(0.7)).roomsize(fx.reverb.size)
@@ -442,7 +477,7 @@ $: chords.slow(2).add(note(12))
   .s('sawtooth').unison(4).detune(keys.wall.det)
   .gain(keys.wall.vol.mul(tlOr('wall')))
   .hpf(keys.wall.hpf)
-  .lpf(keys.wall.cut.mul(autoCurve('keys.wall.cut'))).lpq(keys.wall.q)
+  .lpf(keys.wall.cut.mul(autoAt('keys.wall.cut'))).lpq(keys.wall.q)
   .attack(keys.wall.atk).decay(2).sustain(0.8).release(keys.wall.rel)
   .chorus(0.4)
   .room(verb).roomsize(fx.reverb.size)
@@ -452,8 +487,8 @@ $: chords.slow(2).add(note(12))
 $: riff.fast(keys.arpwall.rate).add(note(12)).degradeBy(0.1)
   .sometimesBy(0.2, (x) => x.rev())
   .s('sawtooth').unison(1)
-  .gain(keys.arpwall.vol.mul(autoCurve('keys.arpwall.vol')).mul(tlOr('arpwall')))
-  .lpf(keys.arpwall.cut.mul(autoCurve('keys.arpwall.cut')))
+  .gain(keys.arpwall.vol.mul(autoAt('keys.arpwall.vol')).mul(tlOr('arpwall')))
+  .lpf(keys.arpwall.cut.mul(autoAt('keys.arpwall.cut')))
   .lpq(keys.arpwall.q)
   .attack(0.002).decay(keys.arpwall.decay).sustain(0).release(0.05)
   .delay(keys.arpwall.echo).delaytime(0.375).delayfeedback(0.5)
@@ -513,7 +548,7 @@ $: s('rilke')
   .speed(voice.grain.speed)
   .clip(voice.grain.clip)
   .sometimesBy(voice.grain.revProb, (x) => x.rev())
-  .gain(voice.grain.vol.mul(autoCurve('voice.grain.vol')).mul(tlOr('voxGrain')))
+  .gain(voice.grain.vol.mul(autoAt('voice.grain.vol')).mul(tlOr('voxGrain')))
   .lpf(voice.grain.cut).hpf(160)
   .delay(voice.grain.echo).delaytime(0.375).delayfeedback(0.4)
   .room(verb.mul(0.6)).roomsize(fx.reverb.size)
