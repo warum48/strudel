@@ -442,12 +442,106 @@ const isSwitch = (k) => k.path.length === 0 && k.step === 1 && k.min === 0;
 //   "transport": { "name": "...", "labels": [...] }  (0 jam, 1 timeline, max HOLD)
 //   "holdBar": "..."
 //   "switches": { "name": ["v1","v2",...] }          (2+ варианта = группа)
+// Разбор JS-литерала (объект/массив/строки/числа) без eval: манифест UI
+// должен выглядеть как обычный JS, а не как заэкранированный JSON.
+function parseJSLiteral(src, i) {
+  const skip = () => {
+    for (;;) {
+      while (i < src.length && /\s/.test(src[i])) i++;
+      if (src[i] === '/' && src[i + 1] === '/') { while (i < src.length && src[i] !== '\n') i++; continue; }
+      if (src[i] === '/' && src[i + 1] === '*') { i += 2; while (i < src.length && !(src[i] === '*' && src[i + 1] === '/')) i++; i += 2; continue; }
+      break;
+    }
+  };
+  const readString = () => {
+    const q = src[i++];
+    let out = '';
+    while (i < src.length && src[i] !== q) {
+      if (src[i] === '\\') {
+        const n = src[i + 1];
+        out += n === 'n' ? '\n' : n === 't' ? '\t' : n;
+        i += 2;
+      } else out += src[i++];
+    }
+    i++;
+    return out;
+  };
+  const readValue = () => {
+    skip();
+    const ch = src[i];
+    if (ch === '{') {
+      i++;
+      const obj = {};
+      for (;;) {
+        skip();
+        if (src[i] === '}') { i++; break; }
+        let key;
+        if (src[i] === '"' || src[i] === "'") key = readString();
+        else {
+          const st = i;
+          while (i < src.length && /[A-Za-z0-9_$]/.test(src[i])) i++;
+          key = src.slice(st, i);
+        }
+        skip();
+        if (src[i] !== ':') throw new Error('expected :');
+        i++;
+        obj[key] = readValue();
+        skip();
+        if (src[i] === ',') { i++; continue; }
+        if (src[i] === '}') { i++; break; }
+        throw new Error('expected , or }');
+      }
+      return obj;
+    }
+    if (ch === '[') {
+      i++;
+      const arr = [];
+      for (;;) {
+        skip();
+        if (src[i] === ']') { i++; break; }
+        arr.push(readValue());
+        skip();
+        if (src[i] === ',') { i++; continue; }
+        if (src[i] === ']') { i++; break; }
+        throw new Error('expected , or ]');
+      }
+      return arr;
+    }
+    if (ch === '"' || ch === "'") return readString();
+    if (ch === '-' || /[0-9]/.test(ch)) {
+      const st = i;
+      i++;
+      while (i < src.length && /[0-9.eE+-]/.test(src[i])) i++;
+      return Number(src.slice(st, i));
+    }
+    const st = i;
+    while (i < src.length && /[A-Za-z0-9_$]/.test(src[i])) i++;
+    const word = src.slice(st, i);
+    if (word === 'true') return true;
+    if (word === 'false') return false;
+    if (word === 'null') return null;
+    throw new Error('unexpected literal');
+  };
+  return { value: readValue(), end: i };
+}
+
 function scanUI(src) {
-  // Транспайлер Strudel превращает двойные кавычки в m(...), поэтому
-  // манифест — tagged template (его не трогают) с валидным JSON внутри.
-  const m = /const\s+UI\s*=\s*JSON\.parse\(\s*String\.raw`([\s\S]*?)`\s*\)/.exec(src);
+  const m = /const\s+UI\s*=\s*/.exec(src);
   if (!m) return null;
-  try { return JSON.parse(m[1]); } catch (e) { return null; }
+  try {
+    const { value } = parseJSLiteral(src, m.index + m[0].length);
+    return value && typeof value === 'object' && !Array.isArray(value) ? value : null;
+  } catch (e) { return null; }
+}
+
+// Свитчи, у которых значение берётся из секций (автоматика таймлайна).
+// В SONG/HOLD они неинтерактивны — панель их не показывает.
+function scanTimelineSwitches(src) {
+  const out = new Set();
+  const re = /autoSwitch\(\s*'([^']+)'/g;
+  let m;
+  while ((m = re.exec(src))) out.add(m[1]);
+  return out;
 }
 
 function scanSwitchCaps(src) {
@@ -461,6 +555,7 @@ function scanSwitchCaps(src) {
   return caps;
 }
 let switchCaps = {};
+let timelineSwitches = new Set(); // свитчи, которыми в SONG/HOLD ведёт TIMELINE
 // PADS — momentary control. A top-level slider named in `// @pads a,b,c` is NOT
 // a switch: press/hold writes max (1), release writes min (0). The track gates a
 // one-bar fill layer by that slider, so holding loops the fill and releasing
@@ -548,10 +643,9 @@ const knobByAnchor = new Map(); // widget id → { input, out }
 // HOLD: номер секции (0 = выкл) и такт для снимка AUTOMATION. Панель пишет
 // их только в движок (без правки документа) — это перформанс-состояние.
 const knobByName = (name) => knobs.find((k) => k.name === name && k.path.length === 0)
-// Панель не знает имён трека: роли ручек объявляются маркерами в коде.
-//   // @transport <switch>   — свитч в шапке таймлайна; 0 jam, 1 timeline, max HOLD
-//   // @holdBar  <slider>     — такт снимка AUTOMATION для HOLD
-// Без маркеров — легаси: транспорт ищем как `song`, holdBar как `holdBar`.
+// Панель не знает имён трека: роли объявляются UI-манифестом в коде
+// (transport/holdBar/switches). Без манифеста — фолбэк на имена для старых
+// треков: транспорт `song`, такт `holdBar`.
 let transportName = 'song';
 let holdBarName = 'holdBar';
 const holdBarKnob = () => knobByName(holdBarName);
@@ -588,15 +682,68 @@ function setHoldBar(bar) {
   holdBarCache = v;
   setKnobLive(holdBarKnob(), v);
 }
+// В LOOP таймлайн и автоматика не работают: сворачиваем и блокируем их,
+// чтобы никто не тыкал в то, что не реагирует. Возврат в SONG/HOLD
+// разворачивает таймлайн и возвращает автоматику как было.
+let automationOpenBeforeLock = false;
+function applyModeLock() {
+  const loop = playState() === 0;
+  const tl = $('timeline');
+  const au = $('automation');
+  const tlLoopBtn = $('tlLoop');
+  if (tlLoopBtn) tlLoopBtn.style.display = loop ? 'none' : '';
+  if (tl) {
+    const wasLocked = tl.classList.contains('mode-locked');
+    if (loop) {
+      tl.classList.add('mode-locked');
+      tl.open = false;
+    } else {
+      tl.classList.remove('mode-locked');
+      if (wasLocked) tl.open = true; // возврат из LOOP — разворачиваем
+    }
+  }
+  if (au) {
+    if (loop) {
+      if (!au.classList.contains('mode-locked')) automationOpenBeforeLock = au.open;
+      au.classList.add('mode-locked');
+      au.open = false;
+    } else {
+      const was = au.classList.contains('mode-locked') ? automationOpenBeforeLock : au.open;
+      au.classList.remove('mode-locked');
+      au.open = !!was;
+    }
+  }
+}
+function lockDetailsToggle(id) {
+  const el = $(id);
+  const summary = el?.querySelector('summary');
+  if (!summary) return;
+  const isControl = (e) => !!e.target?.closest?.('button, input, select, textarea, a, [role="button"]');
+  const block = (e) => {
+    if (!el.classList.contains('mode-locked')) return;
+    if (isControl(e)) return; // кнопки внутри summary (режим, play/stop) работают
+    e.preventDefault();
+    e.stopPropagation();
+  };
+  summary.addEventListener('click', block, true);
+  summary.addEventListener('keydown', (e) => {
+    if (!el.classList.contains('mode-locked')) return;
+    if (isControl(e)) return;
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+  }, true);
+}
 const openState = new Map(); // 'group' / 'group.inst' → свёрнуто ли
 
 function buildKnobs() {
   const src = mirror.editor.state.doc.toString();
   const ui = scanUI(src);
-  const tm = /^[ \t]*\/\/[ \t]*@transport[ \t]+(\w+)/m.exec(src);
-  const hm = /^[ \t]*\/\/[ \t]*@holdBar[ \t]+(\w+)/m.exec(src);
-  transportName = ui?.transport?.name || (tm ? tm[1] : 'song');
-  holdBarName = ui?.holdBar || (hm ? hm[1] : 'holdBar');
+  // Источник — UI-манифест в коде. Фолбэк на имена — только для старых треков,
+  // где манифеста ещё нет (никаких комментариев-маркеров).
+  transportName = ui?.transport?.name || 'song';
+  holdBarName = ui?.holdBar || 'holdBar';
   const { sites, names } = scanSliders(src);
   labels = names;
   switchCaps = {};
@@ -608,6 +755,7 @@ function buildKnobs() {
     switchCaps = scanSwitchCaps(src);
   }
   if (ui?.transport?.labels) switchCaps[transportName] = ui.transport.labels.map(String);
+  timelineSwitches = scanTimelineSwitches(src);
   padNames = scanPadNames(src);
   muteNames = scanMuteNames(src);
   instrumentMutes = scanInstrumentMutes(src);
@@ -648,6 +796,7 @@ function buildKnobs() {
   }
   renderTimeline();
   render();
+  applyModeLock();
   if (inHold()) setKnobLive(holdBarKnob(), holdBarCache);
   if (!defaultMutesApplied && /^[ \t]*\/\/[ \t]*@defaultMutes/m.test(src)) {
     applyDefaultMutes();
@@ -669,9 +818,13 @@ function render() {
       else if (padNames.has(k.name)) pads.push(k);
       else if (isSwitch(k)) {
         // Свитч = группа только если реально есть из чего выбирать:
-        // в @switches объявлено ≥2 подписи. Один вариант — не свитч.
+        // в UI/@switches объявлено ≥2 подписи. Один вариант — не свитч.
         const caps = switchCaps[k.name];
-        if (!caps || caps.length >= 2) switches.push(k); // без объявления — легаси, не прячем
+        const hasVariants = !caps || caps.length >= 2;
+        // Свитчи, привязанные к TIMELINE, интерактивны только в LOOP:
+        // в SONG/HOLD их значение берётся из секции, кнопки ничего не меняют.
+        const timelineDriven = timelineSwitches.has(k.name) && playState() !== 0;
+        if (hasVariants && !timelineDriven) switches.push(k);
       } else globals.push(k);
       continue;
     }
@@ -724,6 +877,8 @@ function renderModeSwitch(k, root) {
       setKnob(k, v);
       if (v === transportMax()) setHoldBar(timelineBar);
       renderTimeline();
+      render();
+      applyModeLock();
       btns.forEach((o, j) => o.classList.toggle('on', vals[j] === v));
     });
     btns.push(b);
@@ -753,6 +908,9 @@ function renderSwitches(list) {
     for (let v = k.min; v <= k.max + 1e-9; v += 1) vals.push(v);
     const caps = switchCaps[k.name] || [];
     const btns = [];
+    const btnsBox = document.createElement('span');
+    btnsBox.className = 'btns';
+    box.appendChild(btnsBox);
     vals.forEach((v, i) => {
       const b = document.createElement('button');
       b.type = 'button';
@@ -768,7 +926,7 @@ function renderSwitches(list) {
         for (const other of btns) other.classList.toggle('on', other === b);
       });
       btns.push(b);
-      box.appendChild(b);
+      btnsBox.appendChild(b);
     });
     const cur = Math.round(k.value);
     btns.forEach((b, i) => b.classList.toggle('on', vals[i] === cur));
@@ -1863,6 +2021,8 @@ function setKnob(k, v) {
 }
 
 // ── 5. editor theme and visualizer ────────────────────────────────
+lockDetailsToggle('timeline');
+lockDetailsToggle('automation');
 // cm.themes — 39 color schemes from strudel.cc itself; activateTheme writes the
 // theme into `:root` as `--background/--foreground/--caret/...` variables. Our own
 // variables are --bg/--panel/--text/--accent, they do not collide, so the panel

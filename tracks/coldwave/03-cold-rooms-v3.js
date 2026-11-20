@@ -23,17 +23,17 @@ if (typeof samples === 'function') {
 }
 
 // ── переключатели ────────────────────────────────────────────────
-// UI-манифест для панели: это КОД (валидный JSON), а не комментарий.
+// UI-манифест для панели: обычный JS-объект в коде, а не комментарий.
 // Удалишь комментарии — панель всё равно знает роли и варианты.
-const UI = JSON.parse(String.raw`{
-  "transport": { "name": "play", "labels": ["loop", "song", "hold"] },
-  "holdBar": "holdBar",
-  "switches": {
-    "mode": ["machine", "offbeat", "half", "toms"],
-    "gtr": ["riff", "sparse"],
-    "arp": ["wall", "high"]
-  }
-}`)
+const UI = {
+  transport: { name: 'play', labels: ['loop', 'song', 'hold'] },
+  holdBar: 'holdBar',
+  switches: {
+    mode: ['machine', 'offbeat', 'half', 'toms'],
+    gtr: ['riff', 'sparse'],
+    arp: ['wall', 'high'],
+  },
+}
 const play = slider(1, 0, 2, 1)   // 0 LOOP (без TIMELINE), 1 SONG, 2 HOLD
 const mode = slider(0, 0, 3, 1)   // четыре механических рисунка
 const gtr = slider(0, 0, 1, 1)    // гитара: riff / sparse
@@ -314,7 +314,7 @@ const autoSwitch = (key, knob) =>
 const modeAuto = autoSwitch('mode', mode)
 const gtrAuto = autoSwitch('gtr', gtr)
 const arpAuto = autoSwitch('arp', arp)
-// AUTOMATION: HOLD замирает на holdBar, иначе обычная кривая.
+// AUTOMATION: SONG — кривая по форме, LOOP — нейтрально (×1), HOLD — снимок.
 const autoValueAt = (path, bar) => {
   const pts = AUTOMATION.find((a) => a.path === path)?.points || []
   if (!pts.length) return 1
@@ -327,7 +327,8 @@ const autoValueAt = (path, bar) => {
   return pts[pts.length - 1][1]
 }
 const autoAt = (path) =>
-  autoCurve(path).mul(pure(1).sub(holdGate))
+  autoCurve(path).mul(songGate)
+    .add(loopGate)
     .add(holdBar.fmap((b) => autoValueAt(path, b)).mul(holdGate))
 const audible = (hap) => {
   const g = hap.value?.gain
