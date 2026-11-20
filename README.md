@@ -171,6 +171,8 @@ web/
                     `// @pads` рисует momentary-пэды (клавиши 1–9),
                     `// @mutes` — ряд обычных 0/1 mute-кнопок под сценами,
                     `// @scenes` — Intro/Theme, Export/Import JSON,
+                    `// @transport`/`// @holdBar` — роли свитча режима и такта
+                    холда (панель не знает имён ручек),
                     `const TIMELINE` — читаемый массив объектов; горизонтальная сворачиваемая панель:
                     секции, target-множители, playhead, APPLY/LOOP/STOP;
                     правки по Ctrl+Enter или APPLY; секции идут подряд, длина

@@ -537,16 +537,25 @@ const knobByAnchor = new Map(); // widget id → { input, out }
 // HOLD: номер секции (0 = выкл) и такт для снимка AUTOMATION. Панель пишет
 // их только в движок (без правки документа) — это перформанс-состояние.
 const knobByName = (name) => knobs.find((k) => k.name === name && k.path.length === 0)
-const holdBarKnob = () => knobByName('holdBar')
-const playKnob = () => knobByName('play') || knobByName('song')
-// 0 LOOP, 1 SONG, 2 HOLD. Старая ручка `song` (0/1) читается как LOOP/SONG.
+// Панель не знает имён трека: роли ручек объявляются маркерами в коде.
+//   // @transport <switch>   — свитч в шапке таймлайна; 0 jam, 1 timeline, max HOLD
+//   // @holdBar  <slider>     — такт снимка AUTOMATION для HOLD
+// Без маркеров — легаси: транспорт ищем как `song`, holdBar как `holdBar`.
+let transportName = 'song';
+let holdBarName = 'holdBar';
+const holdBarKnob = () => knobByName(holdBarName);
+const playKnob = () => knobByName(transportName);
+const transportMax = () => { const k = playKnob(); return k ? Math.round(k.max) : 1; };
 const playState = () => {
   const k = playKnob();
   if (!k) return 1;
-  const v = Math.round(Number(k.value));
-  return k.name === 'song' ? (v > 0.5 ? 1 : 0) : Math.max(0, Math.min(2, v));
-}
-const inHold = () => playState() === 2
+  return Math.max(0, Math.min(transportMax(), Math.round(Number(k.value))));
+};
+const inHold = () => {
+  const k = playKnob();
+  const max = transportMax();
+  return !!k && max >= 2 && Math.round(Number(k.value)) === max;
+};
 const holdBarValue = () => { const k = holdBarKnob(); return k ? Math.round(Number(k.value)) : 0; }
 const sectionIndexAtBar = (bar) => {
   if (!timeline.length) return -1;
@@ -572,6 +581,10 @@ const openState = new Map(); // 'group' / 'group.inst' → свёрнуто ли
 
 function buildKnobs() {
   const src = mirror.editor.state.doc.toString();
+  const tm = /^[ \t]*\/\/[ \t]*@transport[ \t]+(\w+)/m.exec(src);
+  transportName = tm ? tm[1] : 'song';
+  const hm = /^[ \t]*\/\/[ \t]*@holdBar[ \t]+(\w+)/m.exec(src);
+  holdBarName = hm ? hm[1] : 'holdBar';
   const { sites, names } = scanSliders(src);
   labels = names;
   switchCaps = scanSwitchCaps(src);
@@ -631,7 +644,7 @@ function render() {
   const groups = new Map(); // group → Map(instrument → knobs[])
   for (const k of knobs) {
     if (k.path.length === 0) {
-      if (k.name === 'hold' || k.name === 'holdBar') continue;
+      if (k.name === holdBarName) continue;
       if (muteNames.has(k.name)) mutes.push(k);
       else if (padNames.has(k.name)) pads.push(k);
       else (isSwitch(k) ? switches : globals).push(k);
@@ -684,7 +697,7 @@ function renderModeSwitch(k, root) {
       e.stopPropagation();
       k.value = v;
       setKnob(k, v);
-      if (v === 2) setHoldBar(timelineBar);
+      if (v === transportMax()) setHoldBar(timelineBar);
       renderTimeline();
       btns.forEach((o, j) => o.classList.toggle('on', vals[j] === v));
     });
@@ -701,7 +714,7 @@ function renderSwitches(list) {
   root.innerHTML = '';
   if (modeRoot) modeRoot.innerHTML = '';
   for (const k of list) {
-    if (modeRoot && (k.name === 'play' || k.name === 'song')) {
+    if (modeRoot && k.name === transportName) {
       renderModeSwitch(k, modeRoot);
       continue;
     }
@@ -723,8 +736,8 @@ function renderSwitches(list) {
       b.addEventListener('click', () => {
         k.value = v;
         setKnob(k, v);
-        if (k.name === 'play' || k.name === 'song') {
-          if (v === 2) setHoldBar(timelineBar);
+        if (k.name === transportName) {
+          if (v === transportMax()) setHoldBar(timelineBar);
           renderTimeline();
         }
         for (const other of btns) other.classList.toggle('on', other === b);
@@ -998,7 +1011,7 @@ function renderTimeline() {
       e.preventDefault();
       const pk = playKnob();
       if (!pk) return;
-      if (playState() !== 2) setKnob(pk, 2);
+      if (!inHold()) setKnob(pk, transportMax());
       setHoldBar(sec.at);
       timelineSel = i;
       seekTimeline(sec.at);
@@ -1431,7 +1444,7 @@ function timelineTick() {
   }
   const st = playState();
   if (st !== 1) {
-    const bar = st === 2 ? holdBarValue() : 0;
+    const bar = inHold() ? holdBarValue() : 0;
     timelineBar = bar;
     updatePlayhead(bar);
     applyAutomation(bar);

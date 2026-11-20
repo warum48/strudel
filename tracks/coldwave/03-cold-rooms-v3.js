@@ -28,7 +28,9 @@ const play = slider(1, 0, 2, 1)   // 0 LOOP (без TIMELINE), 1 SONG, 2 HOLD
 const mode = slider(0, 0, 3, 1)   // четыре механических рисунка
 const gtr = slider(0, 0, 1, 1)    // гитара: riff / sparse
 const arp = slider(0, 0, 1, 1)    // арп: wall (+12) / high (+24)
-// HOLD: такт-снимок; секция определяется по этому такту (ставит панель).
+// Роли ручек для панели (без имён трека): транспорт и такт снимка.
+// @transport play
+// @holdBar holdBar
 const holdBar = slider(0, 0, 127, 1)
 
 // ── глобальные ───────────────────────────────────────────────────
