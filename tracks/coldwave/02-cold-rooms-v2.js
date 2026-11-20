@@ -187,22 +187,22 @@ const TIMELINE = [
   { at: 0,  len: 8,  name: 'INTRO',  values: { kick: 0, snare: 0, rim: 0, hat: 0.5, ohat: 0, tom: 0, bass: 0.6, pad: 1, guitar: 0, lead: 0, air: 1, hiss: 1, mode: 2, wall: 0, arpwall: 0, leadBreak: 0, voxClean: 0, voxGrain: 0  } },
   { at: 8,  len: 16, name: 'VERSE',  values: { kick: 1, snare: 1, rim: 0.4, hat: 1, ohat: 0.2, tom: 0, bass: 1, pad: 1, guitar: 0.6, lead: 0, air: 0.8, hiss: 0.8, mode: 0, wall: 0, arpwall: 0, leadBreak: 0, voxClean: 0, voxGrain: 0  } },
   { at: 24, len: 16, name: 'CHORUS', values: { kick: 1, snare: 1, rim: 0.6, hat: 1, ohat: 0.5, tom: 0.6, bass: 1, pad: 1, guitar: 1, lead: 1, air: 0.8, hiss: 0.7, mode: 1, wall: 0.8, arpwall: 0, leadBreak: 0, voxClean: 0, voxGrain: 0  } },
-  { at: 40, len: 8,  name: 'BREAK',  values: { kick: 0, snare: 0, rim: 0, hat: 0.4, ohat: 0, tom: 0, bass: 0.8, pad: 1, guitar: 0.6, lead: 0, air: 1, hiss: 1, mode: 2, wall: 0.4, arpwall: 0, leadBreak: 1, voxClean: 1, voxGrain: 1  } },
+  { at: 40, len: 8,  name: 'BREAK',  values: { kick: 0, snare: 0, rim: 0, hat: 0.4, ohat: 0, tom: 0, bass: 0.8, pad: 1, guitar: 0.6, lead: 0, air: 1, hiss: 1, mode: 2, wall: 0.4, arpwall: 0, leadBreak: 1, voxClean: 0, voxGrain: 1  } },
   { at: 48, len: 16, name: 'VERSE 2',values: { kick: 1, snare: 1, rim: 0.4, hat: 1, ohat: 0.2, tom: 0.3, bass: 1, pad: 1, guitar: 0.7, lead: 0.4, air: 0.8, hiss: 0.8, mode: 1, wall: 0, arpwall: 1, leadBreak: 0, voxClean: 0, voxGrain: 0  } },
-  { at: 64, len: 8,  name: 'OUTRO',  values: { kick: 0.4, snare: 0, rim: 0, hat: 0.3, ohat: 0, tom: 0, bass: 0.5, pad: 1, guitar: 0.4, lead: 0.2, air: 1.1, hiss: 1.1, mode: 3, wall: 0.6, arpwall: 0, leadBreak: 0, voxClean: 0, voxGrain: 0  } },
+  { at: 64, len: 8,  name: 'OUTRO',  values: { kick: 0.4, snare: 0, rim: 0, hat: 0.3, ohat: 0, tom: 0, bass: 0.5, pad: 1, guitar: 0.4, lead: 0.2, air: 1.1, hiss: 1.1, mode: 3, wall: 0.6, arpwall: 0, leadBreak: 0, voxClean: 1, voxGrain: 0  } },
 ]
 // ── AUTOMATION: множители к слайдерам во времени (нативно) ────────
 // Читается и панелью (визуализация), и этим кодом (звук). В обычном
 // Strudel работает так же: autoCurve строит arrange из saw.range/pure.
 // Chorus 24–40: lead cut ×1 → ×2.4 (2200→5280) → ×1.
 // Verse 2 48–64: lead снова; guitar ×2.3; arp wall vol ×2.75.
-// Outro 64–72: lead/pad/wall/guitar cut в минимум (×0.14 / ×0.1 / ×0.11).
+// Outro 64–72: lead/pad/wall/guitar cut плавно в минимум (×0.14 / ×0.1 / ×0.11).
 const AUTOMATION = [
-  { path: 'keys.lead.cut',    points: [[24, 1], [35, 2.4], [40, 1], [48, 1], [59, 2.4], [64, 0.14], [72, 0.14]] },
-  { path: 'keys.guitar.cut',  points: [[48, 1], [59, 2.3], [64, 0.11], [72, 0.11]] },
+  { path: 'keys.lead.cut',    points: [[24, 1], [35, 2.4], [40, 1], [48, 1], [59, 2.4], [64, 1], [72, 0.14]] },
+  { path: 'keys.guitar.cut',  points: [[48, 1], [59, 2.3], [64, 1], [72, 0.11]] },
   { path: 'keys.arpwall.vol', points: [[48, 1], [59, 2.75], [64, 1]] },
-  { path: 'keys.pad.cut',     points: [[64, 0.1], [72, 0.1]] },
-  { path: 'keys.wall.cut',    points: [[64, 0.11], [72, 0.11]] },
+  { path: 'keys.pad.cut',     points: [[64, 1], [72, 0.1]] },
+  { path: 'keys.wall.cut',    points: [[64, 1], [72, 0.11]] },
   // grain enters from silence: 1st bar of BREAK, 3rd beat → «и» 3-й (40.5→40.75).
   { path: 'voice.grain.vol',  points: [[40, 0], [40.5, 0], [40.75, 1], [48, 1]] },
 ]
@@ -216,7 +216,7 @@ const autoCurve = (path) => {
   for (let i = 0; i < pts.length - 1; i++) {
     const [a, va] = pts[i]
     const [b, vb] = pts[i + 1]
-    if (a > pos) segs.push([a - pos, pure(va)])
+    if (a > pos) segs.push([a - pos, pure(1)])
     if (b > a) segs.push([b - a, va === vb ? pure(va) : saw.range(va, vb).slow(b - a)])
     pos = b
   }
@@ -397,7 +397,7 @@ $: riff.slow(2).struct('x ~ ~ ~ ~ ~ ~ ~')
   .pan(sine.slow(8).range(0.4, 0.6))
   .filter(audible)
 
-// ГОЛОС: чистая фраза целиком — один раз в начале BREAK (узнаваемо).
+// ГОЛОС: чистая фраза целиком — один раз в начале OUTRO (узнаваемо).
 $: s('rilke').struct('<x ~ ~ ~ ~ ~ ~ ~>')
   .speed(voice.clean.speed)
   .gain(voice.clean.vol.mul(tlOr('voxClean')))
