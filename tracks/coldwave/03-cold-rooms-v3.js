@@ -2,7 +2,10 @@
 // Классический kit: TR-606 (kick/hats), LinnDrum (snare), TR-808 (rim/toms).
 // Холодный пост-панк/минимал-вейв: механические барабаны, обрезанный бас,
 // Juno-пэд, угловатая гитара, тонкий лид. Dm, почти статичная гармония.
-// v3: +VERSE 3 с шугейз-стеной (абстрактная гитара), арпеджио остаётся.
+// v3: +VERSE 3 (уровни как в VERSE 2, гитара тем же плаком но реже,
+//     шершавый бас-пэд по реф. «Horn») и долгий фузз-аккорд из шума
+//     (ветер + гул в Dm). Форма 88 тактов:
+//     OUTRO 72–80, OUTRO 2 80–88 без барабанов и баса.
 // Гайд: docs/coldwave/README.md. Моды: 4 рисунка, состав не выключается.
 setcpm(108 / 4)
 
@@ -79,6 +82,13 @@ const instruments = {
       env: slider(2.6, 0, 8, 0.1),
       decay: slider(0.12, 0.03, 0.5, 0.01),
     },
+    bassPad: {
+      name: 'Bass pad',
+      vol: slider(0.05, 0, 2, 0.05),     // drone из рефа
+      hpf: slider(60, 20, 2000, 5),      // ниже — проходит тело, не только шипение
+      oct: slider(2, 0, 5, 1),           // октав вниз (2 по умолчанию)
+      tri: slider(0.25, 0, 2, 0.05),     // слой tri
+    },
   },
   keys: {
     name: 'Keys',
@@ -109,7 +119,8 @@ const instruments = {
     },
     wall: {
       name: 'String wall',
-      vol: slider(0.14, 0, 0.6, 0.01),
+      vol: slider(0.37, 0, 0.6, 0.01),
+      hpf: slider(800, 100, 1500, 10),
       cut: slider(900, 100, 5000, 10),
       q: slider(1.5, 0, 12, 0.5),
       det: slider(0.2, 0, 0.6, 0.01),
@@ -121,6 +132,10 @@ const instruments = {
       vol: slider(0.13, 0, 0.5, 0.01),
       cut: slider(2400, 200, 9000, 20),
       decay: slider(0.06, 0.01, 0.3, 0.005),
+      rate: slider(4, 1, 8, 0.5),        // частота арпеджио
+      q: slider(6, 3, 17, 0.5),          // резонанс
+      period: slider(2, 1, 8, 1),        // тактов на цикл LFO
+      depth: slider(1500, 0, 3000, 50),  // глубина LFO по срезу, Гц
       echo: slider(0.45, 0, 0.85, 0.01),
     },
     leadBreak: {
@@ -172,6 +187,23 @@ const instruments = {
       echo: slider(0.45, 0, 0.85, 0.01),
     },
   },
+  noise: {
+    name: 'Noise',
+    fuzz: {
+      name: 'Wind fuzz',
+      vol: slider(0.16, 0, 0.5, 0.01),
+      cut: slider(3600, 600, 12000, 20),
+      hpf: slider(420, 60, 4000, 10),
+      q: slider(1.6, 0.5, 12, 0.1),
+      wind: slider(1.6, 0, 4, 0.1),      // глубина хода среза, октавы
+      windAtk: slider(5, 0.2, 12, 0.1),  // ветер налетает, с
+      windDec: slider(6, 0.5, 16, 0.1),  // и стихает, с
+      atk: slider(2.5, 0.05, 8, 0.05),   // амплитуда, с
+      rel: slider(4, 0.2, 12, 0.1),
+      hum: slider(0.25, 0, 1, 0.01),      // гул-слой (×vol на голос)
+      humQ: slider(14, 4, 30, 0.5),      // резонанс гула = высота
+    },
+  },
   fx: {
     name: 'FX',
     reverb: {
@@ -180,32 +212,37 @@ const instruments = {
     },
   },
 }
-const { drums, low, keys, voice, atmos, fx } = instruments
+const { drums, low, keys, voice, noise, atmos, fx } = instruments
 
-// ── TIMELINE: 88 тактов ───────────────────────────────────────────
+// ── TIMELINE: 96 тактов ───────────────────────────────────────────
 const TIMELINE = [
-  { at: 0,  len: 8,  name: 'INTRO',  values: { kick: 0, snare: 0, rim: 0, hat: 0.5, ohat: 0, tom: 0, bass: 0.6, pad: 1, guitar: 0, lead: 0, air: 1, hiss: 1, mode: 2, wall: 0, arpwall: 0, leadBreak: 0, voxClean: 0, voxGrain: 0, guitarAbs: 0  } },
-  { at: 8,  len: 16, name: 'VERSE',  values: { kick: 1, snare: 1, rim: 0.4, hat: 1, ohat: 0.2, tom: 0, bass: 1, pad: 1, guitar: 0.6, lead: 0, air: 0.8, hiss: 0.8, mode: 0, wall: 0, arpwall: 0, leadBreak: 0, voxClean: 0, voxGrain: 0, guitarAbs: 0  } },
-  { at: 24, len: 16, name: 'CHORUS', values: { kick: 1, snare: 1, rim: 0.6, hat: 1, ohat: 0.5, tom: 0.6, bass: 1, pad: 1, guitar: 1, lead: 1, air: 0.8, hiss: 0.7, mode: 1, wall: 0.8, arpwall: 0, leadBreak: 0, voxClean: 0, voxGrain: 0, guitarAbs: 0  } },
-  { at: 40, len: 8,  name: 'BREAK',  values: { kick: 0, snare: 0, rim: 0, hat: 0.4, ohat: 0, tom: 0, bass: 0.8, pad: 1, guitar: 0.6, lead: 0, air: 1, hiss: 1, mode: 2, wall: 0.4, arpwall: 0, leadBreak: 1, voxClean: 0, voxGrain: 1, guitarAbs: 0  } },
-  { at: 48, len: 16, name: 'VERSE 2',values: { kick: 1, snare: 1, rim: 0.4, hat: 1, ohat: 0.2, tom: 0.3, bass: 1, pad: 1, guitar: 0.7, lead: 0.4, air: 0.8, hiss: 0.8, mode: 1, wall: 0, arpwall: 1, leadBreak: 0, voxClean: 0, voxGrain: 0, guitarAbs: 0  } },
-  { at: 64, len: 16, name: 'VERSE 3', values: { kick: 1, snare: 1, rim: 0.4, hat: 1, ohat: 0.3, tom: 0.4, bass: 1, pad: 1, guitar: 0, lead: 0.2, air: 1.1, hiss: 1.1, mode: 2, wall: 1, arpwall: 1, leadBreak: 0, voxClean: 0, voxGrain: 0, guitarAbs: 1 } },
-  { at: 80, len: 8,  name: 'OUTRO',  values: { kick: 0.4, snare: 0, rim: 0, hat: 0.3, ohat: 0, tom: 0, bass: 0.5, pad: 1, guitar: 0, lead: 0.2, air: 1.1, hiss: 1.1, mode: 3, wall: 0.6, arpwall: 0, leadBreak: 0, voxClean: 1, voxGrain: 0, guitarAbs: 0.3 } },
+  { at: 0,  len: 8,  name: 'INTRO',  values: { kick: 0, snare: 0, rim: 0, hat: 0.5, ohat: 0, tom: 0, bass: 0.6, pad: 1, guitar: 0, lead: 0, air: 1, hiss: 1, mode: 2, wall: 0, arpwall: 0, leadBreak: 0, voxClean: 0, voxGrain: 0, guitarThin: 0, bassPad: 0, noise: 0  } },
+  { at: 8,  len: 16, name: 'VERSE',  values: { kick: 1, snare: 1, rim: 0.4, hat: 1, ohat: 0.2, tom: 0, bass: 1, pad: 1, guitar: 0.6, lead: 0, air: 0.8, hiss: 0.8, mode: 0, wall: 0, arpwall: 0, leadBreak: 0, voxClean: 0, voxGrain: 0, guitarThin: 0, bassPad: 0, noise: 0  } },
+  { at: 24, len: 16, name: 'CHORUS', values: { kick: 1, snare: 1, rim: 0.6, hat: 1, ohat: 0.5, tom: 0.6, bass: 1, pad: 1, guitar: 1, lead: 1, air: 0.8, hiss: 0.7, mode: 1, wall: 0.8, arpwall: 0, leadBreak: 0, voxClean: 0, voxGrain: 0, guitarThin: 0, bassPad: 0, noise: 0  } },
+  { at: 40, len: 8,  name: 'BREAK',  values: { kick: 0, snare: 0, rim: 0, hat: 0.4, ohat: 0, tom: 0, bass: 0.8, pad: 1, guitar: 0.6, lead: 0, air: 1, hiss: 1, mode: 2, wall: 0.4, arpwall: 0, leadBreak: 1, voxClean: 0, voxGrain: 1, guitarThin: 0, bassPad: 0, noise: 0  } },
+  { at: 48, len: 16, name: 'VERSE 2',values: { kick: 1, snare: 1, rim: 0.4, hat: 1, ohat: 0.2, tom: 0.3, bass: 1, pad: 1, guitar: 0.7, lead: 0.4, air: 0.8, hiss: 0.8, mode: 1, wall: 0, arpwall: 1, leadBreak: 0, voxClean: 0, voxGrain: 0, guitarThin: 0, bassPad: 0, noise: 0  } },
+  { at: 64, len: 8,  name: 'VERSE 3', values: { kick: 1, snare: 1, rim: 0.4, hat: 1, ohat: 0.2, tom: 0.3, bass: 1, pad: 1, guitar: 0, lead: 0.4, air: 0.8, hiss: 0.8, mode: 2, wall: 1, arpwall: 1, leadBreak: 0, voxClean: 0, voxGrain: 0, guitarThin: 0.7, bassPad: 1, noise: 0.5  } },
+  { at: 72, len: 8,  name: 'OUTRO',  values: { kick: 0.4, snare: 0, rim: 0, hat: 0.3, ohat: 0, tom: 0, bass: 0.5, pad: 1, guitar: 0, lead: 0.2, air: 1.1, hiss: 1.1, mode: 3, wall: 0.6, arpwall: 0, leadBreak: 0, voxClean: 0, voxGrain: 1, guitarThin: 0, bassPad: 0, noise: 0  } },
+  { at: 80, len: 8,  name: 'OUTRO 2',values: { kick: 0, snare: 0, rim: 0, hat: 0, ohat: 0, tom: 0, bass: 0, pad: 1, guitar: 0, lead: 0.1, air: 1.2, hiss: 1.2, mode: 3, wall: 0.35, arpwall: 0, leadBreak: 0, voxClean: 0, voxGrain: 0, guitarThin: 0, bassPad: 0, noise: 0.25  } },
 ]
 // ── AUTOMATION: множители к слайдерам во времени (нативно) ────────
 // Читается и панелью (визуализация), и этим кодом (звук). В обычном
 // Strudel работает так же: autoCurve строит arrange из saw.range/pure.
 // Chorus 24–40: lead cut ×1 → ×2.4 (2200→5280) → ×1.
-// Verse 2 48–64: lead снова; guitar ×2.3; arp wall vol ×2.75.
-// VERSE 3 64–80: шугейз-стена; OUTRO 80–88: cut плавно в минимум.
+// Verse 2 48–64: lead снова; guitar ×2.3; arp wall vol ×2.75 — держим и в VERSE 3.
+// VERSE 3 64–72: уровни как в VERSE 2, гитара реже + шум; арп-срез ползёт
+// в минимум. OUTRO 72–80: бас-срез в минимум, grain гаснет на середине.
+// OUTRO 2 80–88 без барабанов и баса, хвост в темноту.
 const AUTOMATION = [
-  { path: 'keys.lead.cut',    points: [[24, 1], [35, 2.4], [40, 1], [48, 1], [59, 2.4], [64, 1], [80, 1], [88, 0.14]] },
-  { path: 'keys.guitar.cut',  points: [[48, 1], [59, 2.3], [64, 1], [80, 1], [88, 0.11]] },
-  { path: 'keys.arpwall.vol', points: [[48, 1], [59, 2.75], [64, 1]] },
-  { path: 'keys.pad.cut',     points: [[80, 1], [88, 0.1]] },
-  { path: 'keys.wall.cut',    points: [[80, 1], [88, 0.11]] },
-  // grain enters from silence: 1st bar of BREAK, 3rd beat → «и» 3-й (40.5→40.75).
-  { path: 'voice.grain.vol',  points: [[40, 0], [40.5, 0], [40.75, 1], [48, 1]] },
+  { path: 'keys.lead.cut',    points: [[24, 1], [35, 2.4], [40, 1], [48, 1], [59, 2.4], [64, 1], [72, 1], [80, 0.14]] },
+  { path: 'keys.guitar.cut',  points: [[48, 1], [59, 2.3], [64, 1], [72, 1], [80, 0.11]] },
+  { path: 'keys.arpwall.vol', points: [[48, 1], [59, 2.75], [72, 2.75]] },
+  { path: 'keys.arpwall.cut', points: [[64, 1], [72, 0.05]] },
+  { path: 'low.bass.cut',     points: [[72, 1], [80, 0.05]] },
+  { path: 'keys.pad.cut',     points: [[72, 1], [80, 0.1]] },
+  { path: 'keys.wall.cut',    points: [[72, 1], [80, 0.11]] },
+  // grain: вход из тишины в BREAK (40.5→40.75) и в OUTRO гаснет на середине (76→76.5).
+  { path: 'voice.grain.vol',  points: [[40, 0], [40.5, 0], [40.75, 1], [48, 1], [72, 1], [76, 1], [76.5, 0]] },
 ]
 
 const autoCurve = (path) => {
@@ -326,7 +363,7 @@ $: note(m('<d1 d1 d1 d1>')).struct(bassPat)
   .sometimesBy(0.18, (x) => x.add(note(12)))
   .s('sawtooth').unison(1)
   .gain(low.bass.vol.mul(tlOr('bass')))
-  .lpf(low.bass.cut.mul(perlin.slow(8).range(0.85, 1))).lpq(low.bass.res).ftype('24db')
+  .lpf(low.bass.cut.mul(autoCurve('low.bass.cut')).mul(perlin.slow(8).range(0.85, 1))).lpq(low.bass.res).ftype('24db')
   .lpenv(low.bass.env).lpa(0.003).lpd(low.bass.decay).lpsustain(0.2)
   .clip(0.9).decay(0.1).sustain(0.5).release(0.05)
   .orbit(2)
@@ -342,30 +379,52 @@ $: chords.slow(2)
   .room(verb).roomsize(fx.reverb.size)
   .filter(audible)
 
-// Гитара: угловатый короткий плак, chorus и дилей.
-$: riff.struct('~ ~ x ~ ~ x ~ ~ x ~ ~ x ~ ~ x ~')
-  .sometimesBy(0.2, (x) => x.rev())
-  .s('sawtooth').unison(1)
+// Гитара: угловатый короткий плак, chorus и дилей. Одна и та же цепь на
+// оба рисунка — VERSE 2 и разреженный VERSE 3; никакого тремоло/пэда.
+const guitarVoice = (rhythm) =>
+  riff.struct(rhythm)
+    .sometimesBy(0.2, (x) => x.rev())
+    .s('sawtooth').unison(1)
+    .lpf(keys.guitar.cut.mul(autoCurve('keys.guitar.cut'))).lpq(3)
+    .chorus(keys.guitar.chorus)
+    .attack(0.002).decay(keys.guitar.decay).sustain(0).release(0.08)
+    .delay(keys.guitar.echo).delaytime(0.375).delayfeedback(0.35)
+    .room(verb.mul(0.6)).roomsize(fx.reverb.size)
+    .filter(audible)
+
+const guitarDense = guitarVoice('~ ~ x ~ ~ x ~ ~ x ~ ~ x ~ ~ x ~')
   .gain(keys.guitar.vol.mul(tlOr('guitar')))
-  .lpf(keys.guitar.cut.mul(autoCurve('keys.guitar.cut'))).lpq(3)
-  .chorus(keys.guitar.chorus)
-  .attack(0.002).decay(keys.guitar.decay).sustain(0).release(0.08)
-  .delay(keys.guitar.echo).delaytime(0.375).delayfeedback(0.35)
-  .room(verb.mul(0.6)).roomsize(fx.reverb.size)
+const guitarSparse = guitarVoice('~ ~ ~ ~ x ~ ~ ~ ~ ~ ~ ~ x ~ ~ ~')
+  .gain(keys.guitar.vol.mul(tlOr('guitarThin', pure(0))))
+
+// Гитара: тот же короткий плак, в VERSE 3 — реже.
+$: stack(guitarDense, guitarSparse)
+
+// БАС-ПЭД: drone из реф. Strudel Market «Horn» на наших аккордах.
+// Один saw + unison(3) (supersaw и brown убраны — вешали VERSE 3 и давали
+// «белый шум»), seg(8) — шершавый chug, dist 3; изредка glitch seg(16)+pan.
+// Только VERSE 3. Октавы — oct (0…5 вниз), знак ставим в коде.
+const droneBody = s('saw').unison(3).detune(0.2)
+  .lpf(perlin.range(500, 8000))
+  .hpf(low.bassPad.hpf)
+  .seg(8)
+  .someCyclesBy(0.05, (x) =>
+    x.seg(16).clip(0.4).delay(0.8).hard(3)
+     .pan(m('0 0.25 0.5 0.75 1').palindrome()))
+  .dist(3)
+  .gain(low.bassPad.vol.mul(tlOr('bassPad', pure(0))))
+  .note(chords.slow(2).add(note(low.bassPad.oct.mul(-12))))
+  .room(verb.mul(0.35)).roomsize(fx.reverb.size)
+  .filter(audible)
+const droneTri = s('tri')
+  .note(chords.slow(2))
+  .soft(3)
+  .gain(low.bassPad.tri.mul(tlOr('bassPad', pure(0))))
+  .orbit(4)
   .filter(audible)
 
-// ШУГЕЙЗ-СТЕНА: абстрактная гитара — длинные аккорды, фузз, chorus, большой рум.
-// Не соло: никакой мелодической линии, только гармония и шум. Только VERSE 3.
-$: chords.slow(2)
-  .s('sawtooth').unison(4).detune(keys.guitar.chorus.mul(0.8))
-  .gain(keys.guitar.vol.mul(0.85).mul(tlOr('guitarAbs', pure(0))))
-  .lpf(keys.guitar.cut.mul(autoCurve('keys.guitar.cut')).mul(0.7)).lpq(4)
-  .distort(2.2)
-  .chorus(0.7)
-  .attack(1.6).decay(2).sustain(0.9).release(4)
-  .room(verb.mul(1.2)).roomsize(fx.reverb.size)
-  .pan(sine.slow(8).range(0.2, 0.8))
-  .filter(audible)
+// Бас-пэд: drone + tri.
+$: stack(droneBody, droneTri)
 
 // Моно-лид: редкая фраза, dotted-eighth delay.
 $: riff.slow(2).struct('x ~ ~ ~ ~ x ~ ~')
@@ -382,18 +441,20 @@ $: riff.slow(2).struct('x ~ ~ ~ ~ x ~ ~')
 $: chords.slow(2).add(note(12))
   .s('sawtooth').unison(4).detune(keys.wall.det)
   .gain(keys.wall.vol.mul(tlOr('wall')))
+  .hpf(keys.wall.hpf)
   .lpf(keys.wall.cut.mul(autoCurve('keys.wall.cut'))).lpq(keys.wall.q)
   .attack(keys.wall.atk).decay(2).sustain(0.8).release(keys.wall.rel)
   .chorus(0.4)
   .room(verb).roomsize(fx.reverb.size)
   .filter(audible)
 
-// Стена арпеджио: та же строка в 4× быстрее, высоко, в дилее. Только VERSE 2.
-$: riff.fast(4).add(note(12)).degradeBy(0.1)
+// Стена арпеджио: та же строка в rate× быстрее, высоко, в дилее (VERSE 2–3).
+$: riff.fast(keys.arpwall.rate).add(note(12)).degradeBy(0.1)
   .sometimesBy(0.2, (x) => x.rev())
   .s('sawtooth').unison(1)
   .gain(keys.arpwall.vol.mul(autoCurve('keys.arpwall.vol')).mul(tlOr('arpwall')))
-  .lpf(keys.arpwall.cut).lpq(2)
+  .lpf(keys.arpwall.cut.mul(autoCurve('keys.arpwall.cut')))
+  .lpq(keys.arpwall.q)
   .attack(0.002).decay(keys.arpwall.decay).sustain(0).release(0.05)
   .delay(keys.arpwall.echo).delaytime(0.375).delayfeedback(0.5)
   .room(verb.mul(0.5)).roomsize(fx.reverb.size)
@@ -411,6 +472,29 @@ $: riff.slow(2).struct('x ~ ~ ~ ~ ~ ~ ~')
   .pan(sine.slow(8).range(0.4, 0.6))
   .filter(audible)
 
+// ШУМ: не перкуссия, а один долгий аккорд. Верхний слой — широкий шум,
+// срез медленно налетает и стихает (ветер). Нижний — три узких резонанса
+// на d5/f5/a5: гул фильтра в Dm, но выше пэда — не подмешивается в его тело.
+const windFuzz = s('white').slow(8)
+  .gain(noise.fuzz.vol.mul(tlOr('noise', pure(0))))
+  .lpf(noise.fuzz.cut).lpq(noise.fuzz.q).hpf(noise.fuzz.hpf)
+  .lpenv(noise.fuzz.wind).lpa(noise.fuzz.windAtk).lpd(noise.fuzz.windDec).lps(0)
+  .attack(noise.fuzz.atk).decay(2).sustain(1).release(noise.fuzz.rel)
+  .room(verb.mul(0.6)).roomsize(fx.reverb.size)
+  .pan(0.45).filter(audible)
+
+const humChord = stack(...[587.33, 698.46, 880.0].map((hz, i) =>
+  s('white').slow(8)
+    .gain(noise.fuzz.vol.mul(tlOr('noise', pure(0))).mul(noise.fuzz.hum))
+    .bpf(hz).bpq(noise.fuzz.humQ)
+    .attack(noise.fuzz.atk).decay(2).sustain(1).release(noise.fuzz.rel)
+    .room(verb.mul(0.5)).roomsize(fx.reverb.size)
+    .pan(0.3 + i * 0.2).filter(audible),
+))
+
+// ШУМ: долгий фузз-аккорд; ветер + гул в Dm.
+$: stack(windFuzz, humChord)
+
 // ГОЛОС: чистая фраза целиком — один раз в начале OUTRO (узнаваемо).
 $: s('rilke').struct('<x ~ ~ ~ ~ ~ ~ ~>')
   .speed(voice.clean.speed)
@@ -420,7 +504,7 @@ $: s('rilke').struct('<x ~ ~ ~ ~ ~ ~ ~>')
   .room(verb.mul(0.45)).roomsize(fx.reverb.size)
   .filter(audible)
 
-// ГОЛОС: гранулярное облако поверх брейка; можно замьютить M, оставив clean.
+// ГОЛОС: гранулярное облако — BREAK и OUTRO 1 (в OUTRO гаснет на середине).
 $: s('rilke')
   .begin(voice.grain.begin).end(voice.grain.end)
   .striate(voice.grain.slices)
