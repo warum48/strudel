@@ -25,7 +25,7 @@ if (typeof samples === 'function') {
 // ── переключатели ────────────────────────────────────────────────
 // UI-манифест для панели: это КОД (валидный JSON), а не комментарий.
 // Удалишь комментарии — панель всё равно знает роли и варианты.
-const UI = {
+const UI = JSON.parse(String.raw`{
   "transport": { "name": "play", "labels": ["loop", "song", "hold"] },
   "holdBar": "holdBar",
   "switches": {
@@ -33,7 +33,7 @@ const UI = {
     "gtr": ["riff", "sparse"],
     "arp": ["wall", "high"]
   }
-}
+}`)
 const play = slider(1, 0, 2, 1)   // 0 LOOP (без TIMELINE), 1 SONG, 2 HOLD
 const mode = slider(0, 0, 3, 1)   // четыре механических рисунка
 const gtr = slider(0, 0, 1, 1)    // гитара: riff / sparse

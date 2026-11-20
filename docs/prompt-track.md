@@ -82,8 +82,11 @@ GitHub-примеры из `docs/references.md`), выпиши темп, гар�
    панель решает, показывать ли группу.
    Сделай переключатель режима **трёхпозиционным** и объяви роли **в коде**
    манифестом (валидный JSON, не комментарий):
-   `const UI = { "transport": { "name": "play", "labels": ["loop","song","hold"] },
-   "holdBar": "holdBar", "switches": { "mode": [...], "gtr": [...], "arp": [...] } }`.
+   `const UI = JSON.parse(String.raw\`{ "transport": { "name": "play",
+   "labels": ["loop","song","hold"] }, "holdBar": "holdBar",
+   "switches": { "mode": [...], "gtr": [...], "arp": [...] } }\`)`
+   (именно tagged template: двойные кавычки вне `samples(...)` транспайлер
+   превращает в `m(...)` и код падает).
    Панель парсит это через JSON.parse; комментарии-маркеры — устаревший фолбэк.
    0 = LOOP (без TIMELINE, все слои), 1 = SONG (по форме), 2 = HOLD (состояние
    секции под `holdBar`, автоматика заморожена). Панель переключает и двигает

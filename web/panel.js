@@ -443,25 +443,11 @@ const isSwitch = (k) => k.path.length === 0 && k.step === 1 && k.min === 0;
 //   "holdBar": "..."
 //   "switches": { "name": ["v1","v2",...] }          (2+ варианта = группа)
 function scanUI(src) {
-  const m = /const\s+UI\s*=\s*/.exec(src);
+  // Транспайлер Strudel превращает двойные кавычки в m(...), поэтому
+  // манифест — tagged template (его не трогают) с валидным JSON внутри.
+  const m = /const\s+UI\s*=\s*JSON\.parse\(\s*String\.raw`([\s\S]*?)`\s*\)/.exec(src);
   if (!m) return null;
-  let i = m.index + m[0].length;
-  while (i < src.length && /\s/.test(src[i])) i++;
-  if (src[i] !== '{') return null;
-  const start = i;
-  let depth = 0, str = null;
-  for (; i < src.length; i++) {
-    const ch = src[i];
-    if (str) {
-      if (ch === '\\') { i++; continue; }
-      if (ch === str) str = null;
-      continue;
-    }
-    if (ch === '"' || ch === "'") { str = ch; continue; }
-    if (ch === '{') depth++;
-    else if (ch === '}') { depth--; if (depth === 0) { i++; break; } }
-  }
-  try { return JSON.parse(src.slice(start, i)); } catch (e) { return null; }
+  try { return JSON.parse(m[1]); } catch (e) { return null; }
 }
 
 function scanSwitchCaps(src) {
