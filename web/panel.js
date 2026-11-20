@@ -1747,7 +1747,10 @@ function fillThemes() {
 
 function applyTheme(name) {
   try {
-    cm.initTheme(name);
+    // setTheme reconfigures the CodeMirror theme compartment (syntax colors);
+    // initTheme alone only writes CSS variables used by the page background.
+    if (mirror && typeof mirror.setTheme === 'function') mirror.setTheme(name);
+    else cm.initTheme(name);
   } catch (e) {
     setStatus(e.message, true);
   }
