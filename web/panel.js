@@ -515,6 +515,8 @@ let timelineSel = -1;
 let timelineTimer = null;
 let timelineBar = 0;
 let timelineLoop = true;
+let timelineLines = []; // line of each TIMELINE section
+let automationLines = []; // line of each AUTOMATION entry
 let pendingSeek = null;
 const soloed = new Set();
 const muted = new Set();
@@ -532,6 +534,8 @@ function buildKnobs() {
   instrumentMutes = scanInstrumentMutes(src);
   timeline = scanTimeline(src);
   automation = scanAutomation(src);
+  timelineLines = scanTimelineLines(src);
+  automationLines = scanAutomationLines(src, automation);
   renderAutomation();
   if (timelineSel >= timeline.length) timelineSel = timeline.length - 1;
   scenes = importedScenes || scanScenes(src);
@@ -892,6 +896,7 @@ function renderTimeline() {
       e.stopPropagation();
       timelineSel = i;
       renderTimeline();
+      scrollEditorToLine(timelineLines[i]);
     });
     secs.appendChild(b);
   });
@@ -1224,6 +1229,7 @@ function renderAutomation() {
     play.className = 'play';
     lane.appendChild(play);
     row.append(nm, cur, lane);
+    row.addEventListener('click', () => scrollEditorToLine(automationLines[i]));
     root.appendChild(row);
   });
 }
@@ -1232,6 +1238,46 @@ function updateAutoPlayhead(bar) {
   const total = Math.max(1, tlTotal());
   const left = ((Math.max(0, Math.min(total, bar)) / total) * 100) + '%';
   document.querySelectorAll('.auto-row .play').forEach((p) => { p.style.left = left; });
+}
+
+function lineAtSourcePos(src, pos) {
+  let n = 1;
+  for (let i = 0; i < pos && i < src.length; i++) if (src.charCodeAt(i) === 10) n++;
+  return n;
+}
+
+function scanTimelineLines(src) {
+  const lit = timelineLiteral(src);
+  if (!lit) return [];
+  const re = /\{\s*at:/g;
+  re.lastIndex = lit.start;
+  const out = [];
+  let m;
+  while ((m = re.exec(src)) && m.index < lit.end) out.push(lineAtSourcePos(src, m.index));
+  return out;
+}
+
+function scanAutomationLines(src, arr) {
+  const start = src.indexOf('const AUTOMATION');
+  if (start < 0) return arr.map(() => 0);
+  return arr.map((a) => {
+    const at = src.indexOf(`path: '${a.path}'`, start);
+    return at < 0 ? 0 : lineAtSourcePos(src, at);
+  });
+}
+
+function scrollEditorToLine(line) {
+  if (!mirror || !mirror.editor || !line) return;
+  try {
+    const ed = mirror.editor;
+    const doc = ed.state.doc;
+    const n = Math.max(1, Math.min(doc.lines, line));
+    const pos = doc.line(n).from;
+    ed.dispatch({ selection: { anchor: pos } });
+    const block = ed.lineBlockAt ? ed.lineBlockAt(pos) : null;
+    if (block) ed.scrollDOM.scrollTo({ top: Math.max(0, block.top - 80), behavior: 'smooth' });
+    ed.focus();
+  } catch {}
 }
 
 function startTimeline() {
@@ -1564,6 +1610,11 @@ function makeRow(k, label) {
     setKnob(k, v);
   });
   row.append(lab, input, out);
+  row.addEventListener('click', (e) => {
+    if (e.target.closest?.('button,input,select')) return;
+    if (!mirror?.editor) return;
+    scrollEditorToLine(mirror.editor.state.doc.lineAt(k.anchor).number);
+  });
   knobByAnchor.set('slider_' + k.anchor, { input, out, knob: k });
   return row;
 }

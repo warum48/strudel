@@ -196,10 +196,10 @@ const TIMELINE = [
 // Strudel работает так же: autoCurve строит arrange из saw.range/pure.
 // Chorus 24–40: lead cut ×1 → ×2.4 (2200→5280) → ×1.
 // Verse 2 48–64: lead снова; guitar ×2.3; arp wall vol ×2.75.
-// Outro 64–72: lead/pad/wall cut в минимум (×0.14 / ×0.1 / ×0.11).
+// Outro 64–72: lead/pad/wall/guitar cut в минимум (×0.14 / ×0.1 / ×0.11).
 const AUTOMATION = [
   { path: 'keys.lead.cut',    points: [[24, 1], [35, 2.4], [40, 1], [48, 1], [59, 2.4], [64, 0.14], [72, 0.14]] },
-  { path: 'keys.guitar.cut',  points: [[48, 1], [59, 2.3], [64, 1]] },
+  { path: 'keys.guitar.cut',  points: [[48, 1], [59, 2.3], [64, 0.11], [72, 0.11]] },
   { path: 'keys.arpwall.vol', points: [[48, 1], [59, 2.75], [64, 1]] },
   { path: 'keys.pad.cut',     points: [[64, 0.1], [72, 0.1]] },
   { path: 'keys.wall.cut',    points: [[64, 0.11], [72, 0.11]] },

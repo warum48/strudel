@@ -919,7 +919,7 @@ worklet/такт (2/с).
 - **Automation** под TIMELINE — нативная (`AUTOMATION` + `autoCurve` через
   `arrange`/`saw.range`), работает и в обычном Strudel. Множители: `lead.cut`
   ×1 → ×2.4 в CHORUS (24→35→40) и VERSE 2 (48→59→64); `guitar.cut` ×2.3 и
-  `arpwall.vol` ×2.75 в VERSE 2; в OUTRO lead/pad/wall уходят в минимум
+  `arpwall.vol` ×2.75 в VERSE 2; в OUTRO lead/pad/wall/guitar уходят в минимум
   (×0.14 / ×0.1 / ×0.11) на все 8 тактов; grain vol входит из 0 в 1-м такте
   BREAK на 3-й доле (40.5→40.75). Панель только рисует точки.
 
