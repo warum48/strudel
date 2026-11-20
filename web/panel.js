@@ -1747,14 +1747,17 @@ function setKnob(k, v) {
 // keeps its lime accent whatever theme the code wears.
 function fillThemes() {
   const sel = $('theme');
-  for (const name of Object.keys(cm.themes || {})) {
+  const names = Object.keys(cm.themes || {}).filter((n) => n !== ROOMV);
+  if (cm.themes?.[ROOMV]) names.unshift(ROOMV);
+  for (const name of names) {
     const o = document.createElement('option');
     o.value = name;
     o.textContent = name;
     sel.appendChild(o);
   }
-  sel.value = 'strudelTheme';
+  sel.value = ROOMV;
   sel.addEventListener('change', () => applyTheme(sel.value));
+  applyTheme(ROOMV);
 }
 
 function applyTheme(name) {
