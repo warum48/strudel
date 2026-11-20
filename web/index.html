@@ -369,6 +369,12 @@
   /* код красится темой редактора (activateTheme пишет --background в :root),
      панель остаётся на своих цветах — так тема видна, но лайм никуда не делся */
   #right { background: var(--background, var(--bg)); }
+  /* RoomVDark: syntax colors from sublime, code panel and gutters black */
+  html[data-theme="RoomVDark"] #right,
+  html[data-theme="RoomVDark"] #right .bar,
+  html[data-theme="RoomVDark"] #root .cm-editor,
+  html[data-theme="RoomVDark"] #root .cm-scroller,
+  html[data-theme="RoomVDark"] #root .cm-gutters { background: #000 !important; }
   #right .bar {
     flex: none;
     display: flex;

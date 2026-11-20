@@ -52,6 +52,18 @@ const wa = V.wa;
 const draw = V.draw;
 const { transpiler } = V.transpilerMod;
 
+// Custom theme: all syntax colors from sublime, code panel + gutters black.
+const ROOMV = 'RoomVDark';
+if (cm.themes && cm.themes.sublime && !cm.themes[ROOMV]) {
+  cm.themes[ROOMV] = cm.themes.sublime;
+  cm.settings[ROOMV] = {
+    ...cm.settings.sublime,
+    background: '#000000',
+    lineBackground: '#00000000',
+    gutterBackground: '#000000',
+  };
+}
+
 // Трек не зашит: меню в шапке собирается из /api/tracks (tools/serve.mjs
 // читает папку tracks/), поэтому новый файл появляется в списке сам.
 // Хэш в адресе (#/tracks/techno/13-gabber-v3.js) — чтобы ссылку можно было
@@ -1751,6 +1763,7 @@ function applyTheme(name) {
     // initTheme alone only writes CSS variables used by the page background.
     if (mirror && typeof mirror.setTheme === 'function') mirror.setTheme(name);
     else cm.initTheme(name);
+    document.documentElement.dataset.theme = name;
   } catch (e) {
     setStatus(e.message, true);
   }
