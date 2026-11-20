@@ -169,8 +169,8 @@ const audible = (hap) => {
 }
 
 // ── НОТЫ: Dm, модально; без поп-кадансов ─────────────────────────
-const riff = note('d3 f3 a3 c4 a3 f3 d3 a3') // узкий диапазон
-const chords = note('<[d3,f3,a3] [d3,f3,a3] [bb2,d3,f3] [g2,bb2,d3]>')
+const riff = note(m('d3 f3 a3 c4 a3 f3 d3 a3')) // узкий диапазон
+const chords = note(m('<[d3,f3,a3] [d3,f3,a3] [bb2,d3,f3] [g2,bb2,d3]>'))
 
 // ── РИТМЫ: mode 0..3, все слои остаются ──────────────────────────
 const kickPat = modeAuto.pick([
@@ -243,7 +243,7 @@ $: s('lt').struct('~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ x ~ x ~')
   .filter(audible)
 
 // Бас: обрезанный, повторяющийся; иногда октава.
-$: note('<d1 d1 d1 d1>').struct(bassPat)
+$: note(m('<d1 d1 d1 d1>')).struct(bassPat)
   .sometimesBy(0.18, (x) => x.add(note(12)))
   .s('sawtooth').unison(1)
   .gain(low.bass.vol.mul(tlOr('bass')))

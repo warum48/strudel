@@ -191,12 +191,12 @@ const audible = (hap) => {
 }
 
 // ── НОТЫ: e-фригийский, b2=f, тритон=bb ───────────────────────────
-const riff = note('e2 e2 f2 g2 bb2 a2 g2 f2')
+const riff = note(m('e2 e2 f2 g2 bb2 a2 g2 f2'))
 const acid = riff.fast(2)
   .sometimesBy(0.22, (x) => x.add(note(1)))
   .sometimesBy(0.14, (x) => x.add(note(6)))
   .degradeBy(0.08)
-const PAD = note('<[e3,f3,bb3] [e3,f3,b3] [e3,g3,bb3] [f3,ab3,b3]>')
+const PAD = note(m('<[e3,f3,bb3] [e3,f3,b3] [e3,g3,bb3] [f3,ab3,b3]>'))
 
 // ── СЛОИ (каждый со своей ручкой громкости) ──────────────────────
 $: s('bd').struct('x*4')
@@ -243,7 +243,7 @@ $: s('rim').struct('~ ~ ~ x ~ ~ x ~ ~ x ~ ~ x ~ ~ ~')
   .delay(drums.rim.echo).delaytime(0.375).delayfeedback(0.3)
   .filter(audible)
 
-$: note('<e1 e1 f1 bb1>').struct(bassPat)
+$: note(m('<e1 e1 f1 bb1>')).struct(bassPat)
   .sometimesBy(0.18, (x) => x.add(note(12)))
   .s('sawtooth').unison(3).detune(low.bass.det)
   .gain(low.bass.vol.mul(tlOr('bass')))
@@ -256,7 +256,7 @@ $: note('<e1 e1 f1 bb1>').struct(bassPat)
   .filter(audible)
 
 // SUB — низкая копия того же рисунка: вес, которого не хватало.
-$: note('<e1 e1 f1 bb1>').struct(bassPat)
+$: note(m('<e1 e1 f1 bb1>')).struct(bassPat)
   .s('sine')
   .gain(low.sub.vol.mul(tlOr('bass')))
   .lpf(low.sub.cut).lpq(1)
@@ -272,7 +272,7 @@ $: PAD.slow(2)
   .room(verb.mul(0.9)).roomsize(fx.reverb.size)
   .filter(audible)
 
-$: note('<[e2,bb2] [e2,b2] [e2,bb2] [f2,b2]>').slow(2)
+$: note(m('<[e2,bb2] [e2,b2] [e2,bb2] [f2,b2]>')).slow(2)
   .s('sawtooth').unison(2).detune(keys.drone.det)
   .gain(keys.drone.vol.mul(tlOr('drone')))
   .lpf(keys.drone.cut).lpq(2)

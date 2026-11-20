@@ -22,7 +22,7 @@ const fat = slider(0.45, 0, 1, 0.01)     // «жир»: масса и грохо
 const verb = slider(0.5, 0, 1, 0.01)
 
 // ── ОДНА СТРОКА НОТ (f-минор) ────────────────────────────────────
-const cell = note('f2 f2 ab2 c3 eb3 c3 ab2 f2')
+const cell = note(m('f2 f2 ab2 c3 eb3 c3 ab2 f2'))
 
 // Мелодия: опциональные октавы/квинты/реверс и пропуски.
 const tune = cell
@@ -57,7 +57,7 @@ $: s('oh').struct('~ ~ x ~ ~ ~ x ~ ~ ~ x ~ ~ ~ x ~')
   .room(verb.mul(0.5)).roomsize(8)
 
 // РОЛЛИНГ-БАС: 16-ми, пропуск на доле, иногда октава.
-$: note('<f1 f1 ab1 c2>').struct('~ x x x ~ x x x ~ x x x ~ x x x')
+$: note(m('<f1 f1 ab1 c2>')).struct('~ x x x ~ x x x ~ x x x ~ x x x')
   .sometimesBy(0.18, (x) => x.add(note(12)))
   .s('sawtooth').unison(2).detune(0.05)
   .gain(0.5).lpf(bassCut.mul(perlin.slow(8).range(0.8, 1.1))).lpq(8).ftype('24db')

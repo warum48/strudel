@@ -22,14 +22,14 @@ const verb = slider(0.55, 0, 1, 0.01)
 const fat = slider(0.4, 0, 1, 0.01)   // масса/грохот; 0 — если рвётся
 
 // ── НОТЫ (f-минор) ───────────────────────────────────────────────
-const cell = note('f2 f2 ab2 c3 eb3 c3 ab2 f2')
+const cell = note(m('f2 f2 ab2 c3 eb3 c3 ab2 f2'))
 const tune = cell
   .sometimesBy(0.22, (x) => x.add(note(12)))
   .sometimesBy(0.12, (x) => x.add(note(7)))
   .degradeBy(0.12)
 
 // Пэд: кварто-квинтовые укладки, без регги-«skank» — длинные аккорды.
-const PAD = note('<[f3,c4,g4] [ab3,eb4,c5] [eb3,bb3,g4] [db3,ab3,f4]>')
+const PAD = note(m('<[f3,c4,g4] [ab3,eb4,c5] [eb3,bb3,g4] [db3,ab3,f4]>'))
 
 // ── ГРУВ ─────────────────────────────────────────────────────────
 $: s('bd').struct('x*4')
@@ -55,7 +55,7 @@ $: s('oh').struct('~ ~ x ~ ~ ~ x ~ ~ ~ x ~ ~ ~ x ~')
   .room(verb.mul(0.55)).roomsize(9)
 
 // БАС — оффбит 8-е («ты-ды-дын»), иногда 16-я октава. Срез ≤80.
-$: note('<f1 f1 ab1 c2>').struct('~ x ~ x ~ x [x x] x')
+$: note(m('<f1 f1 ab1 c2>')).struct('~ x ~ x ~ x [x x] x')
   .sometimesBy(0.2, (x) => x.add(note(12)))
   .sometimesBy(0.12, (x) => x.stut(2, 1/32, 0.9))
   .s('sawtooth').unison(2).detune(0.05)

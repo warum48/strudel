@@ -23,7 +23,7 @@ const verb = slider(0.6, 0, 1, 0.01)
 const fat = slider(0.45, 0, 1, 0.01)   // масса/грохот; 0 — если рвётся
 
 // ── НОТЫ: e-фригийский + b2 (f) и тритон (bb) ────────────────────
-const riff = note('e2 e2 f2 g2 bb2 a2 g2 f2')
+const riff = note(m('e2 e2 f2 g2 bb2 a2 g2 f2'))
 
 // Acid: та же строка в 2×, иногда +1 полутон и +6 (тритон) — намеренно.
 const acid = riff.fast(2)
@@ -32,7 +32,7 @@ const acid = riff.fast(2)
   .degradeBy(0.08)
 
 // Пэд-кластер: e+f (малая секунда) и e+bb (тритон) — тёмная укладка.
-const PAD = note('<[e3,f3,bb3] [e3,f3,b3] [e3,g3,bb3] [f3,ab3,b3]>')
+const PAD = note(m('<[e3,f3,bb3] [e3,f3,b3] [e3,g3,bb3] [f3,ab3,b3]>'))
 
 // ── ГРУВ ─────────────────────────────────────────────────────────
 $: s('bd').struct('x*4')
@@ -62,7 +62,7 @@ $: s('rim').struct('~ ~ ~ x ~ ~ x ~ ~ x ~ ~ x ~ ~ ~')
   .room(verb.mul(0.35)).roomsize(8)
 
 // БАС — на e, с заходами в f (b2) и bb (тритон). Срез ≤80.
-$: note('<e1 e1 f1 bb1>').struct('~ x ~ x ~ x [x x] x')
+$: note(m('<e1 e1 f1 bb1>')).struct('~ x ~ x ~ x [x x] x')
   .sometimesBy(0.18, (x) => x.add(note(12)))
   .s('sawtooth').unison(2).detune(0.05)
   .gain(0.58).lpf(bassCut.mul(perlin.slow(8).range(0.8, 1.1))).lpq(10).ftype('24db')
@@ -78,7 +78,7 @@ $: PAD.slow(2)
   .room(verb.mul(0.8)).roomsize(11)
 
 // ДРОН — e+bb (тритон) тянется под всем; медленная атака.
-$: note('<[e2,bb2] [e2,b2] [e2,bb2] [f2,b2]>').slow(2)
+$: note(m('<[e2,bb2] [e2,b2] [e2,bb2] [f2,b2]>')).slow(2)
   .s('sawtooth').unison(2).detune(0.08)
   .gain(0.1).lpf(140).lpq(2)
   .attack(3).decay(2).sustain(0.9).release(4)
