@@ -73,6 +73,10 @@ GitHub-примеры из `docs/references.md`), выпиши темп, гар�
 6. **Таймлайн секций**: массив `{ at, len, name, values }` + функция
    `tlCurve(key)`/`tlOr(key)` (как в эталоне) и `song`-гейт для SONG/LOOP.
    `tlCurve` несёт последнее значение вперёд — ставь `0` явно.
+   Раздели материал и ритм: `figures` (ноты, один источник правды),
+   `grooves` (ритмы по слотам: kick/snare/hat/bass…) и `autoSwitch(key, knob)`
+   = «SONG → секция / LOOP → ручка / HOLD → секция». На каждое семейство
+   (`mode`, `gtr`, `arp`…) — свой свитч и свой ключ в секциях.
    Сделай переключатель режима **трёхпозиционным**: `play = slider(1, 0, 2, 1)`
    (`@switches play=loop,song,hold`) + глобал **`holdBar`** (такт снимка).
    0 = LOOP (без TIMELINE, все слои), 1 = SONG (по форме), 2 = HOLD (состояние
