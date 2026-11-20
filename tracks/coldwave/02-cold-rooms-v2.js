@@ -157,13 +157,13 @@ const instruments = {
     },
     grain: {
       name: 'Grain texture',
-      vol: slider(0, 0, 0.5, 0.01),
+      vol: slider(0.23, 0, 0.5, 0.01),
       // ── нарезка / скан сэмпла ──
       begin: slider(0, 0, 1, 0.01),       // окно в сэмпле
       end: slider(1, 0, 1, 0.01),
-      slices: slider(18, 2, 64, 1),       // мелкость кусочков (striate)
-      scan: slider(8, 1, 32, 1),         // за сколько циклов головка проходит сэмпл
-      density: slider(1, 0.25, 4, 0.05), // плотность гранул (fast)
+      slices: slider(55, 2, 64, 1),       // мелкость кусочков (striate)
+      scan: slider(10, 1, 32, 1),         // за сколько циклов головка проходит сэмпл
+      density: slider(2.7, 0.25, 4, 0.05), // плотность гранул (fast)
       speed: slider(1, 0.25, 2, 0.01),   // скорость = высота голоса
       clip: slider(1, 0.05, 2, 0.01),    // длина гранулы
       revProb: slider(0, 0, 1, 0.01),    // доля реверс-гранул
@@ -203,6 +203,8 @@ const AUTOMATION = [
   { path: 'keys.arpwall.vol', points: [[48, 1], [59, 2.75], [64, 1]] },
   { path: 'keys.pad.cut',     points: [[64, 0.1], [72, 0.1]] },
   { path: 'keys.wall.cut',    points: [[64, 0.11], [72, 0.11]] },
+  // grain enters from silence: 1st bar of BREAK, 3rd beat → «и» 3-й (40.5→40.75).
+  { path: 'voice.grain.vol',  points: [[40, 0], [40.5, 0], [40.75, 1], [48, 1]] },
 ]
 
 const autoCurve = (path) => {
@@ -413,7 +415,7 @@ $: s('rilke')
   .speed(voice.grain.speed)
   .clip(voice.grain.clip)
   .sometimesBy(voice.grain.revProb, (x) => x.rev())
-  .gain(voice.grain.vol.mul(tlOr('voxGrain', pure(0))))
+  .gain(voice.grain.vol.mul(autoCurve('voice.grain.vol')).mul(tlOr('voxGrain', pure(0))))
   .lpf(voice.grain.cut).hpf(160)
   .delay(voice.grain.echo).delaytime(0.375).delayfeedback(0.4)
   .room(verb.mul(0.6)).roomsize(fx.reverb.size)
