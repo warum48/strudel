@@ -8,6 +8,9 @@
 - `docs/pitfalls.md` — обязательные грабли Strudel (m(), slow vs struct,
   seg/worklet-бюджет, слайдеры без отрицательных литералов, один roomsize).
 - `docs/rules.md` — стилевые рамки и антипаттерны.
+- `docs/darkwave/README.md` — darkwave/new wave (Depeche-середина): BPM,
+  минор, драм-машины, pulse-бас, пэды/струнные, FM-колокол, источники.
+- `docs/coldwave/README.md` — coldwave: разреженность, 606/808/Linn, форма.
 
 ## Доки Strudel
 

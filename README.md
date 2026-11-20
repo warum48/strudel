@@ -96,6 +96,10 @@ tracks/
     01-cold-rooms.js  108 BPM coldwave: механические барабаны, обрезанный
                       бас, Juno-пэд, угловатая гитара, моно-лид; 4 моды,
                       64-тактный TIMELINE, LOOP/SONG, авто-смена барабанных мод; 13 дорожек, 58 слайдеров
+  darkwave/
+    01-static-confession.js  124 BPM darkwave/new wave (Depeche-середина, A minor):
+                      TR-909/808, pulse-бас, полый pulse-пэд, string machine,
+                      FM-колокол, арп из аккордов, лид; 104 такта, HOLD; 17 дорожек, 83 слайдера
   trip-hop/
     01-acid-jazz.js  84 BPM trip-hop / acid jazz: D дорийский с bII,
                       roots d–eb–bb–f–g–eb–c–d, квартовые PAD_A и 9/13
@@ -192,6 +196,9 @@ web/
                     и G (групповой mute из `mute:` в дереве, цвет по группе);
                     если все группы привязаны к инструментам, верхний ряд @mutes скрыт
 docs/
+  darkwave/           плейбук по darkwave/new wave (Depeche-середина): BPM,
+                      минор, драм-машины, pulse-бас, пэды/струнные, FM-колокол,
+                      форма, ошибки, источники
   dub-techno/         плейбук по даб-техно: характер, гармония, стаб в дилее,
                       саб ≤80, пэд, режимы, чек-лист следующего трека
   experimental/       Buchla / West Coast: complex oscillator, FM/AM,
@@ -919,6 +926,33 @@ DROP 16 → BREAK 8 → DROP2 16 → OUTRO 8. Каждый слой — своя
 
 Проверки: `verify` (13 дорожек / 66 слайдеров; LOOP 143 удара, SONG 71), `cpu` — 4
 worklet/такт (2/с).
+
+### Darkwave 01: Static Confession (`darkwave/01-static-confession.js`)
+
+Новый жанр в коллекции: **darkwave / new wave** в духе Depeche Mode середины
+80-х, но не копия: 124 BPM, **A минор/фригийский без доминанты**, 104 такта.
+Гармония антипоп: `Am9 – Bbmaj7 – Fmaj7 – Dm7` (i–bII–bVI–iv), без G# и
+кадансов; бас — педаль A с b2-соседом, не проход по корням. Отличие от coldwave — плотнее и драматичнее, есть бас-движение,
+арпеджио из аккордов, FM-колокол и мелодический лид; пустота остаётся в
+INTRO, INTERLUDE и OUTRO.
+
+Форма: INTRO 8 → VERSE 16 → PRE 8 → CHORUS 16 → INTERLUDE 8 → VERSE 2 16 →
+CHORUS 2 16 → OUTRO 8 → OUTRO 2 8. В OUTRO 2 барабаны и бас выключены.
+
+Состав: TR-909 (kick/snare/clap/hats), TR-808 (томы/rim), pulse-бас (cut 80,
+педаль A + октавы), sine-саб, полый pulse-пэд (`pw`, chorus), string machine,
+FM-колокол (`fmi/fmh`), арпеджио `.arp` из аккордов, square-лид, brown-воздух,
+лента, шум-ризер. Арпеджио и лид выбираются свитчами, автоматика ведёт срезы
+по секциям.
+
+Свитчи: `play` (LOOP/SONG/HOLD), `mode` (drive/push/half/stomp),
+`arpVar` (low/high), `leadVar` (verse/chorus). Материал/грувы/свитчи — как в
+новой схеме (`figures`, `grooves`, `autoSwitch`), UI-манифест в коде.
+
+Проверки: `verify` (17 дорожек / 83 слайдера; VERSE 47, CHORUS 67 ударов),
+`cpu` — 0 worklet/такт, `gains` — глушится в ноль.
+Гайд и источники: `docs/darkwave/README.md` (Wikipedia Dark wave, Music for
+the Masses, Violator, Depeche Mode; Sound Atlas; BeatKey).
 
 ### Coldwave 03: Cold Rooms v3 (`coldwave/03-cold-rooms-v3.js`) — шумовая вставка
 
