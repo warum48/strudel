@@ -67,6 +67,24 @@
   .sw .cap { color: var(--dim); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; }
   .sw button { padding: 2px 7px; font-size: 11px; background: transparent; }
   .sw button.on { background: var(--accent); color: #0d0f0c; }
+  /* автоматизация под таймлайном: точки выровнены по шкале TIMELINE */
+  #automation { flex: none; border-bottom: 1px solid var(--line); background: var(--panel); }
+  #automation > summary { cursor: pointer; list-style: none; display: flex; align-items: center; gap: 10px; padding: 7px 14px; }
+  #automation > summary::-webkit-details-marker { display: none; }
+  #automation > summary::before { content: '▸'; color: var(--accent); font-size: 11px; }
+  #automation[open] > summary::before { content: '▾'; }
+  #automation .tl-cap { color: var(--text); }
+  .auto-body { padding: 2px 12px 8px; display: flex; flex-direction: column; gap: 0; max-height: 160px; overflow: auto; }
+  .auto-row { position: relative; height: 32px; }
+  .auto-row .nm { position: absolute; left: 2px; top: 0; color: var(--dim); font-size: 10px; letter-spacing: .04em; max-width: 45%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .auto-row .cur { position: absolute; right: 2px; top: 0; color: var(--warn); font-size: 10px; }
+  .auto-row.active .cur { color: var(--accent); }
+  .auto-row .lane { position: absolute; left: 0; right: 0; bottom: 5px; height: 16px; }
+  .auto-row .lane::before { content: ''; position: absolute; left: 0; right: 0; top: 50%; border-top: 1px solid #2a3024; }
+  .auto-row .dot { position: absolute; top: 50%; width: 6px; height: 6px; border-radius: 50%; background: var(--dim); transform: translate(-50%, -50%); cursor: help; }
+  .auto-row .dot:hover { background: var(--warn); }
+  .auto-row.active .dot { background: var(--accent); }
+  .auto-row .play { position: absolute; top: 0; bottom: 0; width: 1px; left: 0; background: var(--warn); opacity: .55; pointer-events: none; }
   /* загрузка сэмплов: кнопка в шапке + компактный статус */
   #sampleStatus {
     color: var(--warn);
@@ -198,7 +216,8 @@
   #timeline button.tl-block .nm { display: block; font-weight: 700; letter-spacing: 0.04em; }
   #timeline button.tl-block .mt { display: block; color: var(--dim); font-size: 9px; margin-top: 2px; }
   #timeline .tl-playhead { position: absolute; top: 20px; bottom: 0; width: 2px; left: 0; background: var(--accent); box-shadow: 0 0 8px var(--accent); pointer-events: none; }
-  #timeline .tl-inspector { width: 360px; flex: none; border: 1px solid var(--line); background: #0b0d0a; padding: 8px; overflow: auto; max-height: 124px; font-size: 11px; }
+  /* section inspector intentionally hidden for now (kept for later) */
+  #timeline .tl-inspector { display: none !important; }
   #timeline .tl-inspector:empty { display: none; }
   #timeline .tl-row { display: flex; align-items: center; gap: 5px; margin-bottom: 5px; }
   #timeline .tl-row label { color: var(--dim); min-width: 58px; font-size: 9px; text-transform: uppercase; letter-spacing: 0.06em; }
@@ -469,8 +488,18 @@
       <div class="tl-sections" id="tlSections"></div>
       <div class="tl-playhead" id="tlPlayhead"></div>
     </div>
+    <!-- section inspector hidden for now; element kept for later edits -->
     <div class="tl-inspector" id="tlInspector"></div>
   </div>
+</details>
+
+<!-- ── AUTOMATION: изменения слайдеров во времени, под TIMELINE ── -->
+<details id="automation" open>
+  <summary>
+    <span class="tl-cap">Automation</span>
+    <span id="autoStatus">no AUTOMATION</span>
+  </summary>
+  <div class="auto-body" id="autolist"></div>
 </details>
 
 <main>

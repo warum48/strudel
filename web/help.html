@@ -244,6 +244,40 @@ const tlCurve = (key) => {
   re-evaluates on APPLY. LOOP loops the arrangement; STOP stops playback.
 </p>
 
+<h3>6. Automation (under the timeline)</h3>
+<p>
+  Automation is <strong>native track code</strong>, not a panel feature. Points are
+  multipliers to the slider, so the same track plays identically in plain
+  Strudel. The panel only draws the points on the TIMELINE scale and shows the
+  current multiplier; it does not send values to the engine.
+</p>
+<pre><code>const AUTOMATION = [
+  { path: 'keys.lead.cut',    points: [[24, 1], [29, 2.4], [32, 1]] },
+  { path: 'keys.guitar.cut',  points: [[40, 1], [50, 2.3], [56, 1]] },
+]
+
+// build a piecewise-linear multiplier with native signals:
+const autoCurve = (path) => {
+  const pts = AUTOMATION.find((a) => a.path === path)?.points || []
+  const segs = []
+  let pos = 0
+  for (let i = 0; i &lt; pts.length - 1; i++) {
+    const [a, va] = pts[i], [b, vb] = pts[i + 1]
+    if (a &gt; pos) segs.push([a - pos, pure(va)])
+    if (b &gt; a) segs.push([b - a, va === vb ? pure(va) : saw.range(va, vb).slow(b - a)])
+    pos = b
+  }
+  if (pos &lt; TL_TOTAL) segs.push([TL_TOTAL - pos, pure(pts.at(-1)[1])])
+  return arrange(...segs)
+}
+
+.lpf(keys.lead.cut.mul(autoCurve('keys.lead.cut'))))</code></pre>
+<p>
+  <code>saw.range(a, b).slow(n)</code> is the ramp; <code>pure</code> holds.
+  Outside the points the multiplier is 1 (base slider). Panel rows show
+  <code>×1 → ×2.4 → ×1</code> and the playhead; editing is still in the code.
+</p>
+
 <h3>6. LOOP / SONG</h3>
 <p>
   A common pattern is a <code>song</code> switch that bypasses the timeline in

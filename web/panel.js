@@ -512,6 +512,7 @@ const fmt = (x) => {
 
 let knobs = []; // { idx, path, name, anchor, min, max, step, value }
 let timeline = []; // @timeline sections: { at, length, name, values }
+let automation = []; // const AUTOMATION = [{ path, points: [[bar, value], ...] }]
 let timelineSel = -1;
 let timelineTimer = null;
 let timelineBar = 0;
@@ -532,6 +533,8 @@ function buildKnobs() {
   muteNames = scanMuteNames(src);
   instrumentMutes = scanInstrumentMutes(src);
   timeline = scanTimeline(src);
+  automation = scanAutomation(src);
+  renderAutomation();
   if (timelineSel >= timeline.length) timelineSel = timeline.length - 1;
   scenes = importedScenes || scanScenes(src);
   renderScenes();
@@ -1095,6 +1098,144 @@ function addTimelineSection() {
   commitTimeline();
 }
 
+// ── AUTOMATION: изменения слайдеров во времени ───────────────────
+// const AUTOMATION = [{ path: 'keys.lead.cut', points: [[24, 2200], [29, 5300], [32, 2200]] }]
+// Панель читает массив, рисует строки под TIMELINE и во время SONG
+// подмешивает значения в движок (документ и base-громкость не трогает).
+function automationLiteral(src) {
+  const m = /const\s+AUTOMATION\s*=\s*/.exec(src);
+  if (!m) return null;
+  const start = m.index + m[0].length;
+  if (src[start] !== '[') return null;
+  let depth = 0;
+  let inStr = false;
+  let quote = '';
+  let esc = false;
+  for (let i = start; i < src.length; i++) {
+    const c = src[i];
+    if (inStr) {
+      if (esc) esc = false;
+      else if (c === '\\') esc = true;
+      else if (c === quote) inStr = false;
+      continue;
+    }
+    if (c === '"' || c === "'" || c === '`') { inStr = true; quote = c; continue; }
+    if (c === '[') depth++;
+    else if (c === ']') {
+      depth--;
+      if (depth === 0) return src.slice(start, i + 1);
+    }
+  }
+  return null;
+}
+
+function scanAutomation(src) {
+  const json = automationLiteral(src);
+  if (!json) return [];
+  let arr = null;
+  try { arr = Function('"use strict"; return (' + json + ')')(); } catch { arr = null; }
+  if (!Array.isArray(arr)) return [];
+  return arr
+    .filter((a) => a && typeof a.path === 'string' && Array.isArray(a.points))
+    .map((a) => ({
+      path: a.path,
+      points: a.points
+        .filter((p) => Array.isArray(p) && p.length >= 2)
+        .map((p) => [Number(p[0]), Number(p[1])])
+        .filter((p) => Number.isFinite(p[0]) && Number.isFinite(p[1]))
+        .sort((x, y) => x[0] - y[0]),
+    }))
+    .filter((a) => a.points.length > 0);
+}
+
+function autoLabel(path) {
+  const p = path.split('.');
+  const inst = p.length >= 2 ? p[p.length - 2] : p[0];
+  const param = p[p.length - 1];
+  return `${inst} · ${param}`;
+}
+
+function autoValue(points, bar) {
+  let prev = null;
+  for (const [at, v] of points) {
+    if (bar < at) {
+      if (!prev) return null;
+      const [pa, pv] = prev;
+      const t = at === pa ? 0 : (bar - pa) / (at - pa);
+      return pv + (v - pv) * t;
+    }
+    if (bar === at) return v;
+    prev = [at, v];
+  }
+  return null;
+}
+
+function restoreAutomation() {
+  document.querySelectorAll('.auto-row').forEach((r) => {
+    r.classList.remove('active');
+    const cur = r.querySelector('.cur');
+    if (cur) cur.textContent = '×1';
+  });
+  updateAutoPlayhead(0);
+}
+
+function applyAutomation(bar) {
+  if (!automation.length) return;
+  updateAutoPlayhead(bar);
+  const songKnob = knobs.find((k) => k.name === 'song' && k.path.length === 0);
+  const inSong = !songKnob || Number(songKnob.value) > 0.5;
+  automation.forEach((a, i) => {
+    const v = inSong ? autoValue(a.points, bar) : null;
+    const row = document.querySelector(`.auto-row[data-auto="${i}"]`);
+    if (row) {
+      row.classList.toggle('active', v != null);
+      const cur = row.querySelector('.cur');
+      if (cur) cur.textContent = v == null ? '×1' : '×' + fmt(v);
+    }
+  });
+}
+
+function renderAutomation() {
+  const root = $('autolist');
+  const status = $('autoStatus');
+  if (!root || !status) return;
+  root.innerHTML = '';
+  status.textContent = automation.length ? `${automation.length} lanes` : 'no AUTOMATION';
+  const total = Math.max(1, tlTotal());
+  automation.forEach((a, i) => {
+    const row = document.createElement('div');
+    row.className = 'auto-row';
+    row.dataset.auto = String(i);
+    const nm = document.createElement('span');
+    nm.className = 'nm';
+    nm.textContent = autoLabel(a.path);
+    nm.title = a.path;
+    const cur = document.createElement('span');
+    cur.className = 'cur';
+    cur.textContent = '×1';
+    const lane = document.createElement('div');
+    lane.className = 'lane';
+    for (const [at, v] of a.points) {
+      const dot = document.createElement('span');
+      dot.className = 'dot';
+      dot.style.left = ((Math.max(0, Math.min(total, at)) / total) * 100) + '%';
+      dot.title = `bar ${at}: ×${fmt(v)}`;
+      lane.appendChild(dot);
+    }
+    const play = document.createElement('span');
+    play.className = 'play';
+    lane.appendChild(play);
+    row.append(nm, cur, lane);
+    root.appendChild(row);
+  });
+}
+
+function updateAutoPlayhead(bar) {
+  const total = Math.max(1, tlTotal());
+  const left = ((Math.max(0, Math.min(total, bar)) / total) * 100) + '%';
+  document.querySelectorAll('.auto-row .play').forEach((p) => { p.style.left = left; });
+}
+
 function startTimeline() {
   stopTimeline();
   timelineTimer = setInterval(timelineTick, 120);
@@ -1102,6 +1243,7 @@ function startTimeline() {
 function stopTimeline() {
   if (timelineTimer) clearInterval(timelineTimer);
   timelineTimer = null;
+  restoreAutomation();
   timelineBar = 0;
   updatePlayhead(0);
 }
@@ -1119,6 +1261,7 @@ function timelineTick() {
   }
   timelineBar = timelineLoop ? Math.floor(now) % total : Math.min(total, Math.floor(now));
   updatePlayhead(timelineBar);
+  applyAutomation(timelineBar);
 }
 
 async function applyTimeline() {
