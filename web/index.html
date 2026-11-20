@@ -74,6 +74,8 @@
   #automation > summary::before { content: '▸'; color: var(--accent); font-size: 11px; }
   #automation[open] > summary::before { content: '▾'; }
   #automation .tl-cap { color: var(--text); }
+  #automation .hint { color: var(--dim); font-size: 10px; text-transform: none; letter-spacing: 0; }
+  #automation[open] .hint { display: none; }
   .auto-body { padding: 2px 12px 8px; display: flex; flex-direction: column; gap: 0; max-height: 160px; overflow: auto; }
   .auto-row { position: relative; height: 32px; }
   .auto-row .nm { position: absolute; left: 2px; top: 0; color: var(--dim); font-size: 10px; letter-spacing: .04em; max-width: 45%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -450,9 +452,9 @@
     border-radius: 3px;
   }
   /* тема редактора ставит .cm-content 18px — рядом с сотней ручек это слишком
-     крупно. Возвращаем 13px; селектор с #root перебивает тему без !important. */
-  #root .cm-editor .cm-content,
-  #root .cm-editor .cm-line { font-size: 13px; line-height: 1.5; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+     крупно. Возвращаем 12px; селектор с #root перебивает тему без !important. */
+  #root .cm-editor .cm-content { font-size: 12px; }
+  #root .cm-editor .cm-line { font-size: 12px; line-height: 1.5; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
   #root .cm-editor .cm-gutters { font-size: 11px; }
   select {
     font: inherit;
@@ -491,9 +493,9 @@
   <span class="spacer"></span>
   <span id="status">loading…</span>
   <select id="theme" title="editor color theme"></select>
-  <button id="samples" class="ghost" title="download and decode every sample used by this track">SAMPLES</button>
+  <button id="samples" class="ghost" title="download and decode every sample used by this track">PRELOAD SAMPLES</button>
   <span id="sampleStatus"></span>
-  <a id="help" class="help" href="/web/help.html" title="how to make a track work with this UI">HELP</a>
+  <a id="help" class="help" href="/web/help.html" target="_blank" rel="noreferrer" title="how to make a track work with this UI">HELP</a>
 </header>
 
 <!-- ── SCENES / JSON: первая зона — пресеты, вторая — обмен JSON ── -->
@@ -544,10 +546,11 @@
 </details>
 
 <!-- ── AUTOMATION: изменения слайдеров во времени, под TIMELINE ── -->
-<details id="automation" open>
+<details id="automation">
   <summary>
     <span class="tl-cap">Automation</span>
     <span id="autoStatus">no AUTOMATION</span>
+    <span class="hint">click to expand</span>
   </summary>
   <div class="auto-body" id="autolist"></div>
 </details>
@@ -582,7 +585,6 @@
     <div class="bar">
       <span>track: <span class="kbd" id="trackPath">…</span></span>
       <span class="spacer"></span>
-      <span>viz: <span class="kbd">._pianoroll()</span> in the code</span>
       <span>Ctrl+Enter — run · Ctrl+. — stop · Cmd also works</span>
     </div>
     <canvas id="test-canvas" width="640" height="240"></canvas>

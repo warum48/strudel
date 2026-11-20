@@ -1612,7 +1612,7 @@ function renderTone(groups) {
 
     const gd = document.createElement('details');
     gd.className = 'grp';
-    gd.open = openState.get(g) ?? true;
+    gd.open = openState.get(g) ?? (g === 'keys');
     gd.addEventListener('toggle', () => openState.set(g, gd.open));
     const gs = document.createElement('summary');
     gs.innerHTML = `<span>${groupLabel(g)}</span><span class="n">${gParams}</span>`;
