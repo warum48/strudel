@@ -377,6 +377,13 @@
   html[data-theme="RoomVDark"] #root .cm-gutters { background: #000 !important; }
   /* darker comments in RoomVDark (sublime token class) */
   html[data-theme="RoomVDark"] .ͼf0 { color: #515864 !important; }
+  /* numbers in RoomVDark: was sublime orange #fbac52 */
+  html[data-theme="RoomVDark"] .ͼf6 { color: #fb7752 !important; }
+  /* inline CodeMirror sliders: monochrome, no blue */
+  html[data-theme="RoomVDark"] .cm-slider input[type="range"] {
+    accent-color: #ffffff;
+    filter: grayscale(1);
+  }
   #right .bar {
     flex: none;
     display: flex;
