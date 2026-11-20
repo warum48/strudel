@@ -938,8 +938,9 @@ worklet/такт (2/с).
 - **TIMELINE 64 такта**: INTRO → VERSE → CHORUS → BREAK → VERSE 2 → OUTRO.
 - **LOOP / SONG** (`song`, по умолчанию SONG): SONG идёт по форме, LOOP
   игнорирует таймлайн.
-- **Вторая стена:** к середине (CHORUS/VERSE 2) входит `String wall` — пэд
-  октавой выше, гейтится lane `wall`.
+- **Две стены:** `String wall` (пэд октавой выше) звучит в CHORUS (×0.8),
+  BREAK (×0.4), OUTRO (×0.6); `Arp wall` — в VERSE 2. В LOOP обе доступны
+  постоянно, чтобы соло на дорожке было слышно; в SONG гейтит TIMELINE.
 - **Микс**: тёмный верх, один общий `roomsize`, длинные румы/дилей, лента и
   воздух; `tape` — количество шипения.
 
