@@ -449,7 +449,6 @@ function scanSwitchCaps(src) {
   return caps;
 }
 let switchCaps = {};
-
 // PADS — momentary control. A top-level slider named in `// @pads a,b,c` is NOT
 // a switch: press/hold writes max (1), release writes min (0). The track gates a
 // one-bar fill layer by that slider, so holding loops the fill and releasing
@@ -647,7 +646,12 @@ function render() {
       if (k.name === holdBarName) continue;
       if (muteNames.has(k.name)) mutes.push(k);
       else if (padNames.has(k.name)) pads.push(k);
-      else (isSwitch(k) ? switches : globals).push(k);
+      else if (isSwitch(k)) {
+        // Свитч = группа только если реально есть из чего выбирать:
+        // в @switches объявлено ≥2 подписи. Один вариант — не свитч.
+        const caps = switchCaps[k.name];
+        if (!caps || caps.length >= 2) switches.push(k); // без объявления — легаси, не прячем
+      } else globals.push(k);
       continue;
     }
     if (k.path.length < 3) continue; // ключ-обёртка без параметра
