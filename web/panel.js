@@ -2006,6 +2006,8 @@ function applyDefaultMutes() {
 // сдвигается, а id виджета (`slider_<offset>`) живёт до следующего eval.
 // Поэтому каждый раз заново сканируем документ и берём k.idx-й вызов slider(.
 function setKnob(k, v) {
+  // держим k.value актуальным: exportScene берёт значения из knobs, а не из кода
+  k.value = Number(v);
   const src = mirror.editor.state.doc.toString();
   const site = scanSliders(src).sites[k.idx];
   if (site) {
