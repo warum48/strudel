@@ -628,6 +628,30 @@ function renderSwitches(list) {
     cap.className = 'cap';
     cap.textContent = k.name;
     box.appendChild(cap);
+    if (k.name === 'song') {
+      box.classList.add('toggle');
+      const tgl = document.createElement('button');
+      tgl.type = 'button';
+      tgl.className = 'tgl';
+      tgl.innerHTML = '<span>LOOP</span><span>SONG</span><i></i>';
+      const [loop, song] = tgl.querySelectorAll('span');
+      const paint = () => {
+        const v = Number(k.value) > 0.5 ? 1 : 0;
+        tgl.classList.toggle('on', v === 1);
+        loop.classList.toggle('on', v === 0);
+        song.classList.toggle('on', v === 1);
+      };
+      tgl.addEventListener('click', () => {
+        const next = Number(k.value) > 0.5 ? 0 : 1;
+        k.value = next;
+        setKnob(k, next);
+        paint();
+      });
+      paint();
+      box.appendChild(tgl);
+      root.appendChild(box);
+      continue;
+    }
     const vals = [];
     for (let v = k.min; v <= k.max + 1e-9; v += 1) vals.push(v);
     const caps = switchCaps[k.name] || [];
@@ -900,9 +924,6 @@ function renderTimeline() {
     });
     secs.appendChild(b);
   });
-  $('tlStatus').textContent = timeline.length
-    ? `${timeline.length} sections · ${total} bars`
-    : 'no TIMELINE';
   updatePlayhead();
   renderTimelineInspector();
 }
@@ -2084,6 +2105,39 @@ function stop() {
 
 $('play').addEventListener('click', () => play().catch((e) => setStatus(e.message, true)));
 $('stop').addEventListener('click', () => stop());
+
+// ── TRACK CODE export/import (same idea as JSON scenes) ──────────
+function exportTrack() {
+  if (!mirror?.editor) return;
+  const code = mirror.editor.state.doc.toString();
+  const name = (track.split('/').pop() || 'track.js').replace(/[^\w.-]/g, '_');
+  const url = URL.createObjectURL(new Blob([code], { type: 'text/javascript' }));
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = name;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  setSceneStatus(`track exported: ${name}`);
+}
+
+async function importTrack(file) {
+  if (!mirror?.editor || !file) return;
+  const code = await file.text();
+  stop();
+  mirror.editor.dispatch({ changes: { from: 0, to: mirror.editor.state.doc.length, insert: code } });
+  await mirror.evaluate();
+  buildKnobs();
+  $('title').textContent = file.name.replace(/\.js$/i, '');
+  setSceneStatus(`track imported: ${file.name}`);
+}
+
+$('trackExport')?.addEventListener('click', (e) => { e.preventDefault(); exportTrack(); });
+$('trackImport')?.addEventListener('click', (e) => { e.preventDefault(); $('trackFile')?.click(); });
+$('trackFile')?.addEventListener('change', (e) => {
+  const file = e.target.files?.[0];
+  importTrack(file).catch((err) => setStatus(err.message, true));
+  e.target.value = '';
+});
 $('track').addEventListener('change', (e) => {
   loadTrack(e.target.value).catch((err) => setStatus(err.message, true));
 });

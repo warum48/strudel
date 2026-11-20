@@ -172,10 +172,16 @@
   #timeline[open] > summary::before { content: '▾'; }
   #timeline .tl-cap { color: var(--text); }
   #timeline .sp { flex: 1; }
-  #timeline #tlStatus { color: var(--dim); text-transform: none; letter-spacing: 0; }
-  #timeline #tlAdd, #timeline #tlApply, #timeline #tlLoop, #timeline #tlStop { padding: 3px 8px; font-size: 10px; }
+  #timeline #tlLoop { padding: 3px 8px; font-size: 10px; }
   #timeline #tlLoop.on { background: var(--accent); border-color: var(--accent); color: #0d0f0c; font-weight: 700; }
-  #timeline #tlStop { border-color: var(--bad); color: #f0b1a8; }
+  #timeline .tl-transport { width: 26px; height: 22px; padding: 0; font-size: 12px; line-height: 1; display: inline-flex; align-items: center; justify-content: center; }
+  #timeline #play.on { background: var(--accent); border-color: var(--accent); color: #0d0f0c; }
+  .sw.toggle { display: inline-flex; align-items: center; gap: 6px; }
+  .sw.toggle .tgl { position: relative; display: inline-flex; width: 104px; height: 22px; padding: 0; border: 1px solid var(--line); border-radius: 11px; overflow: hidden; background: #0b0d0a; }
+  .sw.toggle .tgl span { position: relative; z-index: 1; flex: 1; font-size: 9px; letter-spacing: .05em; line-height: 20px; color: var(--dim); }
+  .sw.toggle .tgl span.on { color: #0d0f0c; font-weight: 700; }
+  .sw.toggle .tgl i { position: absolute; z-index: 0; top: 2px; left: 2px; width: calc(50% - 2px); height: 16px; border-radius: 9px; background: var(--accent); transition: transform .18s ease; }
+  .sw.toggle .tgl.on i { transform: translateX(100%); }
   .row.is-vol { grid-template-columns: 74px 1fr 42px 66px; }
   .mx-tools { display: flex; gap: 2px; justify-content: flex-start; }
   .mx-tools button { padding: 1px 4px; font-size: 9px; line-height: 1.2; min-width: 18px; }
@@ -418,8 +424,8 @@
   }
   /* выбор трека: любой файл из tracks/, а не один зашитый в panel.js */
   #track { max-width: 210px; }
-  #status { color: var(--dim); font-size: 11px; white-space: nowrap; }
-  #status.err { color: #ff8a7a; }
+  #status { display: none; color: var(--dim); font-size: 11px; white-space: nowrap; }
+  #status.err { display: inline; color: #ff8a7a; }
   .kbd { color: var(--text); }
 </style>
 
@@ -444,8 +450,6 @@
   <span class="spacer"></span>
   <span id="status">loading…</span>
   <select id="theme" title="editor color theme"></select>
-  <button id="play" class="ghost">PLAY</button>
-  <button id="stop" class="ghost">STOP</button>
   <button id="samples" class="ghost" title="download and decode every sample used by this track">SAMPLES</button>
   <span id="sampleStatus"></span>
   <a id="help" class="help" href="/web/help.html" title="how to make a track work with this UI">HELP</a>
@@ -465,6 +469,13 @@
     <button id="sceneImport" type="button" title="load settings or scenes from JSON">IMPORT</button>
     <input id="sceneFile" type="file" accept=".json,application/json" hidden />
   </div>
+  <span class="sep"></span>
+  <div class="zone">
+    <span class="cap">Track</span>
+    <button id="trackExport" type="button" title="download the Strudel code of this track">EXPORT TRACK</button>
+    <button id="trackImport" type="button" title="load a Strudel code file">IMPORT TRACK</button>
+    <input id="trackFile" type="file" accept=".js,.txt,text/javascript" hidden />
+  </div>
   <span id="sceneStatus"></span>
 </div>
 
@@ -475,12 +486,10 @@
 <details id="timeline" open>
   <summary>
     <span class="tl-cap">Timeline</span>
-    <span id="tlStatus">no TIMELINE</span>
     <span class="sp"></span>
-    <button id="tlApply" type="button" title="apply TIMELINE (re-evaluate the track)">APPLY</button>
+    <button id="play" class="tl-transport" title="play (Ctrl+Enter)">▶</button>
+    <button id="stop" class="tl-transport" title="stop">■</button>
     <button id="tlLoop" type="button" class="on" title="loop timeline / stop at the end">LOOP</button>
-    <button id="tlStop" type="button" title="stop playback">STOP</button>
-    <button id="tlAdd" type="button" title="add a section at the end">+ section</button>
   </summary>
   <div class="tl-body">
     <div class="tl-track" id="tlTrack" title="click to seek">
