@@ -438,6 +438,32 @@ const paramLabel = (name) => pretty(name);
 // Нет строки — кнопки называются цифрами, но всё равно рисуются.
 const isSwitch = (k) => k.path.length === 0 && k.step === 1 && k.min === 0;
 
+// UI-манифест в коде (не в комментариях): const UI = { ... } — валидный JSON.
+//   "transport": { "name": "...", "labels": [...] }  (0 jam, 1 timeline, max HOLD)
+//   "holdBar": "..."
+//   "switches": { "name": ["v1","v2",...] }          (2+ варианта = группа)
+function scanUI(src) {
+  const m = /const\s+UI\s*=\s*/.exec(src);
+  if (!m) return null;
+  let i = m.index + m[0].length;
+  while (i < src.length && /\s/.test(src[i])) i++;
+  if (src[i] !== '{') return null;
+  const start = i;
+  let depth = 0, str = null;
+  for (; i < src.length; i++) {
+    const ch = src[i];
+    if (str) {
+      if (ch === '\\') { i++; continue; }
+      if (ch === str) str = null;
+      continue;
+    }
+    if (ch === '"' || ch === "'") { str = ch; continue; }
+    if (ch === '{') depth++;
+    else if (ch === '}') { depth--; if (depth === 0) { i++; break; } }
+  }
+  try { return JSON.parse(src.slice(start, i)); } catch (e) { return null; }
+}
+
 function scanSwitchCaps(src) {
   const caps = {};
   const line = /^[ \t]*\/\/[ \t]*@switches[ \t]+(.+)$/m.exec(src);
@@ -580,13 +606,22 @@ const openState = new Map(); // 'group' / 'group.inst' → свёрнуто ли
 
 function buildKnobs() {
   const src = mirror.editor.state.doc.toString();
+  const ui = scanUI(src);
   const tm = /^[ \t]*\/\/[ \t]*@transport[ \t]+(\w+)/m.exec(src);
-  transportName = tm ? tm[1] : 'song';
   const hm = /^[ \t]*\/\/[ \t]*@holdBar[ \t]+(\w+)/m.exec(src);
-  holdBarName = hm ? hm[1] : 'holdBar';
+  transportName = ui?.transport?.name || (tm ? tm[1] : 'song');
+  holdBarName = ui?.holdBar || (hm ? hm[1] : 'holdBar');
   const { sites, names } = scanSliders(src);
   labels = names;
-  switchCaps = scanSwitchCaps(src);
+  switchCaps = {};
+  if (ui && ui.switches && typeof ui.switches === 'object') {
+    for (const [k, v] of Object.entries(ui.switches)) {
+      switchCaps[k] = Array.isArray(v) ? v.map(String) : [];
+    }
+  } else {
+    switchCaps = scanSwitchCaps(src);
+  }
+  if (ui?.transport?.labels) switchCaps[transportName] = ui.transport.labels.map(String);
   padNames = scanPadNames(src);
   muteNames = scanMuteNames(src);
   instrumentMutes = scanInstrumentMutes(src);

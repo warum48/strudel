@@ -23,15 +23,22 @@ if (typeof samples === 'function') {
 }
 
 // ── переключатели ────────────────────────────────────────────────
-// @switches play=loop,song,hold mode=machine,offbeat,half,toms gtr=riff,sparse arp=wall,high
+// UI-манифест для панели: это КОД (валидный JSON), а не комментарий.
+// Удалишь комментарии — панель всё равно знает роли и варианты.
+const UI = {
+  "transport": { "name": "play", "labels": ["loop", "song", "hold"] },
+  "holdBar": "holdBar",
+  "switches": {
+    "mode": ["machine", "offbeat", "half", "toms"],
+    "gtr": ["riff", "sparse"],
+    "arp": ["wall", "high"]
+  }
+}
 const play = slider(1, 0, 2, 1)   // 0 LOOP (без TIMELINE), 1 SONG, 2 HOLD
 const mode = slider(0, 0, 3, 1)   // четыре механических рисунка
 const gtr = slider(0, 0, 1, 1)    // гитара: riff / sparse
 const arp = slider(0, 0, 1, 1)    // арп: wall (+12) / high (+24)
-// Роли ручек для панели (без имён трека): транспорт и такт снимка.
-// @transport play
-// @holdBar holdBar
-const holdBar = slider(0, 0, 127, 1)
+const holdBar = slider(0, 0, 127, 1) // такт снимка AUTOMATION для HOLD
 
 // ── глобальные ───────────────────────────────────────────────────
 const verb = slider(0.8, 0, 1, 0.01)
