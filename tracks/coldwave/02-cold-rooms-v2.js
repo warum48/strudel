@@ -150,16 +150,25 @@ const instruments = {
     name: 'Voice',
     clean: {
       name: 'Clean phrase',
-      vol: slider(0.38, 0, 0.8, 0.01),
+      vol: slider(0.16, 0, 0.8, 0.01),
       cut: slider(5000, 400, 12000, 20),
       speed: slider(1, 0.7, 1.3, 0.01),
       echo: slider(0.25, 0, 0.8, 0.01),
     },
     grain: {
       name: 'Grain texture',
-      vol: slider(0.16, 0, 0.5, 0.01),
+      vol: slider(0, 0, 0.5, 0.01),
+      // ── нарезка / скан сэмпла ──
+      begin: slider(0, 0, 1, 0.01),       // окно в сэмпле
+      end: slider(1, 0, 1, 0.01),
+      slices: slider(18, 2, 64, 1),       // мелкость кусочков (striate)
+      scan: slider(8, 1, 32, 1),         // за сколько циклов головка проходит сэмпл
+      density: slider(1, 0.25, 4, 0.05), // плотность гранул (fast)
+      speed: slider(1, 0.25, 2, 0.01),   // скорость = высота голоса
+      clip: slider(1, 0.05, 2, 0.01),    // длина гранулы
+      revProb: slider(0, 0, 1, 0.01),    // доля реверс-гранул
+      // тембр/пространство
       cut: slider(3600, 300, 10000, 20),
-      striate: slider(18, 4, 48, 1),
       echo: slider(0.45, 0, 0.85, 0.01),
     },
   },
@@ -387,7 +396,7 @@ $: riff.slow(2).struct('x ~ ~ ~ ~ ~ ~ ~')
   .filter(audible)
 
 // ГОЛОС: чистая фраза целиком — один раз в начале BREAK (узнаваемо).
-$: s('rilke').struct('x ~ ~ ~ ~ ~ ~ ~')
+$: s('rilke').struct('<x ~ ~ ~ ~ ~ ~ ~>')
   .speed(voice.clean.speed)
   .gain(voice.clean.vol.mul(tlOr('voxClean', pure(0))))
   .lpf(voice.clean.cut).hpf(120)
@@ -396,14 +405,19 @@ $: s('rilke').struct('x ~ ~ ~ ~ ~ ~ ~')
   .filter(audible)
 
 // ГОЛОС: гранулярное облако поверх брейка; можно замьютить M, оставив clean.
-$: s('rilke').striate(voice.grain.striate).slow(8)
-  .speed(1)
+$: s('rilke')
+  .begin(voice.grain.begin).end(voice.grain.end)
+  .striate(voice.grain.slices)
+  .slow(voice.grain.scan)
+  .fast(voice.grain.density)
+  .speed(voice.grain.speed)
+  .clip(voice.grain.clip)
+  .sometimesBy(voice.grain.revProb, (x) => x.rev())
   .gain(voice.grain.vol.mul(tlOr('voxGrain', pure(0))))
   .lpf(voice.grain.cut).hpf(160)
   .delay(voice.grain.echo).delaytime(0.375).delayfeedback(0.4)
   .room(verb.mul(0.6)).roomsize(fx.reverb.size)
   .pan(sine.slow(8).range(0.3, 0.7))
-  .filter(audible)
 
 // Воздух и лента.
 $: s('pink').struct('x*16')

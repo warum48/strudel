@@ -41,18 +41,16 @@
 //    our chain low → mid → high → master gain → analyser → speakers. The EQ knobs
 //    are hidden for now (see `bindEq`), the filters stay at 0 dB.
 
-const EXT =
-  '?external=@strudel/core,@strudel/mini,@strudel/tonal,@strudel/webaudio,@strudel/transpiler,@strudel/draw';
-
-const cm = await import('https://esm.sh/@strudel/codemirror@1.3.0' + EXT);
-const core = await import('https://esm.sh/@strudel/core@1.2.6');
-const mini = await import('https://esm.sh/@strudel/mini@1.2.6');
-const tonal = await import('https://esm.sh/@strudel/tonal@1.2.6');
-const wa = await import('https://esm.sh/@strudel/webaudio@1.3.0');
-// тот же инстанс, что грузит @strudel/codemirror: иначе cleanupDraw() из нашей
-// копии не остановит анимации, которые запустила его копия
-const draw = await import('https://esm.sh/@strudel/draw@1.2.6?external=@strudel/core');
-const { transpiler } = await import('https://esm.sh/@strudel/transpiler@1.2.6');
+// Локальный бандл (см. tools/build-vendor.mjs): один инстанс core для паттернов,
+// codemirror и draw; никаких esm.sh в рантайме.
+const V = await import('/web/vendor/strudel.js');
+const cm = V.cm;
+const core = V.core;
+const mini = V.mini;
+const tonal = V.tonal;
+const wa = V.wa;
+const draw = V.draw;
+const { transpiler } = V.transpilerMod;
 
 // Трек не зашит: меню в шапке собирается из /api/tracks (tools/serve.mjs
 // читает папку tracks/), поэтому новый файл появляется в списке сам.
