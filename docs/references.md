@@ -140,6 +140,13 @@ Switch Angel: он считает интервал от предыдущей н�
 - `tracks/experimental/01-complex-bass.js` — 160 BPM, 5 пар WT+FM, 10
   осцилляторов, 206 слайдеров, у каждого баса `oct` и `pace`.
 
+## Shoegaze
+
+- `docs/shoegaze/README.md` — стена гитар, fuzz/chorus/delay/reverb, glide guitar,
+  reverse reverb, BPM/гармония, аранжировка плотностью, микс и ошибки.
+- Источники: Wikipedia, Sound on Sound (Only Shallow), BeatKey, ToneMirror,
+  GuitarBomb, Plugg Supply.
+
 ## Coldwave
 
 - `docs/coldwave/README.md` — холодный пост-панк: ритм, бас, Juno-пэд,

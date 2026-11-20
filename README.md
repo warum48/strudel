@@ -90,6 +90,8 @@ tracks/
                       wt_dbass/distorted/ebass/raw/bitreduced; FM/AM,
                       waveshaping, ducking; 12 риффов, у каждого баса pace 4…32
                       + hardcore kick/hats + sidechain; 18 дорожек, 206 слайдеров
+  shoegaze/           плейбук по шугейзу: гитарная стена, эффекты, glide guitar,
+                      reverse reverb, BPM/гармония, аранжировка, микс, ошибки
   coldwave/
     01-cold-rooms.js  108 BPM coldwave: механические барабаны, обрезанный
                       бас, Juno-пэд, угловатая гитара, моно-лид; 4 моды,
