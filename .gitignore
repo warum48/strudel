@@ -9,3 +9,6 @@ refs/
 
 # local backup of upstream sample libraries (large, not part of the app)
 backup/
+
+# local settings dumps (not part of the project)
+dumps/
