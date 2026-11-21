@@ -342,6 +342,13 @@
   .row .v { font-size: 11px; color: var(--warn); text-align: right; }
   .row.is-vol label { color: var(--text); font-weight: 600; }
   .row.is-cut input[type=range] { accent-color: #7fb0ff; }
+  .act-dot {
+    display: inline-block; width: 7px; height: 7px; border-radius: 1px;
+    background: #20261a; border: 1px solid #35401f;
+    margin-right: 5px; vertical-align: 1px;
+    transition: background .12s, box-shadow .12s, border-color .12s;
+  }
+  .act-dot.on { background: #ff8a3d; border-color: #ff8a3d; box-shadow: 0 0 7px #ff8a3d; }
   /* ── группы и инструменты: сворачиваются оба уровня ── */
   details.grp {
     border: 1px solid var(--line);

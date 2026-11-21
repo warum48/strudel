@@ -61,6 +61,9 @@ tracks/
                       hats, Dm9→Bbmaj9, vowel pad, sub ≤80 + growl, Moog
     17-halfstep-dub-v2.js v2 17: audible Moog note + Moog arp with pace,
                       pad.fb; 17 не тронут
+    17-halfstep-dub-v3.js v3 17 как композиция: 112 тактов, TIMELINE,
+                      SONG/LOOP/HOLD, автоматика срезов, постоянные уровни,
+                      gateOf; те же Dm9→Bbmaj9, vowel-пэд, Moog, стаб
     23-black-room.js  132 BPM berlin techno: 192 такта, 15 дорожек, 68 слайдеров;
                       uzu bd + click-атака, rumble в wet-ревербе с сайдчейном,
                       low tom, клэп на второй кик, metal/rim, sub ≤80 +
@@ -127,6 +130,12 @@ tracks/
                       breaks165, FM grinder, тритоны, dist + glitch
     02-dark-techstep-v2.js v2 02: длинный grinder (long/drift/stutter)
                       и настоящий chop/granular 4/8/16 с ручками
+    02-dark-techstep-v3.js v3 02 как композиция: 144 такта, TIMELINE,
+                      SONG/LOOP/HOLD, gateOf, автоматика срезов,
+                      постоянные уровни; 31 дорожка, 125 слайдеров
+    02-dark-techstep-v4.js v4 02 по мотивам onefeather: один брейк за раз
+                      (apache loopAt(2)), один бас за раз, сухой микс;
+                      19 дорожек, 90 слайдеров
   breakcore/
     01-rinse.js       174 BPM rinse: chop 4/8/16/32 (первая версия)
     01-rinse-slices.js 174 BPM rinse: только 16-е фрагменты, питч без сдвига
@@ -207,6 +216,8 @@ web/
                     в HOLD переставляет точку, двойной клик входит в HOLD;
                     у каждого канала MIXER есть M/S (панельные, код не трогают)
                     и G (групповой mute из `mute:` в дереве, цвет по группе);
+                    рядом с именем инструмента — квадрат активности: горит,
+                    пока в текущем такте звучит его сэмпл/громкость (по haps);
                     если все группы привязаны к инструментам, верхний ряд @mutes скрыт
 docs/
   darkwave/           плейбук по darkwave/new wave (Depeche-середина): BPM,
@@ -630,6 +641,40 @@ eval ок, паттерн играет, слайдер синхронизиро�
 трения нет, `cpu` — 10/9/10/10 worklet'ов на такт (4/с), `doubles` — наложений
 нет, `live` — eval ок, паттерн играет, слайдер синхронизирован.
 
+`17-halfstep-dub-v3.js` — **v3 17 как композиция** (17 и v2 не тронуты):
+112 тактов при 104 BPM, 17 дорожек, 92 слайдера.
+
+- **Форма:** INTRO 8 → INTRO 2 8 → A 16 → BUILD 8 → MAIN 1 16 → BREAK 16 →
+  MAIN 2 24 → OUTRO 16. На 8-м такте (INTRO 2) входит **dub stab** — ровно
+  спустя 8 тактов от начала, аккорд на сильную долю — и остаётся в A.
+  BREAK — без кика/снейра, на ghost-пэде, стабе, Moog и sub.
+- **TIMELINE + SONG/LOOP/HOLD**, `mode` (half/drag/step/strip) и `harmony`
+  (dark/ghost) — по секциям или руками в LOOP.
+- **Слои как в v2:** hollow vowel-пэд `a↔o`, ghost-пэд, dub-стаб, Moog note
+  и Moog arp, sub ≤80 + growl, halfstep-барабаны с шумящими 16-ми.
+- **Автоматика:** `chords.pad.cut`, `chords.stab.cut`, `bass.growl.cut`,
+  `moog.note.cut`, `moog.arp.cut`, `atmos.field.cut` — медленные 16/32-тактовые
+  кривые, без смен громкости инструментов.
+- **Гигиена:** `gateOf` на каждом слое, постоянные уровни, `vowel`-пэд
+  не перезаписан на saw/Juno, один `roomsize`.
+- **По дампу:** Moog arp `vol 0.14` / cut `2200` / lfo `0.25`; A без хэтов,
+  BUILD без open; в BREAK добавлены hat/open/shaker/sub; в OUTRO возвращён
+  стаб; на 48–52 — арп-бёрст (pace ×4: 4→16 нот на такт и назад).
+  MAIN 1 укорочен до 16 тактов, BREAK — 16.
+
+Проверки v3: 17 дорожек / 92 слайдера; INTRO 9 ударов; `gains` — тихо;
+`cpu` — 1 worklet/такт на первых 8 тактах (инструмент меряет только INTRO);
+`levels` на MAIN 1 (такт 40) — hh 1.69, stab 1.12, arp 1.12, sub 1.00,
+growl 1.00, kick 0.90, pad 0.90.
+
+**Про перегрузку.** Первая версия пэда плодила слишком много голосов:
+`PAD_A` = 5 нот × 6 partials × unison 2 = 60 осцилляторов на аккорд с release
+14 с, `PAD_B` — 3 × 4 × 3 = 36 с release 18 с, и оба пэда считались даже когда
+`harmony` выбирал один (gain 0 не отменяет построение голосов). Уменьшено:
+partials 2, unison 1/2, release 6/8 с, каждая полярность пэда загейчена через
+`hA`/`hB`; `roomsize` 16 → 10, `verb` 0.78 → 0.65. Дропаутов от голосов быть
+не должно.
+
 `techno/18-khmer-dub.js` — **новый трек**: 122 BPM, dub techno снизу,
 кхмерская перкуссия сверху. Fm9 → Abmaj9 → Dbmaj9 → Gbmaj9: четыре
 аккорда по два такта, 9-е, другие ноты, чем в 16/17.
@@ -748,6 +793,61 @@ jungle/techstep с IDM-слоем. Другие брейки, другой ба�
 намеренных тритонов), `cpu` — 17/45/48/58 worklet'ов на такт
 (12/32/34/42 в секунду), `doubles` — наложений нет, `live` — eval ок,
 паттерн играет; кнопка SAMPLES протестирована end-to-end.
+
+`dnb/02-dark-techstep-v3.js` — **v3 02 как композиция** (v2 и v1 не тронуты):
+144 такта при 172 BPM, 31 дорожка, 125 слайдеров.
+
+- **Форма:** INTRO 16 → VOID 16 → BUILD 16 → JUNGLE 24 → TECHSTEP 24 →
+  BREAK 16 → GLITCH 16 → OUTRO 16. Материал: Apache / Funky Drummer /
+  breaks165 / dist, grain-chop 4/8/16, FM-гринд, Reese, кластерный пад,
+  тритоновый колокол, wraith и glitch-клики.
+- **TIMELINE + SONG/LOOP/HOLD.** В SONG `mode` (void/jungle/techstep/glitch),
+  `harmony` (cluster/drone), `grind` (long/drift/stutter) и `grain` (4/8/16)
+  ведёт таймлайн; в LOOP — слайдеры; в HOLD — снимок на `holdBar`.
+- **Слои и гейты.** Каждый `$:` загейчен `gateOf`/`mask`, громкости
+  постоянные: секции включают и выключают слои, а не крутят ручки.
+- **Гринд без `pick`.** `pick` на 8-тактовой фразе сжимал её в один такт
+  (8 событий вместо 1), поэтому четыре фразы лежат в `stack` с mode-гейтами.
+  `glide` тоже был 8-шаговым и резал ноту на 8 событий — заменён на
+  однократный паттерн (glide на 6 из 8 тактов).
+- **Голоса пэда.** Было 4 ноты × 5 partials × unison 3 = 60 осцилляторов
+  на аккорд при release 8 с: аккорды накладывались и звук пропадал. Стало
+  2 partials × unison 2 = 16 на аккорд, release 2.5 с; drone — unison 2 /
+  release 4, coil — unison 2.
+- **Автоматика:** `breaks.apache.cut`, `bass.grinder.cut`, `bass.coil.cut`,
+  `leads.bell.cut`, `pads.void.cut`, `drums.metal.cut`, `atmos.dust.cut`.
+
+Проверки v3: INTRO 5 ударов; `gains` — тихо; `cpu` — 37 worklet/такт (19/с)
+в TECHSTEP и 71/такт (36/с) в GLITCH; `levels` на JUNGLE — break 1.28,
+hats 0.97, pad 0.96, kick 0.90, grain 0.63, coil/metal/grinder 0.60;
+на TECHSTEP — kick 1.20, pad 0.96, hats 0.80, metal 0.75, snare 0.72;
+VOID — pad 0.64, sub 0.55, snare 0.48, bell 0.48, kick 0.30.
+
+`dnb/02-dark-techstep-v4.js` — **лёгкая пересборка 02** (по мотивам
+onefeather, strudelmarket): 144 такта, 19 дорожек, 90 слайдеров. v3 не тронут.
+
+- **Один брейк за раз.** `apache` и `dist:4` запущены через `loopAt(2)`
+  (не `fit()` — он питчил брейк вверх и звучал «высоко»); grain-chop 4/8/16
+  лежит отдельно. Включается ровно одна дорожка: свитч `drums`
+  (apache/dist/grain) + гейт `breakOn`. Синтетических kick/snare/metal/ohat
+  нет — ритм держит сам брейк.
+- **Один средний бас за раз.** Саб `≤90` отдельно; свитч `bass`
+  (grinder/coil) выбирает единственный средний бас.
+- **Сухой микс.** `verb` 0.6 → **0.22**, `roomsize` 14 → 7, у брейка
+  `room 0.05`, delay колокола 0.45 → 0.3; apache crush 11 → **15**,
+  хэты без ply/degrade, grinder drive 1.4 / dist 0.2.
+- **Пэд без дропаутов.** 3-нотный пад, 2 partials × unison 1 = 6
+  осцилляторов на аккорд, release 2.5 с; drone unison 1.
+- **TIMELINE + SONG/LOOP/HOLD** с шестью свитчами: `mode`, `harmony`,
+  `grind`, `grain`, `drums`, `bass`.
+- **Автоматика:** `breaks.apache.cut`, `low.grinder.cut`, `low.coil.cut`,
+  `leads.bell.cut`, `pads.void.cut`, `atmos.dust.cut`.
+
+Проверки v4: `gains` — тихо; `cpu` по секциям — BUILD/JUNGLE 6 worklet/такт
+(3/с), TECHSTEP 11 (6/с), GLITCH 35 (18/с); `levels` — VOID: break 0.50,
+sub 0.50, drone 0.36, grinder 0.22; BUILD/JUNGLE: pad 0.60, hats 0.58,
+break 0.50, sub 0.50, coil 0.40; TECHSTEP: pad 0.60, hats 0.58, sub 0.50,
+grinder 0.44, dist 0.36; GLITCH: grain 0.75, pad 0.60, click 0.54.
 
 `idm/01-splinter.js` — **новый трек, новая подпапка**: 136 BPM, IDM
 с глитчем, грануляром, микро-событиями, 8-битным тембром и 303.

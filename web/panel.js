@@ -421,6 +421,55 @@ function scanSliders(src) {
   return { sites, names };
 }
 
+// `$:`-блоки по порядку. Для каждого собираем: group.inst, которые он
+// упоминает; сэмплы `s('…')` (база + индекс `:N`); и vol-пути — по текущему
+// значению gain в hap'е понимаем, чей это звук (gain в hap уже число).
+function sampleParts(lit) {
+  const raw = lit.trim();
+  const m = /:(\d+)/.exec(raw);
+  return { base: raw.split(/[:\/*!?@\s]/)[0].trim(), n: m ? Number(m[1]) : null };
+}
+function laneSamples(text) {
+  const out = [];
+  const re = /\b(?:s|sound)\(\s*'([^']+)'\s*\)/g;
+  let m;
+  while ((m = re.exec(text))) out.push(sampleParts(m[1]));
+  return out;
+}
+function scanLanes(src, sites) {
+  const instruments = new Set();
+  for (const s of sites) {
+    if (s.path.length >= 2) instruments.add(`${s.path[0]}.${s.path[1]}`);
+  }
+  const known = [...instruments];
+  const lines = src.split('\n');
+  const lanes = [];
+  let i = 0;
+  while (i < lines.length) {
+    if (!lines[i].startsWith('$:')) { i++; continue; }
+    const block = [lines[i]];
+    i++;
+    while (i < lines.length) {
+      const line = lines[i];
+      if (line.trim() === '' || /^\s/.test(line)) { block.push(line); i++; continue; }
+      break;
+    }
+    const text = block.join('\n');
+    const insts = new Set();
+    for (const inst of known) {
+      const [g, name] = inst.split('.');
+      if (new RegExp(`\\b${g}\\.${name}\\b`).test(text)) insts.add(inst);
+    }
+    const samples = laneSamples(text);
+    if (/grainChain\b/.test(text)) {
+      for (const inst of known) if (inst.endsWith('.grain')) insts.add(inst);
+      samples.push({ base: 'funkydrummer', n: null });
+    }
+    lanes.push({ insts, samples, vols: [...insts].map((x) => `${x}.vol`) });
+  }
+  return lanes;
+}
+
 // Подписи. Приоритет: `name:` из трека → человеческая форма ключа.
 const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
 const pretty = (key) => key.replace(/([a-z0-9])([A-Z])/g, '$1 $2').toLowerCase();
@@ -638,6 +687,15 @@ let automationLines = []; // line of each AUTOMATION entry
 let pendingSeek = null;
 const soloed = new Set();
 const muted = new Set();
+
+// ── LIVE ACTIVITY: какие инструменты звучат прямо сейчас ─────────
+// Repl вешает на каждый `$:`-паттерн controls.id (`$1`, `$2`, … по порядку).
+// Мы разбираем `$:`-блоки в том же порядке и знаем, какие group.inst они
+// трогают; в такте спрашиваем играющий pattern и подсвечиваем точки.
+let activityLanes = []; // { insts:Set, samples:[{base,n}], vols:[…] }
+let actTimer = null;
+const actSeen = new Map(); // 'drums.kick' → performance.now()
+const ACT_TTL = 200;
 let defaultMutesApplied = false;
 const knobByAnchor = new Map(); // widget id → { input, out }
 // HOLD: номер секции (0 = выкл) и такт для снимка AUTOMATION. Панель пишет
@@ -794,6 +852,7 @@ function buildKnobs() {
       base: Number(w.value),   // последняя «человеческая» громкость; mute её не трогает
     });
   }
+  activityLanes = scanLanes(src, sites);
   renderTimeline();
   render();
   applyModeLock();
@@ -1613,6 +1672,70 @@ function stopTimeline() {
   timelineBar = 0;
   updatePlayhead(0);
 }
+
+// ── live activity dots ───────────────────────────────────────────
+function paintActivity(t = performance.now()) {
+  for (const dot of document.querySelectorAll('.act-dot')) {
+    const inst = dot.dataset.inst;
+    dot.classList.toggle('on', t - (actSeen.get(inst) || 0) < ACT_TTL);
+  }
+}
+const knobByPath = (path) => knobs.find((k) => k.path.join('.') === path);
+const hapSample = (h) => {
+  const s = h.value?.s;
+  if (typeof s !== 'string') return null;
+  return s.replace(/[:*!?@].*$/, '').trim();
+};
+function laneHasSample(lane, h) {
+  const base = hapSample(h);
+  if (!base) return false;
+  const n = h.value?.n;
+  return lane.samples.some((sp) => sp.base === base && (sp.n == null || n == null || sp.n === n));
+}
+function laneHasGain(lane, h) {
+  const g = h.value?.gain;
+  if (typeof g !== 'number') return true;
+  for (const vp of lane.vols) {
+    const k = knobByPath(vp);
+    if (k && Math.abs(g - Number(k.value)) < 0.012) return true;
+  }
+  return false;
+}
+function activityTick() {
+  if (!playing || !mirror) return;
+  const sched = mirror.repl?.scheduler;
+  const pat = sched?.pattern;
+  const now = sched?.now?.();
+  if (!pat || typeof pat.queryArc !== 'function' || !Number.isFinite(now)) return;
+  let haps = [];
+  try {
+    haps = pat.queryArc(now - 0.02, now + 0.04);
+  } catch {
+    paintActivity();
+    return;
+  }
+  const t = performance.now();
+  for (const h of haps) {
+    const bySample = activityLanes.filter((l) => laneHasSample(l, h));
+    if (!bySample.length) continue;
+    let chosen = bySample.filter((l) => laneHasGain(l, h));
+    // акценты (хэты) — gain = vol × accent, поэтому сверка по громкости мимо;
+    // если по сэмплу+индексу дорожка одна, зажигаем её.
+    if (!chosen.length && bySample.length === 1) chosen = bySample;
+    for (const lane of chosen) for (const inst of lane.insts) actSeen.set(inst, t);
+  }
+  paintActivity(t);
+}
+function startActivity() {
+  stopActivity();
+  actTimer = setInterval(activityTick, 120);
+}
+function stopActivity() {
+  if (actTimer) clearInterval(actTimer);
+  actTimer = null;
+  actSeen.clear();
+  paintActivity();
+}
 function timelineTick() {
   if (!playing || !mirror) return;
   const now = mirror.repl?.scheduler?.now?.();
@@ -1827,6 +1950,11 @@ function renderMixer(groups) {
       const row = makeRow(vol, instLabel(g, inst));
       row.classList.add('is-vol');
       const id = `${g}.${inst}`;
+      const dot = document.createElement('i');
+      dot.className = 'act-dot';
+      dot.dataset.inst = id;
+      dot.title = id + ' — sounding';
+      row.querySelector('label')?.prepend(dot);
       const tools = document.createElement('span');
       tools.className = 'mx-tools';
       for (const [label, set, cls] of [
@@ -2404,6 +2532,7 @@ async function play() {
   $('play').classList.add('on');
   buildKnobs();
   startTimeline();
+  startActivity();
   if (pendingSeek != null) {
     const target = pendingSeek;
     pendingSeek = null;
@@ -2415,6 +2544,7 @@ async function play() {
 function stop() {
   if (!mirror) return;
   stopTimeline();
+  stopActivity();
   mirror.stop();
   playing = false;
   $('play').classList.remove('on');
