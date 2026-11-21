@@ -141,6 +141,14 @@ tracks/
                       меняющимся банком padlong/space/wind/noise2, pitch
                       −24…+12, 8-бит pulse/square + arp, 303 с glide,
                       голос numbers, саб ≤80 + growl + FM rubber, мало реверба
+    02-splinter-v2.js 136 BPM IDM, форма 96 тактов: C–Gb–Db–Bb, 20 дорожек,
+                      100 слайдеров, SONG/LOOP/HOLD, 2 свитча (mode/grain),
+                      грануляр cloud/scan, глитч/клики, 8-бит lead/arp, 303,
+                      numbers, саб ≤80 + growl + FM; gateOf на слоях
+    03-splinter-v3.js 136 BPM IDM, 144 такта: 25 дорожек, 133 слайдера,
+                      4 свитча (mode/grain/acid/vox), больше смен сетки,
+                      глитч/roll/squeak/acid scream, VOICE LAB с
+                      автоматизацией голоса и грануляра, больше кривых среза
   khmer/
     01-sathukar.js    88 BPM кхмерский пинпет / ударные: 27 дорожек,
                       83 слайдера, 3 переключателя (scene/mode/harmony),
@@ -224,6 +232,8 @@ tools/
   doubles.mjs         разбор «что играется дважды»: такт 0 против такта 1
   tension.mjs         тритоны и малые секунды: фразы против корней и пэдов
   gains.mjs           звучит ли что-то при ВСЕХ громкостях в нуле
+  levels.mjs          баланс дорожек за такт (Σ gain × unison): ловит «лид
+                      в 2 раза тише пэда» и перекосы по секциям
   modes.mjs           включается ли каждый режим ударов (прогон по mode = 0…N)
   cpu.mjs             сколько worklet'ов строится за такт и в секунду (по режимам)
   latch.mjs           защёлка harmony: на каком такте реально меняется звук
@@ -777,6 +787,64 @@ jungle/techstep с IDM-слоем. Другие брейки, другой ба�
 25–28 worklet'ов на такт (14–16/с), `doubles` — наложений нет, `live` —
 eval ок, паттерн играет, слайдер синхронизирован.
 
+### IDM 02: Splinter v2 (`idm/02-splinter-v2.js`)
+
+Набросок `01-splinter` собран в форму: **96 тактов**, SONG/LOOP/HOLD,
+никаких панельных хаков, пэдов и восьми свитчей. Палитра та же — глитч,
+грануляр, 8-бит, 303, голос numbers, — но уровни постоянны, а энергия
+меняется плотностью и срезами.
+
+- **Форма.** INTRO 8 → VERSE 16 → BUILD 8 → MAIN 16 → BREAK 8 → VERSE 2 16 →
+  MAIN 2 16 → OUTRO 4 → OUTRO 2 4.
+- **Свитчи.** `mode` (glitch/skitter/half/fracture) — 4 сетки; `grain`
+  (off/cloud/scan) — в SONG/HOLD по секциям, в LOOP рукой.
+- **Грануляр.** `cloud` — `chop 32` из `padlong/space`; `scan` ведёт позицию
+  синусом. Оба сухие, пространство дают дилей/панорама.
+- **Микро-события.** Клики, `glitch` с `degradeBy`, призраки снейра по
+  `mutate`, open hat, 8-бит lead (`pulse`+`crush`) и arp (`square`).
+- **Бас.** Саб ≤80 + growl (две пилы, `shape`) + FM rubber (`triangle`).
+  Бочка дакает орбиту 2.
+- **Гармония.** C–Gb–Db–Bb (8 тактов), тритоновые пары в пэде; `@dark`.
+- **Гигиена CPU.** `gateOf(key)` на каждом слое: выключенные секции не
+  порождают событий (INTRO: работают только pad/cloud/click/atmos).
+
+Проверки: `verify` (20 дорожек / 100 слайдеров; MAIN 110 ударов),
+`cpu` — 18 worklet/такт (9/с) в MAIN, `gains` — тихо, `levels` — lead
+0.48 vs pad 0.44, без событий при нулевой громкости.
+
+### IDM 03: Splinter v3 (`idm/03-splinter-v3.js`)
+
+v2, растянутая в **1.5 раза** (96 → 144 такта) и накрученная по событиям:
+больше смен сетки, глитча, кислоты и голоса.
+
+- **Форма.** INTRO 8 → VERSE 16 → BUILD 8 → MAIN 16 → BREAK 8 → VERSE 2 16 →
+  MAIN 2 16 → GLITCH 8 → VOICE LAB 8 → ACID 8 → MAIN 3 16 → OUTRO 8 → OUTRO 2 8.
+- **Свитчи.** `mode` — 6 сеток (glitch/skitter/half/fracture/stutter/shuffle);
+  `grain` (off/cloud/scan); `acid` (off/sparse/run/scream); `vox` (off/dry/chop/cloud).
+  В SONG/HOLD ведёт TIMELINE, в LOOP — ручки.
+- **Глитч.** Клики, `glitch` с `degradeBy`, roll на последнюю долю, squeaks с
+  питч-огибающей, `grain.edit` (slice) в GLITCH/MAIN 3.
+- **Кислота.** line/run/scream: `run` — 16-й синкопированный рифф (не редкие
+  ноты), октава отдельным слайдером, короткая атака и `drive` вместо
+  питч-«пяу»; scream — square + `shape` + `crush`, только в ACID/GLITCH.
+  В BUILD новый рифф не играет: там **старый разреженный** рисунок и срез
+  уведён в минимум (`acid.run.cut` ×0.05) — не суетиться на входе.
+- **8-бит lead.** Не арпеджио: 16-тактовая рваная фраза с паузами,
+  большими скачками, случайными октавами (`sometimesBy` +12), реверсом,
+  редким `ply(2)` и замедлением `slow(2)`. Длинная, чтобы не читалась как луп;
+  `pulse` + `crush` остаются тембром.
+- **VOICE LAB.** `numbers` как грануляр: `chop`, playback speed (pitch) и срез
+  автоматизируются в отдельной секции; статический `vowel('a')` как краска.
+  У голоса свой **HPF-слайдер** (убирает низ), отдельно у dry и cloud.
+- **Энергия.** Уровни постоянны, меняются плотность, срезы и автоматика;
+  `gateOf` на каждом слое (в INTRO работают только click/glitch/cloud/pad/atmos).
+- **Кривые.** Больше точек у `grain/pad/acid/bits/bass/vox` — срезы «дышат» на
+  границах секций, а не просто открываются один раз.
+
+Проверки: `verify` (25 дорожек / 133 слайдера; MAIN 3 — 103 удара),
+`cpu` — до 24 worklet/такт (12/с) в ACID, `gains` — тихо, `levels` — без
+событий при нулевой громкости.
+
 ### Experimental: Complex Bass (`experimental/01-complex-bass.js`) — Buchla-подход
 
 `experimental/01-complex-bass.js` — 160 BPM, 18 дорожек, 206 слайдеров.
@@ -941,7 +1009,8 @@ CHORUS 2 16 → OUTRO 8 → OUTRO 2 8. В OUTRO 2 барабаны и бас в�
 
 Состав: TR-909 (kick/snare/clap/hats), TR-808 (томы/rim), pulse-бас (cut 80,
 педаль A + октавы), sine-саб, полый pulse-пэд (`pw`, chorus), string machine,
-FM-колокол (`fmi/fmh`), арпеджио `.arp` из аккордов, square-лид, brown-воздух,
+FM-колокол (`fmi/fmh`), арпеджио `.arp` из аккордов (срез + резонанс;
+в середине VERSE 2 резонанс ×2 и назад к концу), square-лид, brown-воздух,
 лента, шум-ризер. Арпеджио и лид выбираются свитчами, автоматика ведёт срезы
 по секциям.
 
@@ -949,7 +1018,7 @@ FM-колокол (`fmi/fmh`), арпеджио `.arp` из аккордов, sq
 `arpVar` (low/high), `leadVar` (verse/chorus). Материал/грувы/свитчи — как в
 новой схеме (`figures`, `grooves`, `autoSwitch`), UI-манифест в коде.
 
-Проверки: `verify` (17 дорожек / 83 слайдера; VERSE 47, CHORUS 67 ударов),
+Проверки: `verify` (17 дорожек / 84 слайдера; VERSE 47, CHORUS 67 ударов),
 `cpu` — 0 worklet/такт, `gains` — глушится в ноль.
 Гайд и источники: `docs/darkwave/README.md` (Wikipedia Dark wave, Music for
 the Masses, Violator, Depeche Mode; Sound Atlas; BeatKey).
