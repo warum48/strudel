@@ -61,6 +61,11 @@ tracks/
                       hats, Dm9→Bbmaj9, vowel pad, sub ≤80 + growl, Moog
     17-halfstep-dub-v2.js v2 17: audible Moog note + Moog arp with pace,
                       pad.fb; 17 не тронут
+    23-black-room.js  132 BPM berlin techno: 192 такта, 15 дорожек, 68 слайдеров;
+                      uzu bd + click-атака, rumble в wet-ревербе с сайдчейном,
+                      low tom, клэп на второй кик, metal/rim, sub ≤80 +
+                      mid-pulse, 1–3 нотный tension pulse; без мелодии/пэда,
+                      мастер-фильтр на 16/32 такта
     18-khmer-dub.js   122 BPM dub techno + Khmer drums: Fm9→Abmaj9→Dbmaj9→
                       Gbmaj9, полный дабовый набор (kick/hat/rim/click/shaker,
                       sub/dub, pad/stab/organ/skank/horns, hiss/air/field,
@@ -217,6 +222,9 @@ docs/
                       колотомия, ударные, реальные сэмплы (RU + EN)
   minimal-techno/     плейбук по минимал-техно: 4/4, модальность, uzu/Dirt
                       сэмплы, кик/перкуссия, дрон без пэда, форма 128 тактов
+  techno/             плейбук по берлинскому техно: кик/rumble/сайдчейн,
+                      клэп на второй кик, индустриальная перкуссия, форма,
+                      ошибки, источники
   trip-hop/           плейбук по trip-hop / acid jazz: кварты и 9/13,
                       восемь брейков без выключения слоёв, два Moog
   switchangel-recipes.md  рецепты Switch Angel: glide, acid, accent, DX, fill — читать
@@ -867,6 +875,29 @@ v2, растянутая в **1.5 раза** (96 → 144 такта) и накр
 Проверки: `verify` (14 дорожек / 58 слайдеров; DRIVE 45 ударов), `cpu` —
 7 worklet/такт (4/с), `gains` — тихо, `levels` — кик 3.15, хэты 0.85,
 rim 0.70, clap 0.40, без событий при нулевой громкости.
+
+### Techno 23: Black Room (`techno/23-black-room.js`)
+
+Новый трек после ресёрча по берлинскому техно (`docs/techno/README.md`),
+не продолжение неудачной v2. 132 BPM, 192 такта, 15 дорожек, 68 слайдеров.
+
+- **Кик-якорь:** uzu `bd` + тихий `click:0` как атака; глухой LP, `shape`,
+  короткий decay; 4/4 без пропусков.
+- **Rumble:** тот же кик в 100% wet-реверб (decay длинный), сатурация,
+  LP 170; в orbit 2 и дакается киком — fills the gap, а не второй бас.
+- **Драмы:** low tom как «второй кик» (приём из Berghain-битов), клэп
+  **на второй кик**, metal/rim как индустриальные точки, хэты с акцентами
+  и мелким свингом; `mode` = straight/rolling/broken.
+- **Низ:** sub ≤80 (offbeat) + короткий mid-pulse A2/Bb2/Eb2, всё на orbit 2.
+- **События:** 1–3 нотный tension pulse в дилее, без мелодии и FM-колокольчика.
+- **Форма:** INTRO 16 → BUILD 32 → LIFT 32 → BREAK 16 → DRIVE 48 →
+  PEAK 32 → OUTRO 16. Напряжение — вычитанием слоёв, а не дропами.
+- **Мастер-фильтр** автоматизирован на 16/32 такта; постоянные уровни,
+  `gateOf`, один `roomsize`.
+
+Проверки: `verify` (15 дорожек / 68 слайдеров; LIFT 45 ударов),
+`cpu` — 8 worklet/такт (4/с), `gains` — тихо, `levels` — кик 2.20, хэты 1.20,
+sub 1.20, rumble 0.80, tom 0.16.
 
 ### Experimental: Complex Bass (`experimental/01-complex-bass.js`) — Buchla-подход
 

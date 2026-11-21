@@ -12,6 +12,8 @@
   минор, драм-машины, pulse-бас, пэды/струнные, FM-колокол, источники.
 - `docs/minimal-techno/README.md` — minimal techno: 4/4, модальность,
   uzu/Dirt сэмплы, кик/перкуссия, дрон без пэда, форма 128 тактов.
+- `docs/techno/README.md` — berlin techno: кик/rumble/сайдчейн, клэп на
+  второй кик, индустриальная перкуссия, форма, источники.
 - `docs/coldwave/README.md` — coldwave: разреженность, 606/808/Linn, форма.
 
 ## Доки Strudel
