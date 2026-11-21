@@ -2460,6 +2460,29 @@ $('track').addEventListener('change', (e) => {
   loadTrack(e.target.value).catch((err) => setStatus(err.message, true));
 });
 
+// The intro popup can pick a track before the engine is ready — wait for boot
+// and then load it exactly like the header menu does.
+window.__strudelPickTrack = async (p) => {
+  try {
+    await audioReady;
+  } catch {}
+  if (!mirror) return false;
+  const sel = $('track');
+  if (![...sel.options].some((o) => o.value === p)) {
+    const o = document.createElement('option');
+    o.value = p;
+    o.textContent = trackName(p);
+    sel.appendChild(o);
+  }
+  sel.value = p;
+  if (p === track) {
+    if (!playing) await play();
+  } else {
+    await loadTrack(p);
+  }
+  return true;
+};
+
 // @strudel/codemirror binds exactly `Ctrl-Enter` / `Ctrl-.` (not Mod), so the
 // usual Cmd+Enter is silent on a mac. Add Cmd only: Ctrl stays with the editor,
 // no double eval.
