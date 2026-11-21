@@ -10,6 +10,8 @@
 - `docs/rules.md` — стилевые рамки и антипаттерны.
 - `docs/darkwave/README.md` — darkwave/new wave (Depeche-середина): BPM,
   минор, драм-машины, pulse-бас, пэды/струнные, FM-колокол, источники.
+- `docs/minimal-techno/README.md` — minimal techno: 4/4, модальность,
+  uzu/Dirt сэмплы, кик/перкуссия, дрон без пэда, форма 128 тактов.
 - `docs/coldwave/README.md` — coldwave: разреженность, 606/808/Linn, форма.
 
 ## Доки Strudel
