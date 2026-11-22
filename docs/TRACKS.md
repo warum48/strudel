@@ -135,6 +135,9 @@ Style notes: `docs/psytrance/README.en.md` and
 | `17-halfstep-dub-v3.js` | 104 | 112 | 17 | 92 | play | Composition: 8 sections, timeline, cut automation, constant levels. |
 | `18-khmer-dub.js` | 122 | 64 | 19 | 149 | timeline | Dub techno + 18 Khmer channels, one shared delay/reverb bus. |
 | `18-khmer-dub-v2.js` | 122 | 192 | 19 | 151 | play | 16 sections, group gates (skor/sampho/chhing), 19 automation lanes. |
+| `18-khmer-dub-v3.js` | 122 | 144 | 19 | 151 | play | Compressed v2: first 64 bars kept, two climaxes, shorter tail. |
+| `18-khmer-dub-v4.js` | 122 | 144 | 20 | 166 | play | v3 with DEEP: chhing off, Moog arp2, deep bass, higher cutoffs. |
+| `18-khmer-dub-v5.js` | 122 | 144 | 20 | 166 | play | v4 dump applied; DEEP 2A + DEEP 2 + DEEP 3 (no kick/hats/rim/Khmer perc; arps/shaker/bass fade), stab carries into OUTRO. |
 | `19-hypnotic-trance.js` | 138 | — | 11 | 6 | loop | Compact fat trance: one note row, rolling bass, distort, supersaw stab. |
 | `20-deep-dark-trance.js` | 140 | — | 10 | 6 | loop | Deep dark trance built from the reference recipes. |
 | `21-dark-trance.js` | 140 | — | 12 | 6 | loop | Dark trance with intentional dissonance. |

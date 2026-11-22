@@ -89,7 +89,7 @@
   #automation .hint { color: var(--dim); font-size: 10px; text-transform: none; letter-spacing: 0; }
   #automation[open] .hint { display: none; }
   .auto-body { padding: 2px 12px 8px; display: flex; flex-direction: column; gap: 0; max-height: 160px; overflow: auto; }
-  .auto-row { position: relative; height: 22px; }
+  .auto-row { position: relative; height: 22px; min-height: 22px; flex: 0 0 22px; }
   .auto-row .nm { position: absolute; left: 2px; top: 0; color: var(--dim); font-size: 10px; letter-spacing: .04em; max-width: 45%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .auto-row .cur { position: absolute; right: 2px; top: 0; color: var(--warn); font-size: 10px; }
   .auto-row.active .cur { color: var(--accent); }

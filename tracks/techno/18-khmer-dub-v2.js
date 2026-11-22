@@ -29,6 +29,7 @@
 //  • harmony: warm / air — укладка пэда.
 //  • Никаких райзеров, sidechain-пумпа, snare 2/4 и поп-дропов.
 //  • Один roomsize на все слои; общий delay/reverb для перкуссии.
+//  • Низ: sub/dub по умолчанию ≤80; слайдер среза открыт до 200.
 //
 //  ── НАГРУЗКА ─────────────────────────────────────────────────────
 //  Worklet'ов мало (shape только на кике и Moog), но 18 каналов плюс
@@ -170,15 +171,15 @@ const instruments = {
   bass: {
     name: 'Bass',
     sub: {
-      name: 'Sub ≤80',
+      name: 'Sub',
       vol: slider(0.5, 0, 1.1, 0.01),
-      cut: slider(70, 40, 80, 1),
+      cut: slider(70, 40, 200, 1),
       decay: slider(0.8, 0.1, 2.5, 0.01),
     },
     dub: {
-      name: 'Dub bass ≤80',
+      name: 'Dub bass',
       vol: slider(0.36, 0, 1, 0.01),
-      cut: slider(80, 40, 80, 1),
+      cut: slider(80, 40, 200, 1),
       decay: slider(0.5, 0.1, 2, 0.01),
     },
   },

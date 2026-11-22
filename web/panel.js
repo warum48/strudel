@@ -794,6 +794,9 @@ function lockDetailsToggle(id) {
   }, true);
 }
 const openState = new Map(); // 'group' / 'group.inst' → свёрнуто ли
+// Groups/instruments that open by default in the Tone column.
+const AUTO_OPEN_GROUPS = new Set(['keys', 'moog', 'arp', 'arp2'])
+const AUTO_OPEN_INSTS = new Set(['keys', 'moog', 'arp', 'arp2'])
 
 function buildKnobs() {
   const src = mirror.editor.state.doc.toString();
@@ -2020,7 +2023,8 @@ function renderTone(groups) {
 
     const gd = document.createElement('details');
     gd.className = 'grp';
-    gd.open = openState.get(g) ?? (g === 'keys');
+    const autoGroup = AUTO_OPEN_GROUPS.has(g) || [...insts.keys()].some((i) => AUTO_OPEN_INSTS.has(i));
+    gd.open = openState.get(g) ?? autoGroup;
     gd.addEventListener('toggle', () => openState.set(g, gd.open));
     const gs = document.createElement('summary');
     gs.innerHTML = `<span>${groupLabel(g)}</span><span class="n">${gParams}</span>`;
@@ -2034,7 +2038,7 @@ function renderTone(groups) {
       const key = `${g}.${inst}`;
       const id = document.createElement('details');
       id.className = 'inst';
-      id.open = openState.get(key) ?? true;
+      id.open = openState.get(key) ?? (AUTO_OPEN_GROUPS.has(g) || AUTO_OPEN_INSTS.has(inst));
       id.addEventListener('toggle', () => openState.set(key, id.open));
       const is = document.createElement('summary');
       is.innerHTML = `<span>${instLabel(g, inst)}</span><span class="n">${own.length}</span>`;

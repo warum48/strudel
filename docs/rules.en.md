@@ -119,3 +119,11 @@ bass line is not a walk through the chord harmony from its tonic, but more
 counterpoint patterns characteristic of metal and techno riffs.
 
 All the music should come out ultra-stylish; the rules above will help.
+
+## Panel defaults
+
+- Tone auto-opens the `keys`, `moog`, `arp` and `arp2` groups/instruments.
+  A group that contains one of them opens as well, but its other instruments
+  stay collapsed.
+- The AUTOMATION body keeps its 160px max height; lanes stay 22px and the
+  body scrolls instead of shrinking rows.

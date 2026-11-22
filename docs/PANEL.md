@@ -40,6 +40,9 @@ key path in `instruments`.
 - labels come from `name: '…'`; if there is no name, the key is humanized
   (`bodyLevel` → `body level`);
 - collapse state survives eval (`openState` in `panel.js`);
+- groups/instruments `keys`, `moog`, `arp` and `arp2` open in Tone by
+  default; a group that contains one of them opens too, but its other
+  instruments stay collapsed;
 - sliders declared and never read are reported by `verify`.
 
 Do not bind another instrument to someone else's `vol`: it will be invisible
@@ -82,6 +85,9 @@ use `UI` plus `const TIMELINE` / `const AUTOMATION`.
 - `values` are multipliers or switch values. Repeat every key in every section;
   the curve carries the last value forward.
 - Click a section or the ruler to seek. The playhead follows the song.
+- The AUTOMATION body keeps its current 160px max height. Lanes stay 22px
+  tall; when there are more of them, the body scrolls instead of squeezing
+  the rows.
 - Section edits are applied on Ctrl/Cmd+Enter; there is no separate APPLY
   button in the current panel.
 - In LOOP the timeline and automation are collapsed and disabled (the engine
