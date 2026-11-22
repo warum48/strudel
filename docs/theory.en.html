@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="icon" href="data:," />
+<title>Theory · Strudel</title>
+<style>
+  :root { --bg:#0d0f0c; --panel:#151814; --line:#262b22; --text:#e8e8e8;
+          --dim:#7d8776; --accent:#b3d80d; --warn:#e3f07a; --code:#11140f; }
+  * { box-sizing:border-box; }
+  html,body { margin:0; background:var(--bg); color:var(--text); }
+  body { font:14px/1.65 ui-monospace,SFMono-Regular,Menlo,monospace; padding:28px 20px 80px; }
+  .wrap { max-width:980px; margin:0 auto; }
+  h1 { font-size:16px; letter-spacing:.12em; text-transform:uppercase; margin:0 0 6px; }
+  h2 { font-size:14px; letter-spacing:.08em; text-transform:uppercase; color:var(--accent); margin:38px 0 10px; }
+  h3 { font-size:13px; margin:24px 0 8px; }
+  p,li { color:#cfd4c8; }
+  a { color:var(--accent); }
+  code { background:var(--code); border:1px solid var(--line); border-radius:3px; padding:1px 5px; }
+  pre { background:var(--code); border:1px solid var(--line); border-radius:4px; padding:12px 14px; overflow:auto; }
+  pre code { border:0; padding:0; background:none; }
+  .lead { font-size:15px; color:#e2e7da; }
+  .note { border-left:2px solid var(--accent); padding:6px 12px; background:#121610; margin:14px 0; }
+  .warn { border-left:2px solid var(--warn); padding:6px 12px; background:#151408; margin:14px 0; }
+  .dim { color:var(--dim); }
+  table { border-collapse:collapse; width:100%; margin:12px 0; }
+  th,td { text-align:left; vertical-align:top; border-bottom:1px solid var(--line); padding:7px 10px; }
+  th { color:var(--dim); font-size:12px; letter-spacing:.06em; text-transform:uppercase; }
+  .toc { border:1px solid var(--line); border-radius:4px; padding:12px 16px; background:var(--panel); }
+  .toc a { display:block; padding:2px 0; text-decoration:none; }
+  .toc a:hover { text-decoration:underline; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>Theory · Strudel from A to Z</h1>
+<p class="lead">
+  A conspectus of everything we have worked through: mini-notation, notes and
+  samples, sliders, filters, track structure, the timeline and granular. This is
+  not a replacement for the official documentation but a condensed theory with
+  examples.
+</p>
+<p>
+  Official theory and reference:
+  <a href="https://strudel.cc/learn/mini-notation/" target="_blank" rel="noreferrer">strudel.cc/learn/mini-notation</a>
+  (mini-notation), <a href="https://strudel.cc/learn/" target="_blank" rel="noreferrer">strudel.cc/learn</a>
+  (table of contents), <a href="https://strudel.cc/workshop/" target="_blank" rel="noreferrer">workshop</a>.
+</p>
+
+<div class="toc">
+  <a href="#cycle">1. Cycle = bar</a>
+  <a href="#mini">2. Mini-notation: rhythm and grouping</a>
+  <a href="#chords">3. Chord, arpeggio, and why it "doesn't sound like a chord"</a>
+  <a href="#sound">4. note / s / sound: pitch and sound source</a>
+  <a href="#sliders">5. Sliders: const and inline</a>
+  <a href="#filters">6. Filters and cutoff</a>
+  <a href="#stack">7. stack, $:, and layers</a>
+  <a href="#structure">8. Form: arrange and TIMELINE</a>
+  <a href="#granular">9. Granular: striate / chop</a>
+  <a href="#space">10. Reverb, delay, jux</a>
+  <a href="#kick">11. Kick: gaps, the "and" of 4, every/mask</a>
+  <a href="#loop">12. LOOP / SONG / HOLD</a>
+  <a href="#samples">13. Samples and why they "don't load"</a>
+</div>
+
+<h2 id="cycle">1. Cycle = bar</h2>
+<p>
+  In Strudel everything lives in <strong>cycles</strong>. In our tracks a cycle =
+  one bar (4/4), because the track has <code>setcpm(BPM / 4)</code> or
+  <code>setcpm(160/4)</code>. If you change it to <code>setcpm(BPM)</code>, the
+  cycle becomes 4 bars. This is where all the "per bar" and "once every 4 bars"
+  comes from.
+</p>
+<pre><code>setcpm(140 / 4)   // 140 BPM, 1 cycle = 1 bar</code></pre>
+
+<h2 id="mini">2. Mini-notation: rhythm and grouping</h2>
+<table>
+  <tr><th>Notation</th><th>What it does</th></tr>
+  <tr><td><code>a b c</code></td><td>Three events inside one cycle, evenly spaced.</td></tr>
+  <tr><td><code>~</code></td><td>Rest.</td></tr>
+  <tr><td><code>a*4</code></td><td>Repeat 4 times per cycle (speed up).</td></tr>
+  <tr><td><code>a/2</code></td><td>Slow down: one event over 2 cycles.</td></tr>
+  <tr><td><code>[a b]</code></td><td>Group several steps into one element.</td></tr>
+  <tr><td><code>[a,b]</code></td><td>Simultaneously (a chord).</td></tr>
+  <tr><td><code>&lt;a b&gt;</code></td><td>Alternation: one element per cycle.</td></tr>
+  <tr><td><code>a@2</code></td><td>Duration ×2 (step weight).</td></tr>
+  <tr><td><code>a!</code></td><td>Repeat the event.</td></tr>
+</table>
+<p>
+  The key: <strong>space = sequence, comma = simultaneity, angle brackets =
+  switching by cycle</strong>.
+</p>
+<pre><code>note("d5 ~ f5 ~ a5 ~ f5 ~")       // 8 eighths in one bar, with rests
+
+note("&lt;d4 f4 a4&gt;")               // bar 1: d4, bar 2: f4, bar 3: a4
+
+note("&lt;[c4 ~ ~ ~] [g3 ~ b3 ~]&gt;")  // two 4-step phrases, changing per bar</code></pre>
+<div class="note">
+  The square brackets inside <code>&lt;...&gt;</code> are needed to alternate whole
+  phrases rather than individual notes. Without brackets,
+  <code>&lt;c4 ~ ~ ~ g3 ~ b3 ~&gt;</code> is 8 cycles with one event each.
+</div>
+
+<h2 id="chords">3. Chord, arpeggio, and why it "doesn't sound like a chord"</h2>
+<p>
+  <code>[c4 ~ ~ ~]</code> is a <strong>sequence</strong> (c4, then three rests),
+  not a chord. A chord is commas:
+</p>
+<pre><code>note("[c4,e4,g4]")                 // three notes at once, the whole bar
+note("[a3 c4 ~ e4]")               // a sequence: a3, c4, rest, e4
+note("&lt;[c4,e4,g4] [g3,b3,d4]&gt;")  // the chord changes per bar</code></pre>
+<p>
+  If you hear an arpeggio, it means the group contains spaces, not commas. For a
+  chord symbol there is <code>chord("Cmaj7")</code>, but with hand-written notes
+  it is simpler and more predictable.
+</p>
+
+<h2 id="sound">4. note / s / sound: pitch and sound source</h2>
+<ul>
+  <li><code>note("c4 e4")</code> — sets the pitch.</li>
+  <li><code>s("bd*4")</code> — the source: sample, synth or noise.</li>
+  <li><code>sound</code> — the same as <code>s</code>, just the full spelling.</li>
+</ul>
+<pre><code>s("bd*4")                          // kick sample, 4 hits
+note("d2*8").sound("sawtooth")     // the saw plays note d2
+note("d2*8").s("sawtooth")         // the same thing</code></pre>
+<p>
+  Sources: <code>sine</code>, <code>triangle</code>, <code>square</code>,
+  <code>sawtooth</code>, <code>supersaw</code>, the noises <code>white</code> /
+  <code>pink</code>; samples — <code>bd</code>, <code>sd</code>, <code>hh</code>,
+  <code>oh</code>, <code>cp</code>, <code>rim</code>, <code>sh</code> (if they
+  are loaded via <code>samples(...)</code>).
+</p>
+
+<h2 id="sliders">5. Sliders: const and inline</h2>
+<p>Syntax: <code>slider(value, min, max, step)</code> — four numbers.</p>
+<pre><code>const cut = slider(810, 100, 5000, 10)
+
+// as a const — one slider, reusable by name
+note("c2*8").s("sawtooth").lpf(cut)
+
+// inline — a separate knob right in the chain, also live
+note("c5 e5 g5").s("sawtooth").lpf(slider(3000, 300, 9000, 20))</code></pre>
+<table>
+  <tr><th></th><th>const</th><th>inline</th></tr>
+  <tr><td>Name in the UI</td><td>present (<code>cut</code>)</td><td>technical</td></tr>
+  <tr><td>Reusable</td><td>yes</td><td>no, each call is its own knob</td></tr>
+  <tr><td>For quick sketches</td><td>—</td><td>handy</td></tr>
+</table>
+<div class="warn">
+  The first argument must be a literal number. Expressions (<code>600 * 2</code>)
+  are not supported: the panel rewrites exactly this number. If a slider "does
+  not draw", check the console: most often it is a <code>ReferenceError</code>
+  (for example, you use <code>leadCut</code> without declaring it).
+</div>
+
+<h2 id="filters">6. Filters and cutoff</h2>
+<pre><code>.lpf(600)        // low-pass cutoff, Hz
+.lpq(8)          // resonance
+.hpf(200)        // high-pass
+.lpenv(3)        // filter envelope in octaves
+.lpa(0.004)      // envelope attack
+.lpd(0.12)       // decay
+.lpsustain(0.1)  // sustain</code></pre>
+<p>
+  For a bass, the cutoff is often kept low (our default rule is ≤80), and the
+  "brightness" comes from the envelope (<code>lpenv</code>) rather than the knob.
+  A slow LFO on the cutoff — <code>lpdepth</code>/<code>lpsync</code>.
+</p>
+
+<h3>Slow LFO on the filter</h3>
+<p>
+  Two ways. The first — an LFO on top of the base cutoff (the knob remains the
+  base):
+</p>
+<pre><code>.lpf(600).lpq(8)
+.lpdepth(1.2)     // depth: multiplier on lpf (600 ± 1.2×600)
+.lpsync(0.25)     // speed: 0.25 LFO cycles per cycle = 1 sweep per 4 bars
+.lpdc(0)          // unipolar: only opens upward, never cuts below the base</code></pre>
+<p>
+  <code>lpsync(n)</code> — n sweeps per cycle (our cycle = a bar);
+  <code>lprate(hz)</code> — in hertz, not tied to tempo.
+  <code>lpdc(0)</code> removes the downward swing, <code>lpdepth</code> sets the
+  amplitude.
+</p>
+<p>
+  The second — an explicit signal instead of a base cutoff (exact bounds):
+</p>
+<pre><code>.lpf(sine.slow(8).range(250, 2200))  // one LFO pass per 8 bars</code></pre>
+<p>
+  <code>sine.slow(8)</code> — one sine cycle over 8 track cycles;
+  <code>range(min, max)</code> sets the low and high cutoff.
+</p>
+<p>
+  If <strong>3300 is the maximum</strong> and the LFO should only go down, it is
+  easier to subtract the signal than to fight the sign of <code>lpdc</code>:
+</p>
+<pre><code>.lpf(3300 - sine.range(0, 2500).slow(8))
+// range 800…3300, never goes above 3300</code></pre>
+<p>
+  Or with a slider base: <code>.lpf(cut.sub(sine.range(0, 2500).slow(8)))</code>.
+</p>
+<div class="warn">
+  <code>3300 - sine.range(...)</code> is <strong>ordinary JS arithmetic</strong>,
+  not a pattern: you get <code>NaN</code>, and the filter goes silent. The
+  arithmetic must be pattern-based:
+  <code>pure(3300).sub(sine.range(0, 2500).slow(8))</code>
+  or <code>sine.range(800, 3300).slow(8)</code>.
+</div>
+
+<h2 id="stack">7. stack, $:, and layers</h2>
+<pre><code>stack(
+  s("bd*4").gain(0.8),
+  s("hh*16").gain(0.3),
+  note("c2*8").s("sawtooth").lpf(600).gain(0.5)
+)</code></pre>
+<p>
+  <code>stack</code> plays everything at once. <code>$:</code> does the same but
+  with several independent blocks (handy for a mixer and separate tracks). Both
+  are valid; <code>stack</code> is more compact.
+</p>
+
+<h2 id="structure">8. Form: arrange and TIMELINE</h2>
+<p>The simplest form is <code>arrange</code> (length in bars, pattern):</p>
+<pre><code>arrange(
+  [8,  stack(kick, hats, pad)],
+  [16, stack(kick, bass, hats, pad, lead)],
+  [8,  stack(pad, air)]
+)</code></pre>
+<p>
+  In the panel the form is drawn if there is a <code>const TIMELINE = [...]</code>:
+  sections <code>{ at, len, name, values }</code>, and <code>values</code> are
+  multipliers on the volumes via <code>tlCurve('layer')</code>. 0 = the layer is
+  silent.
+</p>
+<pre><code>const TIMELINE = [
+  { at: 0, len: 8, name: 'INTRO', values: { kick: 1, bass: 0 } },
+  { at: 8, len: 16, name: 'DROP', values: { kick: 1, bass: 1 } },
+]
+.gain(drums.kick.vol.mul(tlCurve('kick')))</code></pre>
+
+<h2 id="granular">9. Granular: striate / chop</h2>
+<pre><code>s('quote').striate(24)   // split into 24 grains per cycle
+s('quote').chop(16)      // cut into 16 slices in order
+.begin(0.1).end(0.8)     // play only part of the sample
+.speed(0.8)              // speed
+.clip(0.4)               // shorter grain</code></pre>
+<p>
+  <code>striate</code> is a "cloud" of shards, <code>chop</code> is sequential
+  slicing. <code>begin/end</code> set a window in the sample (0…1); this is handy
+  so you don't drag the whole quote.
+</p>
+
+<h2 id="space">10. Reverb, delay, jux</h2>
+<pre><code>.room(0.6).roomsize(10)          // send and size
+.delay(0.4).delaytime(0.375).delayfeedback(0.5)</code></pre>
+<p>
+  <code>delaytime</code> is in cycles, not seconds: 0.375 = ⅜ of a bar (a triplet
+  eighth), 0.25 = ¼.
+</p>
+<p>
+  <code>jux(f)</code> — a stereo trick: the original to the left,
+  <code>f(pattern)</code> to the right. <code>jux(rev)</code> = the right channel
+  plays the cycle backwards. <code>juxBy(0.2, rev)</code> — the same, but with a
+  smaller width. Remember: this doubles the voices (and the load).
+</p>
+
+<h3>One reverb for several channels</h3>
+<p>
+  <code>room()</code> is a <strong>send</strong>, not an insert. The reverb itself
+  is created <strong>once per orbit</strong> (orbit 0 by default): all
+  <code>$:</code> with <code>.room()</code> on that orbit send into the same
+  <code>reverbNode</code>. So 18 channels of <code>stack(...).room(...)</code> are
+  not 18 reverbs but one.
+</p>
+<pre><code>// one reverb for the whole stack — economical
+stack(kick, perc).room(0.6).roomsize(10)
+
+// different roomsize on one orbit → the impulse response is recomputed
+// different orbit → separate reverb/delay buses
+stack(a.room(.2).orbit(1), b.room(.8).orbit(2))</code></pre>
+<p>
+  What is expensive is not the number of <code>.room()</code> calls but the
+  <code>roomsize</code> (impulse response length), changing <code>roomsize</code>
+  on the fly (the reverb is recomputed) and separate <code>orbit</code>s. Keep one
+  <code>roomsize</code> per track; add an <code>orbit</code> only if you really
+  need a different space or delay.
+</p>
+
+<h2 id="kick">11. Kick: gaps, the "and" of 4, every/mask</h2>
+<p>The basic pattern:</p>
+<pre><code>s('bd').struct(m('x*4'))       // 4-on-floor</code></pre>
+<p>Gaps: either rebuild the bar or mute the layer:</p>
+<pre><code>// occasionally (12%) the bar turns into "~ ~ x ~"
+s('bd').struct(m('x*4')).sometimesBy(0.12, (x) => x.struct(m('~ ~ x ~')))
+
+// remove 10% of the hits without changing the grid
+s('bd').struct(m('x*4')).degradeBy(0.1)</code></pre>
+<p>
+  The "and" of the 4th beat is step 14 on the 16th grid. An extra hit every 4th
+  bar:
+</p>
+<pre><code>$: s('bd')
+  .struct(m('~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ x ~'))
+  .mask('&lt;0 0 0 1&gt;')   // 3 bars of silence, the 4th plays
+</code></pre>
+<p>
+  <code>every(4, fn)</code> applies the function to every 4th cycle, but
+  <strong>replaces</strong> the pattern on that bar; to "add", you need a separate
+  layer with <code>mask</code> or <code>stack</code>.
+</p>
+
+<h2 id="loop">12. LOOP / SONG / HOLD</h2>
+<p>
+  The transport is declared in the <code>UI</code> manifest; the play slider has
+  three states:
+</p>
+<pre><code>const UI = {
+  transport: { name: 'play', labels: ['loop', 'song', 'hold'] },
+  holdBar: 'holdBar',
+}
+
+const play = slider(1, 0, 2, 1)      // 0 = LOOP, 1 = SONG, 2 = HOLD
+const holdBar = slider(0, 0, 191, 1) // bar to snapshot for HOLD
+const state = play.fmap((v) =&gt; Math.round(v))
+const songGate = state.fmap((v) =&gt; (v === 1 ? 1 : 0))
+const loopGate = state.fmap((v) =&gt; (v === 0 ? 1 : 0))
+const holdGate = state.fmap((v) =&gt; (v === 2 ? 1 : 0))
+
+// sectionValue(key) — the value from the TIMELINE section under holdBar
+const tlOr = (key, loopLevel = pure(1)) =&gt;
+  tlCurve(key).mul(songGate).add(loopLevel.mul(loopGate))
+    .add(sectionValue(key).mul(holdGate))
+
+.gain(drums.kick.vol.mul(tlOr('kick')))        // LOOP — 1, SONG — timeline, HOLD — section under holdBar
+.gain(vox.quote.vol.mul(tlOr('vox', pure(0)))) // off in LOOP</code></pre>
+<p>
+  LOOP ignores TIMELINE and plays a constant mix; SONG follows the form; HOLD
+  freezes the playhead and takes the section under <code>holdBar</code>.
+</p>
+
+<h2 id="samples">13. Samples and why they "don't load"</h2>
+<pre><code>if (typeof samples === 'function') {
+  samples({ bd: ['bd/11_bd_mot4i.wav'] }, 'https://cdn.jsdelivr.net/gh/tidalcycles/uzu-drumkit@main/')
+  samples({ quote: ['samples/de-quote/kafka.wav'] }, './')
+}</code></pre>
+<ul>
+  <li><code>raw.githubusercontent.com</code> often returns 503 — some samples are
+    silent. jsDelivr or local files are more reliable.</li>
+  <li>Check the console/Network: 404/503 is the sample, not the rhythm.</li>
+  <li>In node checks there is no <code>samples()</code> — hence the call under
+    <code>typeof</code>.</li>
+</ul>
+
+<h2>Links to the official theory</h2>
+<ul>
+  <li><a href="https://strudel.cc/learn/mini-notation/" target="_blank" rel="noreferrer">Mini-notation</a> — rhythm, groups, chords, alterations.</li>
+  <li><a href="https://strudel.cc/learn/" target="_blank" rel="noreferrer">Strudel tutorial</a> — table of contents of the basics.</li>
+  <li><a href="https://strudel.cc/learn/synths/" target="_blank" rel="noreferrer">Synths</a> — sawtooth, supersaw, FM, unison.</li>
+  <li><a href="https://strudel.cc/learn/effects/" target="_blank" rel="noreferrer">Effects</a> — filters, delay, reverb, distortion.</li>
+  <li><a href="https://strudel.cc/workshop/" target="_blank" rel="noreferrer">Workshop</a> — cycles and pattern functions.</li>
+  <li><a href="https://tidalcycles.org/docs/" target="_blank" rel="noreferrer">Tidal Cycles docs</a> — the same mini-notation, deeper.</li>
+</ul>
+
+</div>
+</body>
+</html>

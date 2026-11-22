@@ -5,8 +5,12 @@ of building rhythm from micro-events: clicks, splinters, grains, 8-bit
 squeaks and short acid notes. Melody is another timbre, not a theme;
 groove is a sequence of decisions, not a grid.
 
-Reference track: `tracks/idm/01-splinter.js` (136 BPM, 33 tracks,
-193 sliders, 8 switches, 6 pads).
+Reference track: `tracks/idm/01-splinter.js` (136 BPM, 33 layers,
+193 sliders, 8 switches, 6 pads). Also `tracks/idm/02-splinter-v2.js` — the
+same palette in a 96-bar form (SONG/LOOP/HOLD, 2 switches, no pads or panel
+hacks) and `tracks/idm/03-splinter-v3.js` — 144 bars, 4 switches, a VOICE LAB
+with voice/granular automation, more glitch and acid; `run` there is a
+syncopated 16th riff with an octave slider.
 
 ---
 

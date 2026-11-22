@@ -159,7 +159,7 @@ Keys are full tree paths (`drums.skorLow.vol`, `roneat.ek.vol`,
   pattern inside `stack` carries its own `vol.mul(gate)`, and there is
   no outer `.gain()`.
 - **`lpdepth` is a multiplier, not hertz.** `atmos.air` uses
-  `lpdepth(lfo).lpsync(0.125)`; see `docs/references.md`.
+  `lpdepth(lfo).lpsync(0.125)`; see `docs/references.en.md`.
 
 ## 6. Budget
 
@@ -276,7 +276,7 @@ they can be changed live and saved to JSON.
 ### Limits
 
 - The VSCO xylophone/marimba are Western instruments, not roneat.
-- The SAMPLES button downloads only `github:` maps; VSCO loads lazily
+- The PRELOAD SAMPLES button downloads only `github:` maps; VSCO loads lazily
   from direct URLs.
 - No Khmer one-shot bank was found; local recordings are better. See
   `05-samples.md`.

@@ -136,7 +136,7 @@ https://github.com/switchangel/strudel-scripts
 **In the track:** `acid.line` (glide on three 16ths), `acid.run`,
 `acid.scream`.
 
-### `docs/switchangel-recipes.md`
+### `docs/switchangel-recipes.en.md`
 
 - Local digest; read before a new track.
 
@@ -157,7 +157,7 @@ total chop.
 
 ## 6. Dark harmony
 
-### `docs/rules.md`
+### `docs/rules.en.md`
 
 - Bass ≤80 by default.
 - Anti-pop: no funny melodies, 303 is not chord arpeggiation, muted kick,

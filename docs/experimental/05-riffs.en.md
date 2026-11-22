@@ -20,7 +20,7 @@ repetition, mutation — not a theme with chords.
 4. **Rhythm first, pitch second.** Many repeated notes, rests, syncopation;
    small intervals, octave jumps as accents.
 5. **Accent / slide / octave.** A hard hit, a glide, an octave jump.
-6. **No "tю-тю-ту-ту".** If every note is a new pitch at even spacing, that
+6. **No "too-too-too-too".** If every note is a new pitch at even spacing, that
    is a melody, not a riff. You need repeats and rests.
 
 ## 3. Twelve riffs in the track

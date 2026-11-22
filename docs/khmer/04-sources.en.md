@@ -121,7 +121,7 @@ adaptation sits.
 
 ## 7. How to read these docs
 
-- `README.md` — character, track map, how to play, gates.
+- `README.en.md` — character, track map, how to play, gates.
 - `01-instruments.md` — instruments and roles.
 - `02-tuning-rhythm.md` — tuning, scale, cycle, form.
 - `03-strudel.md` — code, budgets, gotchas.

@@ -134,7 +134,7 @@ The second track changes the control rules:
   part is a regular `$:` sequencer.
 - Sound is real samples: Dirt-Samples (taiko, hand drum, tabla, metal)
   + VSCO 2 CE (xylophone, marimba, gong, claves, CC0). It is not a
-  Khmer bank; see `05-samples.md` for details and limits.
+  Khmer bank; see `05-samples.en.md` for details and limits.
 
 ### 03-skors-ritual — percussion only, no high lines
 
@@ -175,11 +175,11 @@ section.
 
 ## 5. Documents
 
-- `01-instruments.md` — pinpeat instruments and their roles.
-- `02-tuning-rhythm.md` — tuning, scale, colotomy, form.
-- `03-strudel.md` — how it maps to Strudel, CPU budget, gotchas.
-- `04-sources.md` — sources and exactly what was taken.
-- `05-samples.md` — which real samples exist and how to swap local ones.
+- `01-instruments.en.md` — pinpeat instruments and their roles.
+- `02-tuning-rhythm.en.md` — tuning, scale, colotomy, form.
+- `03-strudel.en.md` — how it maps to Strudel, CPU budget, gotchas.
+- `04-sources.en.md` — sources and exactly what was taken.
+- `05-samples.en.md` — which real samples exist and how to swap local ones.
 
 RU originals: the same names without `.en.md`.
 

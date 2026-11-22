@@ -27,16 +27,18 @@ and two dirt layers. 18 tracks, 206 sliders.
 ## How to play
 
 1. `npm run web` → `tracks/experimental/01-complex-bass.js`.
-2. `mode 0` — hats on the weak beats (offbeat) + four-on-floor; `mode 3` — hardcore 16ths and a kick on beat 4 of every 2nd bar.
-3. The panel starts with **vol 0 + M on** for everything; raise a volume and unmute 1–2 instruments.
-4. The `bd` kick is already on every beat; `drums.kick.dist/shape` set the character.
-5. Start in `mode 0 CLEAN` or `mode 1 GRIT`; `mode 3 SCREAM` for the peak.
-6. `mode 0 CLEAN` — almost no waveshaping; `mode 2 FOLD` — more warp.
-7. `harmony 1 AXIS` = D–Ab drone; `0 LOW` = D–A.
-8. MIXER has `M/S` for WT/FM/drone, and a color-coded `G` group mute.
+2. Pick a riff with the `riff` knob (0…11): `acid / roll / dnb / prod / off / oct /
+   stair / two / pedal / stab / skip / crawl`.
+3. `mode 0` — hats on the weak beats (offbeat) + four-on-floor; `mode 3` — hardcore 16ths and a kick on beat 4 of every 2nd bar.
+4. The panel starts with **vol 0 + M on** for everything; raise a volume and unmute 1–2 instruments.
+5. The `bd` kick is already on every beat; `drums.kick.dist/shape` set the character.
+6. Start in `mode 0 CLEAN` or `mode 1 GRIT`; `mode 3 SCREAM` for the peak.
+7. `mode 0 CLEAN` — almost no waveshaping; `mode 2 FOLD` — more warp.
+8. `harmony 1 AXIS` = D–Ab drone; `0 LOW` = D–A.
+9. MIXER has `M/S` for WT/FM/drone, and a color-coded `G` group mute.
    The top `@mutes` row is hidden because G replaces it.
-9. Ride `wt.wtN.pos/warp`, `fm.fmN.index/indexMod`, `cut/res`, `shape`,
-   `pace`, `decay`.
+10. Ride `wt.wtN.pos/warp`, `fm.fmN.index/indexMod`, `cut/res`, `shape`,
+    `pace`, `decay`.
 
 ## Gates
 
@@ -49,9 +51,10 @@ and two dirt layers. 18 tracks, 206 sliders.
 
 ## Documents
 
-- `01-buchla.md` — how Buchla / West Coast works.
-- `02-track.md` — track map and controls.
-- `03-strudel.md` — recipes and gotchas.
-- `04-sources.md` — sources.
+- `01-buchla.en.md` — how Buchla / West Coast works.
+- `02-track.en.md` — track map and controls.
+- `03-strudel.en.md` — recipes and gotchas.
+- `04-sources.en.md` — sources.
+- `05-riffs.en.md` — how the 12 riffs are built.
 
 RU originals: the same names without `.en.md`.

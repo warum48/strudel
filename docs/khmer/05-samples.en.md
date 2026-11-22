@@ -80,7 +80,7 @@ samples({
   orchestral gong instead of kong vong.
 - The VSCO xylophone is a Western instrument; it is closer to roneat ek
   than a synth, but the timbre differs.
-- The SAMPLES button in the panel downloads only `github:` maps (Dirt).
+- The PRELOAD SAMPLES button in the panel downloads only `github:` maps (Dirt).
   The VSCO map loads lazily from direct URLs; for offline use, download
   it separately.
 - VSCO 2 CE is CC0. Dirt-Samples has long been used in this project;

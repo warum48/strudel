@@ -76,7 +76,7 @@ and refusing familiar resolutions.
 
 ## 4. Anti-pop
 
-From `docs/rules.md` and project practice:
+From `docs/rules.en.md` and project practice:
 
 - no funny melodic lines;
 - 303 is an atonal riff, not a way to arpeggiate chords;

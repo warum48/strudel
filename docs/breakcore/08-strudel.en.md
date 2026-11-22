@@ -175,7 +175,7 @@ plugins `[18985#37]`.
 
 ---
 
-## 4. Repo constraints (`docs/rules.md`)
+## 4. Repo constraints (`docs/rules.en.md`)
 
 Mandatory — these outrank forum advice:
 
