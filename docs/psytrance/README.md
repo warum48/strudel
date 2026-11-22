@@ -71,8 +71,11 @@
 
 ## 5. Кислота, лид, сквелч
 
-- **303-линия:** saw/square, высокий resonance, filter-envelope, короткий
-  decay. Играет 1–2 ноты из лада, повторяется и мутирует фильтром.
+- **303-линия:** saw/square, **низкий базовый срез** (100–200 Гц) плюс
+  **глубокий filter-envelope** (3–5 октав) и ladder/24 дБ фильтр. Резонанс
+  умеренный (2–5), не 12–15. Короткий filter-decay (0.05–0.15 с), без
+  sustain. По умолчанию чисто; дисторшн — опционально и слегка. Играет 1–2
+  ноты из лада, повторяется и мутирует фильтром.
 - **Psy lead:** пила/квадрат, detune, bandpass или LP с медленной
   автоматикой; delay + reverb. Мелодия — короткий мотив «вопрос-ответ»,
   а не пассаж.
@@ -83,6 +86,29 @@
   вырезай, оставляй паузы.
 - Движение — автоматика: срез ползёт 16–32 такта, delay/reverb меняются,
   но мотив остаётся.
+
+### Значения в Strudel, а не в DAW
+
+`lpf` — это Гц, `lpq` — реальный Q (0–50), `lpenv` — глубина в октавах.
+Совет из DAW «cutoff 400–1000, Q 12–15» не переносится 1:1: в Strudel Q 12–15
+кричит, а кислоте нужен **низкий базовый срез + глубокий envelope**, а не
+высокий base + мелкий envelope.
+
+| Параметр | Диапазон в Strudel | Музыкальный старт |
+|---|---|---|
+| `lpf` | 0–20000 Гц | sub 40–80; top-бас 300–600; acid base 80–200; lead 800–2000; pad 200–600; хэты 6k–12k |
+| `lpq` | 0–50 | 0–4 музыкально; 5–15 агрессивно; 12–15 — это крик, не дефолт |
+| `lpenv` | октавы | 1–4 обычно; acid 3–5 **от низкого base** |
+| `lpa` / `lpd` / `lps` | секунды / 0–1 | acid `lpd` 0.05–0.15, `lps` 0–0.2; бас `lpd` 0.03–0.08 |
+| `ftype` | 12db / 24db / ladder | ladder для 303 (один worklet на ивент); 24db для баса; 12db для мягкого лида |
+| `roomsize` | 0–10 | 6–9; не выше 10 |
+| `room` | 0–1 | 0.1–0.3 барабаны, 0.2–0.5 пэды/лиды |
+| `delaytime` | секунды | 0.375 = 3/8; 0.25 = 1/4 |
+| `delayfeedback` | 0–1 | 0.3–0.55 |
+| `distort` | 0–10 | 0–2; acid может быть чистым |
+
+Наш acid: base 120 Гц, Q 4, `lpenv` 4.5, `lpd` 0.055, `lps` 0.05, ladder.
+Наш бас: 410 Гц, Q 2, `lpenv` 3, `lpd` 0.05, 24db.
 
 ## 6. Аранжировка
 
@@ -120,15 +146,49 @@
 ## 9. Наш трек
 
 `tracks/psytrance/01-serpent-engine.js` — 145 BPM, F# phrygian dominant,
-192 такта, статичный корень (без аккордовой прогрессии). 19 дорожек:
-kick, hats, open hat, clap, shaker, ride, tom, rim, roll, sub, rolling bass,
-acid 303, psy lead, FM squelch, drone, pad, air, riser, reverse.
-Свитчи: `mode` (straight/rolling/tribal/stomp), `bassVar` (root/oct),
-`leadVar` (serpent/squelch/hypno), `play` (LOOP/SONG/HOLD).
+192 такта, статичный корень (без аккордовой прогрессии). 19 дорожек,
+90 слайдеров: kick, hats, open hat, clap, shaker, ride, tom, rim, roll,
+sub, rolling bass, acid 303, psy lead, FM squelch, drone, pad, air, riser,
+reverse. Свитчи: `mode` (straight/rolling/tribal/stomp),
+`bassVar` (root/oct), `leadVar` (serpent/squelch/hypno),
+`play` (LOOP/SONG/HOLD).
+
+- sub 42 Гц; top-бас 410 Гц / Q 2 / `lpenv` 3 / 24db.
+- acid base 120 Гц / Q 4 / `lpenv` 4.5 / ladder, чисто (без дисторшна).
+- lead 1280 Гц / Q 2 / `lpenv` 2; squelch bpf 1240 / Q 3.5.
+- pad 320, drone 115, air 2500, `verb` 0.12, `roomsize` 8 (макс. 10).
+- нет master-множителя: каждый срез = слайдер × своя автоматика.
+
+### 02 — Acid Euphoria
+
+`tracks/psytrance/02-acid-euphoria.js` — 140 BPM, F# minor, 160 тактов,
+14 дорожек, 58 слайдеров. Здесь не изобретаем, а копируем референсы:
+
+- **Acid:** цепочка `switchangel_acid` — `distort 2.2:.3` / sawtooth / `lpf` /
+  `lpenv 2.256` / `lpq 12` — поверх **повторяющегося 16-го остинато на F#**,
+  всего две краски: m2 (G) и m3 (A) как акценты. Без прыжков; вариацию даёт
+  движущийся фильтр.
+- **Kick/hats:** `sbd` + distort + `duck 2`, TR-909 хэты из
+  `lausfødselsdagstechno`.
+- **Bass:** honcoops EX3/6 saw-роллинг, `lpf 700`, `res 7`, короткий release.
+- **Leads/pad:** honcoops EX7 широкое арпеджио, EX9 triangle pluck, EX12
+  медленные saw-струнные.
+- **Динамический cutoff:** двигается каждый синт — `lpf(base ×
+  sine.range(…).slow(16) × autoAt(…))`; у струнных `lpdepth`/`lpsync`.
+  Аккордовой прогрессии нет: статичный F#m, один корень.
 
 Рецепты в Strudel — `docs/psytrance/strudel-recipes.md`.
 
 ## 10. Источники
+
+Strudel-native:
+- https://strudel.cc/learn/effects/ — `lpf` Гц, `lpq` Q 0–50, `lpenv`,
+  LFO, duck, delay, reverb, `roomsize` 0–10.
+- https://strudel.cc/learn/synths/ — волны, FM, partials.
+- Локальные паттерны: `refs/strudel/strudelmarket/Ambient/DISSOLUTION-PROTOCOL-7ec2a894.js`
+  (psytrance 145, acid с низким base), `refs/strudel/strudelmarket/Synth/Adventure-Lime2-303d203e.js`
+  (303), `refs/strudel/strudelmarket/Bass/Stranger-schranz-soul-0a13ccdc.js`
+  (acid/бас).
 
 - Wikipedia, Psychedelic trance — темпы, поджанры, слои каждые 4–8 тактов,
   длина 6–10 минут, брейк 30 с–1 мин:

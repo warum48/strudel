@@ -104,7 +104,8 @@ Style notes: `docs/minimal-techno/README.en.md`.
 
 | File | BPM | Bars | Layers | Sliders | Transport | Description |
 |---|---:|---:|---:|---:|---|---|
-| `01-serpent-engine.js` | 145 | 192 | 19 | 94 | play | Full-on psytrance, one root, rolling 12-note bass, offbeat hats, 303, psy lead. |
+| `01-serpent-engine.js` | 145 | 192 | 19 | 90 | play | Full-on psytrance, one root, rolling 12-note bass, offbeat hats, 303, psy lead. |
+| `02-acid-euphoria.js` | 140 | 160 | 14 | 58 | play | Reference-driven psytrance: repeated-note switchangel acid ostinato, EX7/9/12 arp/pluck/strings, dynamic cutoff. |
 
 Style notes: `docs/psytrance/README.en.md` and
 `docs/psytrance/strudel-recipes.en.md`.
@@ -153,6 +154,7 @@ Style notes: `docs/techno/README.en.md`.
 |---|---:|---:|---:|---:|---|---|
 | `01-acid-jazz.js` | 84 | — | 17 | 73 | loop | Acid-jazz breaks: quarter/ninth pads, Rhodes, upright bass, swing. |
 | `02-acid-jazz-v2.js` | 82 | 96 | 27 | 107 | song | Composition: 11 sections, two Moog lines, tablas, scenes/mutes. |
+| `02-acid-jazz-v3.js` | 82 | 88 | 25 | 95 | play | 4:18 composition on current standard: TIMELINE, 0/1 gates, 8 sections. |
 
 Style notes: `docs/trip-hop/README.en.md`.
 

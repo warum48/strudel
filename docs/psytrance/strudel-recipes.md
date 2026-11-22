@@ -4,6 +4,14 @@
 `m(...)`, `struct`, `lpf/lpq/lpenv`, `duckorbit`, `delay`, `room`.
 Слайдеры — только неотрицательные литералы.
 
+## 0. Значения, которые работают в Strudel
+
+- `lpf` — Гц (0–20000), `lpq` — Q (0–50), `lpenv` — октавы.
+- Q 12–15 — это крик; для музыкального фильтра 0–4.
+- Acid = **низкий base** (80–200 Гц) + **глубокий envelope** (3–5 октав),
+  а не высокий base + мелкий envelope.
+- `roomsize` — 0–10 (не 16). `room` — 0–1. `delaytime` — секунды.
+
 ## 1. Бочка + роллинг-бас + саб
 
 ```js
@@ -21,9 +29,9 @@ $: s('bd').struct(m('x*4'))
 $: note(m('f#1')).struct(bassPat)
   .s('sawtooth').unison(1)
   .gain(bassVol.mul(tlOr('bass')))
-  .lpf(bassCut).lpq(12).ftype('24db')
+  .lpf(bassCut).lpq(2).ftype('24db')
   .lpenv(3).lpa(0.002).lpd(0.05).lpsustain(0)
-  .decay(0.07).sustain(0).release(0.02)
+  .decay(0.05).sustain(0).release(0.02)
   .distort(1.2).clip(0.9)
   .orbit(2)
   .mask(gateOf('bass')).filter(audible)
@@ -32,7 +40,7 @@ $: note(m('f#1')).struct(bassPat)
 $: note(m('f#1')).struct(bassPat)
   .s('sine')
   .gain(subVol.mul(tlOr('sub')))
-  .lpf(70)
+  .lpf(42)
   .decay(0.08).sustain(0).release(0.02)
   .orbit(2)
   .mask(gateOf('sub')).filter(audible)
@@ -61,17 +69,36 @@ $: s('oh').struct(m('~ ~ x ~ ~ ~ x ~ ~ ~ x ~ ~ ~ x ~'))
 $: note(m('f#2 ~ f#2 ~ g2 ~ f#2 a#2 ~ f#2 ~ g2 f#2 ~ a#2 ~'))
   .s('sawtooth').unison(1)
   .gain(acidVol.mul(tlOr('acid')))
-  .lpf(acidCut.mul(autoAt('keys.acid.cut'))).lpq(15).ftype('24db')
-  .lpenv(4).lpa(0.002).lpd(0.06).lpsustain(0)
-  .decay(0.07).sustain(0.1).release(0.03)
-  .distort(1.1)
-  .delay(0.32).delaytime(0.375).delayfeedback(0.45)
+  .lpf(acidCut.mul(autoAt('keys.acid.cut'))).lpq(4).ftype('ladder')
+  .lpenv(4.5).lpa(0.002).lpd(0.055).lpsustain(0.05)
+  .decay(0.055).sustain(0.1).release(0.03)
+  .delay(0.17).delaytime(0.375).delayfeedback(0.45)
   .room(verb.mul(0.3)).roomsize(fx.reverb.size)
   .mask(gateOf('acid')).filter(audible)
 ```
 
 Одна-две ноты из лада, повтор, фильтр ползёт. Это не «обыгрывание
-аккордов» — это ритмический рифф.
+аккордов» — это ритмический рифф. Низкий base + глубокий ladder-envelope —
+это и есть ход 303; высокий base с Q 15 превращает его в крик.
+
+## Повторяющийся dark-trance acid-остинато
+
+Не прыгай по разным нотам. Ритмично повторяй одну и ту же ноту, а краску давай
+**интервалами**: малая секунда (m2) и малая терция (m3).
+
+```js
+$: note(m('f#3 f#3 f#3 g3 f#3 f#3 f#3 f#3 f#3 f#3 f#3 a3 f#3 f#3 f#3 f#3'))
+  // 16-й пульс: 14 × F#, одна m2 (G), одна m3 (A), без прыжков
+  .distort('2.2:.3').s('sawtooth')
+  .lpf(cut.mul(sine.range(0.7, 1.8).slow(16)))
+  .lpenv(2.256).lpq(12)
+```
+
+F# — пульс; G — m2, A — m3; ритм повторяется каждый такт. Больше нот — ок,
+если это одна и та же нота; вариацию даёт фильтр/LFO. Myloops: повторяй хук и
+меняй одну ноту; Theory Helper: паттерн на 1–2 ноты с ритмичной огибающей
+фильтра; Attack: acid-остинато из корня + интервала. Рифф делает движение
+фильтра.
 
 ## 4. Psy lead с рандомным bandpass
 
@@ -79,8 +106,8 @@ $: note(m('f#2 ~ f#2 ~ g2 ~ f#2 a#2 ~ f#2 ~ g2 f#2 ~ a#2 ~'))
 $: note(m('<[f#3 ~ a#3 ~ c#4 ~ a#3 ~] [g3 ~ a#3 ~ f#3 ~ g3 ~]>'))
   .s('sawtooth').unison(2).detune(0.08)
   .gain(leadVol.mul(tlOr('lead')))
-  .bpf(leadCut.mul(rand.range(0.7, 1.3))).bpq(8)
-  .lpenv(2).lpa(0.002).lpd(0.1).lpsustain(0.1)
+  .lpf(leadCut.mul(perlin.slow(8).range(0.8, 1.2))).lpq(2)
+  .lpenv(2).lpa(0.003).lpd(0.12).lpsustain(0.1)
   .decay(0.12).sustain(0.2).release(0.15)
   .delay(0.4).delaytime(0.375).delayfeedback(0.5)
   .room(verb.mul(0.6)).roomsize(fx.reverb.size)
@@ -97,7 +124,7 @@ $: note(m('<[f#3 ~ a#3 ~ c#4 ~ a#3 ~] [g3 ~ a#3 ~ f#3 ~ g3 ~]>'))
 $: note(m('~ ~ f#4 ~ ~ g4 ~ ~ ~ a#4 ~ ~ ~ g4 ~ ~'))
   .s('sine').fmi(4).fmh(2.01)
   .gain(squelchVol.mul(tlOr('squelch')))
-  .bpf(1800).bpq(10)
+  .bpf(1240).bpq(3.5)
   .attack(0.001).decay(0.06).sustain(0).release(0.02)
   .delay(0.3).delaytime(0.375).delayfeedback(0.4)
   .room(verb.mul(0.4)).roomsize(fx.reverb.size)
@@ -106,6 +133,23 @@ $: note(m('~ ~ f#4 ~ ~ g4 ~ ~ ~ a#4 ~ ~ ~ g4 ~ ~'))
 ```
 
 2–4 сквелча на такт, не на даунбит.
+
+## Динамический cutoff (чего не хватало)
+
+Референсы в основном статичные. Двигай срез двумя слоями:
+
+```js
+// 8-е/16-е слои: база × медленный LFO × автоматика секции
+.lpf(cut.mul(sine.range(0.6, 1.3).slow(16)).mul(autoAt('keys.acid.cut')))
+
+// длинные пэды/струнные: непрерывный LFO, один проход за 16 тактов
+.lpf(cut).lpdepth(0.6).lpsync(1/16).lpdc(0)
+```
+
+`sine.range` сэмплится на каждом ивенте, поэтому годится для баса, acid,
+арпа и pluck. Для длинных нот — `lpdepth`/`lpsync`, иначе срез сэмплится
+только в момент атаки. `autoAt` двигает базу по секциям, LFO — внутри
+секции.
 
 ## 6. Riser и реверс
 

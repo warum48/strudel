@@ -75,8 +75,11 @@ save it.
 
 ## 5. Acid, lead, squelch
 
-- **303 line:** saw/square, high resonance, filter envelope, short decay.
-  Plays 1–2 notes from the scale, repeats and mutates through the filter.
+- **303 line:** saw/square, **low base cutoff** (100–200 Hz) plus a **deep
+  filter envelope** (3–5 octaves) and a ladder/24 dB filter. Moderate
+  resonance (2–5), not 12–15. Short filter decay (0.05–0.15 s), no sustain.
+  Clean by default; distortion optional and light. Plays 1–2 notes from the
+  scale, repeats and mutates through the filter.
 - **Psy lead:** saw/square, detune, bandpass or LP with slow automation;
   delay + reverb. The melody is a short "question–answer" motif, not a
   passage.
@@ -87,6 +90,29 @@ save it.
   pauses.
 - Movement is automation: the cutoff crawls over 16–32 bars, delay/reverb
   change, but the motif stays.
+
+### Strudel-native values, not a DAW
+
+Cutoff is Hz, `lpq` is a real Q factor (0–50), `lpenv` is envelope depth in
+octaves. A DAW guide saying "cutoff 400–1000, Q 12–15" does **not** translate
+1:1: in Strudel Q 12–15 screams, and an acid needs a **low base + deep
+envelope**, not a high base + shallow envelope.
+
+| Control | Range in Strudel | Musical start |
+|---|---|---|
+| `lpf` | 0–20000 Hz | sub 40–80; top bass 300–600; acid base 80–200; lead 800–2000; pad 200–600; hats 6k–12k |
+| `lpq` | 0–50 | 0–4 musical; 5–15 aggressive; 12–15 is a scream, not a default |
+| `lpenv` | octaves | 1–4 typical; acid 3–5 **from a low base** |
+| `lpa` / `lpd` / `lps` | seconds / 0–1 | acid `lpd` 0.05–0.15, `lps` 0–0.2; bass `lpd` 0.03–0.08 |
+| `ftype` | 12db / 24db / ladder | ladder for 303 (one worklet per event); 24db for bass; 12db for soft leads |
+| `roomsize` | 0–10 | 6–9; never above 10 |
+| `room` | 0–1 | 0.1–0.3 drums, 0.2–0.5 pads/leads |
+| `delaytime` | seconds | 0.375 = 3/8; 0.25 = 1/4 |
+| `delayfeedback` | 0–1 | 0.3–0.55 |
+| `distort` | 0–10 | 0–2; acid can be clean |
+
+Our acid: base 120 Hz, Q 4, `lpenv` 4.5, `lpd` 0.055, `lps` 0.05, ladder.
+Our bass: 410 Hz, Q 2, `lpenv` 3, `lpd` 0.05, 24db.
 
 ## 6. Arrangement
 
@@ -125,15 +151,48 @@ save it.
 ## 9. Our track
 
 `tracks/psytrance/01-serpent-engine.js` — 145 BPM, F# phrygian dominant,
-192 bars, static root (no chord progression). 19 tracks:
+192 bars, static root (no chord progression). 19 tracks, 90 sliders:
 kick, hats, open hat, clap, shaker, ride, tom, rim, roll, sub, rolling bass,
 acid 303, psy lead, FM squelch, drone, pad, air, riser, reverse.
 Switches: `mode` (straight/rolling/tribal/stomp), `bassVar` (root/oct),
 `leadVar` (serpent/squelch/hypno); transport: `play` (LOOP/SONG/HOLD).
 
+- sub 42 Hz; top bass 410 Hz / Q 2 / `lpenv` 3 / 24db.
+- acid base 120 Hz / Q 4 / `lpenv` 4.5 / ladder, clean (no distortion).
+- lead 1280 Hz / Q 2 / `lpenv` 2; squelch bpf 1240 / Q 3.5.
+- pad 320, drone 115, air 2500, `verb` 0.12, `roomsize` 8 (max 10).
+- no master multiplier: every cutoff is the slider times its own automation.
+
+### 02 — Acid Euphoria
+
+`tracks/psytrance/02-acid-euphoria.js` — 140 BPM, F# minor, 160 bars,
+14 tracks, 58 sliders. This one copies the references instead of inventing:
+
+- **Acid:** `switchangel_acid` chain — `distort 2.2:.3`/sawtooth/`lpf`/
+  `lpenv 2.256`/`lpq 12` — over a **repetitive 16th ostinato on F#**, with
+  only two color notes: m2 (G) and m3 (A) as accents. No jumps; the moving
+  filter does the variation.
+- **Kick/hats:** `sbd` + distort + `duck 2` and TR-909 hats from
+  `lausfødselsdagstechno`.
+- **Bass:** honcoops EX3/6 saw rolling bass, `lpf 700`, `res 7`, short release.
+- **Leads/pad:** honcoops EX7 wide arp, EX9 triangle pluck, EX12 slow saw
+  strings.
+- **Dynamic cutoff:** every synth moves — `lpf(base × sine.range(…).slow(16)
+  × autoAt(…))`; the strings use `lpdepth`/`lpsync`. No chord progression:
+  static F#m strings, one root.
+
 Strudel recipes — `docs/psytrance/strudel-recipes.en.md`.
 
 ## 10. Sources
+
+Strudel-native:
+- https://strudel.cc/learn/effects/ — `lpf` Hz, `lpq` Q 0–50, `lpenv`,
+  LFO, duck, delay, reverb, `roomsize` 0–10.
+- https://strudel.cc/learn/synths/ — waveforms, FM, partials.
+- Local patterns: `refs/strudel/strudelmarket/Ambient/DISSOLUTION-PROTOCOL-7ec2a894.js`
+  (psytrance 145, low-base acid envelope), `refs/strudel/strudelmarket/Synth/Adventure-Lime2-303d203e.js`
+  (303), `refs/strudel/strudelmarket/Bass/Stranger-schranz-soul-0a13ccdc.js`
+  (acid/bass).
 
 - Wikipedia, Psychedelic trance — tempos, subgenres, layers every 4–8 bars,
   6–10 minute length, 30 s–1 min break:

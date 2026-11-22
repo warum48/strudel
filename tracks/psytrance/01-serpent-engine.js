@@ -29,18 +29,11 @@ const leadVar = slider(0, 0, 2, 1)   // serpent / squelch / hypno
 const holdBar = slider(0, 0, 191, 1)
 
 // ── глобальные ───────────────────────────────────────────────────
-const verb = slider(0.55, 0, 1, 0.01)
+const verb = slider(0.12, 0, 1, 0.01)
 const duck = slider(0.45, 0, 1, 0.01)
 const swing = slider(0.02, 0, 0.08, 0.005)
 
 const instruments = {
-  master: {
-    cut: {
-      name: 'Master',
-      tone: slider(1, 0.2, 2, 0.01),   // множитель к LP верхних слоёв
-      hp: slider(1, 0, 3, 0.01),       // множитель к HP верхних слоёв
-    },
-  },
   drums: {
     kick: {
       name: 'Kick',
@@ -106,15 +99,15 @@ const instruments = {
     sub: {
       name: 'Sub',
       vol: slider(0.20, 0, 0.8, 0.01),
-      cut: slider(70, 40, 90, 1),
+      cut: slider(42, 35, 90, 1),
       decay: slider(0.08, 0.03, 0.2, 0.005),
     },
     bass: {
       name: 'Rolling bass',
       vol: slider(0.26, 0, 0.8, 0.01),
       // top-бас: psytrance намеренно открывает срез выше 80; sub остаётся ≤70.
-      cut: slider(700, 200, 2000, 10),
-      res: slider(12, 0, 20, 0.5),
+      cut: slider(410, 120, 2000, 10),
+      res: slider(2, 0, 20, 0.5),
       env: slider(3, 0, 8, 0.1),
       decay: slider(0.05, 0.02, 0.2, 0.005),
       drive: slider(1.2, 0, 4, 0.05),
@@ -124,18 +117,17 @@ const instruments = {
     acid: {
       name: 'Acid 303',
       vol: slider(0.28, 0, 0.7, 0.01),
-      cut: slider(1800, 200, 8000, 20),
-      res: slider(15, 0, 20, 0.5),
-      env: slider(4, 0, 8, 0.1),
-      decay: slider(0.06, 0.02, 0.3, 0.005),
-      drive: slider(1.0, 0, 3, 0.05),
-      echo: slider(0.32, 0, 0.8, 0.01),
+      cut: slider(120, 80, 1200, 5),
+      res: slider(4, 0, 12, 0.5),
+      env: slider(4.5, 0, 8, 0.1),
+      decay: slider(0.055, 0.02, 0.2, 0.005),
+      echo: slider(0.17, 0, 0.8, 0.01),
     },
     lead: {
       name: 'Psy lead',
       vol: slider(0.30, 0, 0.7, 0.01),
-      cut: slider(2600, 300, 9000, 20),
-      res: slider(6, 0, 16, 0.5),
+      cut: slider(1280, 200, 6000, 10),
+      res: slider(2, 0, 16, 0.5),
       env: slider(2, 0, 6, 0.1),
       decay: slider(0.12, 0.03, 0.5, 0.005),
       det: slider(0.08, 0, 0.3, 0.005),
@@ -143,9 +135,9 @@ const instruments = {
     },
     squelch: {
       name: 'FM squelch',
-      vol: slider(0.18, 0, 0.6, 0.01),
-      cut: slider(3000, 400, 10000, 20),
-      q: slider(10, 1, 20, 0.5),
+      vol: slider(0.20, 0, 0.6, 0.01),
+      cut: slider(1240, 300, 6000, 10),
+      q: slider(3.5, 0.5, 16, 0.5),
       fm: slider(4, 0, 8, 0.1),
       ratio: slider(2.01, 1, 4, 0.01),
       decay: slider(0.06, 0.02, 0.3, 0.005),
@@ -153,16 +145,16 @@ const instruments = {
     },
     drone: {
       name: 'Drone',
-      vol: slider(0.12, 0, 0.5, 0.01),
-      cut: slider(160, 50, 1000, 5),
-      det: slider(0.08, 0, 0.4, 0.01),
-      atk: slider(4, 0.1, 8, 0.1),
-      rel: slider(4, 0.2, 8, 0.1),
+      vol: slider(0.11, 0, 0.5, 0.01),
+      cut: slider(115, 50, 1000, 5),
+      det: slider(0.03, 0, 0.4, 0.01),
+      atk: slider(2, 0.1, 8, 0.1),
+      rel: slider(2.3, 0.2, 8, 0.1),
     },
     pad: {
       name: 'Air pad',
       vol: slider(0.10, 0, 0.4, 0.01),
-      cut: slider(900, 200, 6000, 20),
+      cut: slider(320, 100, 3000, 10),
       atk: slider(2, 0.1, 6, 0.1),
       rel: slider(4, 0.2, 8, 0.1),
       chorus: slider(0.5, 0, 1, 0.01),
@@ -172,7 +164,7 @@ const instruments = {
     air: {
       name: 'Air',
       vol: slider(0.05, 0, 0.2, 0.005),
-      cut: slider(9000, 1000, 16000, 100),
+      cut: slider(2500, 500, 12000, 50),
       lfo: slider(1, 0, 4, 0.05),
     },
     riser: {
@@ -189,14 +181,14 @@ const instruments = {
     },
   },
   fx: {
-    reverb: { size: slider(8, 2, 16, 0.5) },
+    reverb: { size: slider(8, 0, 10, 0.5) },
     delay: {
       time: slider(0.375, 0.125, 0.75, 0.005),
       fb: slider(0.45, 0, 0.8, 0.01),
     },
   },
 }
-const { master, drums, low, keys, atmos, fx } = instruments
+const { drums, low, keys, atmos, fx } = instruments
 
 // ── TIMELINE: 192 такта; 0 = слой молчит в секции ────────────────
 const TIMELINE = [
@@ -216,11 +208,9 @@ const TIMELINE = [
 
 // ── AUTOMATION: срезы и мастер-фильтр ────────────────────────────
 const AUTOMATION = [
-  { path: 'master.tone',    points: [[0, 0.5], [16, 0.8], [48, 1], [64, 0.6], [80, 1.4], [96, 1], [128, 1.2], [160, 1.4], [176, 0.6], [192, 0.2]] },
-  { path: 'master.hp',      points: [[0, 1], [64, 1], [80, 1.8], [96, 1], [160, 1.6], [176, 1], [192, 0.5]] },
   { path: 'low.bass.cut',   points: [[0, 0.8], [16, 1], [64, 0.9], [80, 1.1], [96, 1], [160, 0.9], [176, 0.8], [192, 0.4]] },
-  { path: 'keys.acid.cut',  points: [[16, 0.4], [32, 0.8], [64, 1.4], [80, 1.2], [96, 1.8], [128, 2.2], [160, 1.4], [176, 0.6], [192, 0.2]] },
-  { path: 'keys.lead.cut',  points: [[64, 0.7], [80, 1.2], [96, 1.6], [128, 2.4], [160, 1.2], [192, 0.2]] },
+  { path: 'keys.acid.cut',  points: [[16, 0.6], [32, 0.8], [64, 1.1], [80, 1.0], [96, 1.2], [128, 1.4], [160, 1.1], [176, 0.8], [192, 0.5]] },
+  { path: 'keys.lead.cut',  points: [[64, 0.7], [80, 1.0], [96, 1.2], [128, 1.4], [160, 1.1], [192, 0.5]] },
   { path: 'keys.pad.cut',   points: [[0, 0.6], [64, 0.4], [80, 1], [160, 1.4], [192, 0.3]] },
   { path: 'atmos.air.cut',  points: [[0, 0.6], [64, 1.2], [80, 0.8], [160, 1.4], [192, 0.3]] },
 ]
@@ -362,7 +352,7 @@ $: s('bd').struct(m('x*4'))
 $: s('hh').struct(groove('hats')).n(run(5))
   .sometimesBy(drums.hats.human, (x) => x.late(0.01))
   .gain(drums.hats.vol.mul(tlOr('hats')).mul(m('[.8 .35 .55 .3]*4')))
-  .lpf(drums.hats.cut.mul(master.cut.tone).mul(autoAt('master.tone'))).hpf(master.cut.hp.mul(900).mul(autoAt('master.hp')))
+  .lpf(drums.hats.cut).hpf(900)
   .decay(drums.hats.decay).sustain(0)
   .swingBy(swing, 8)
   .mask(gateOf('hats')).filter(audible)
@@ -370,7 +360,7 @@ $: s('hh').struct(groove('hats')).n(run(5))
 // Open hat — оффбит (третья 16-я каждой четверти).
 $: s('oh').struct(m('~ ~ x ~ ~ ~ x ~ ~ ~ x ~ ~ ~ x ~'))
   .gain(drums.oh.vol.mul(tlOr('oh')))
-  .lpf(drums.oh.cut.mul(master.cut.tone).mul(autoAt('master.tone'))).hpf(master.cut.hp.mul(400).mul(autoAt('master.hp')))
+  .lpf(drums.oh.cut).hpf(400)
   .decay(drums.oh.decay).sustain(0)
   .room(verb.mul(0.35)).roomsize(fx.reverb.size)
   .mask(gateOf('oh')).filter(audible)
@@ -379,7 +369,7 @@ $: s('oh').struct(m('~ ~ x ~ ~ ~ x ~ ~ ~ x ~ ~ ~ x ~'))
 $: s('cp').struct(groove('clap'))
   .sometimesBy(0.25, (x) => x.stut(2, 1/16, 0.8))
   .gain(drums.clap.vol.mul(tlOr('clap')))
-  .lpf(drums.clap.cut.mul(master.cut.tone).mul(autoAt('master.tone'))).hpf(master.cut.hp.mul(300).mul(autoAt('master.hp'))).lpq(2)
+  .lpf(drums.clap.cut).hpf(300).lpq(2)
   .decay(drums.clap.decay).sustain(0)
   .room(verb.mul(drums.clap.room)).roomsize(fx.reverb.size)
   .mask(gateOf('clap')).filter(audible)
@@ -387,7 +377,7 @@ $: s('cp').struct(groove('clap'))
 // Shaker — 16-е, mode даёт оффбит/лом.
 $: s('sh').struct(groove('shaker'))
   .gain(drums.shaker.vol.mul(tlOr('shaker')).mul(m('[.6 .3 .5 .25]*4')))
-  .lpf(drums.shaker.cut.mul(master.cut.tone).mul(autoAt('master.tone'))).hpf(master.cut.hp.mul(1200).mul(autoAt('master.hp')))
+  .lpf(drums.shaker.cut).hpf(1200)
   .decay(drums.shaker.decay).sustain(0)
   .pan(sine.slow(16).range(0.4, 0.6))
   .mask(gateOf('shaker')).filter(audible)
@@ -395,7 +385,7 @@ $: s('sh').struct(groove('shaker'))
 // Ride — редкие акценты в GROOVE 2/DROP/PEAK.
 $: s('rd').struct(groove('ride'))
   .gain(drums.ride.vol.mul(tlOr('ride')))
-  .lpf(drums.ride.cut.mul(master.cut.tone).mul(autoAt('master.tone'))).hpf(master.cut.hp.mul(700).mul(autoAt('master.hp')))
+  .lpf(drums.ride.cut).hpf(700)
   .decay(drums.ride.decay).sustain(0)
   .pan(0.35)
   .mask(gateOf('ride')).filter(audible)
@@ -412,7 +402,7 @@ $: s('lt').bank('RolandTR808').struct(m('~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ x ~ x ~'))
 // Rim — синкопы, короткое эхо.
 $: s('rim').struct(groove('rim'))
   .gain(drums.rim.vol.mul(tlOr('rim')))
-  .lpf(drums.rim.cut.mul(master.cut.tone).mul(autoAt('master.tone'))).hpf(master.cut.hp.mul(800).mul(autoAt('master.hp'))).lpq(2)
+  .lpf(drums.rim.cut).hpf(800).lpq(2)
   .decay(drums.rim.decay).sustain(0)
   .delay(drums.rim.echo).delaytime(fx.delay.time).delayfeedback(fx.delay.fb.mul(0.6))
   .mask(gateOf('rim')).filter(audible)
@@ -440,7 +430,7 @@ $: bassPitch.struct(bassPat)
   .gain(low.bass.vol.mul(tlOr('bass')))
   .lpf(low.bass.cut.mul(autoAt('low.bass.cut'))).lpq(low.bass.res).ftype('24db')
   .lpenv(low.bass.env).lpa(0.002).lpd(low.bass.decay).lpsustain(0)
-  .decay(0.07).sustain(0).release(0.02)
+  .decay(low.bass.decay).sustain(0).release(0.02)
   .distort(low.bass.drive)
   .clip(0.9)
   .orbit(2)
@@ -450,11 +440,9 @@ $: bassPitch.struct(bassPat)
 $: acidLine
   .s('sawtooth').unison(1)
   .gain(keys.acid.vol.mul(tlOr('acid')))
-  .lpf(keys.acid.cut.mul(master.cut.tone).mul(autoAt('keys.acid.cut'))).lpq(keys.acid.res).ftype('24db')
-  .hpf(master.cut.hp.mul(120).mul(autoAt('master.hp')))
-  .lpenv(keys.acid.env).lpa(0.002).lpd(keys.acid.decay).lpsustain(0)
-  .decay(0.07).sustain(0.1).release(0.03)
-  .distort(keys.acid.drive)
+  .lpf(keys.acid.cut.mul(autoAt('keys.acid.cut'))).lpq(keys.acid.res).ftype('ladder')
+  .lpenv(keys.acid.env).lpa(0.002).lpd(keys.acid.decay).lpsustain(0.05)
+  .decay(keys.acid.decay).sustain(0.1).release(0.03)
   .delay(keys.acid.echo).delaytime(fx.delay.time).delayfeedback(fx.delay.fb.mul(0.7))
   .room(verb.mul(0.3)).roomsize(fx.reverb.size)
   .mask(gateOf('acid')).filter(audible)
@@ -463,10 +451,9 @@ $: acidLine
 $: leadLine
   .s('sawtooth').unison(2).detune(keys.lead.det)
   .gain(keys.lead.vol.mul(tlOr('lead')))
-  .lpf(keys.lead.cut.mul(master.cut.tone).mul(autoAt('keys.lead.cut')).mul(perlin.slow(8).range(0.8, 1.2))).lpq(keys.lead.res)
-  .hpf(master.cut.hp.mul(300).mul(autoAt('master.hp')))
+  .lpf(keys.lead.cut.mul(autoAt('keys.lead.cut')).mul(perlin.slow(8).range(0.8, 1.2))).lpq(keys.lead.res)
   .lpenv(keys.lead.env).lpa(0.003).lpd(keys.lead.decay).lpsustain(0.1)
-  .decay(0.12).sustain(0.25).release(0.15)
+  .decay(keys.lead.decay).sustain(0.25).release(0.15)
   .delay(keys.lead.echo).delaytime(fx.delay.time).delayfeedback(fx.delay.fb.mul(0.8))
   .room(verb.mul(0.6)).roomsize(fx.reverb.size)
   .pan(sine.slow(8).range(0.4, 0.6))
@@ -476,7 +463,7 @@ $: leadLine
 $: squelchLine
   .s('sine').fmi(keys.squelch.fm).fmh(keys.squelch.ratio)
   .gain(keys.squelch.vol.mul(tlOr('squelch')))
-  .bpf(keys.squelch.cut.mul(master.cut.tone).mul(rand.range(0.6, 1.4))).bpq(keys.squelch.q)
+  .bpf(keys.squelch.cut.mul(rand.range(0.6, 1.4))).bpq(keys.squelch.q)
   .attack(0.001).decay(keys.squelch.decay).sustain(0).release(0.02)
   .delay(keys.squelch.echo).delaytime(fx.delay.time).delayfeedback(fx.delay.fb.mul(0.6))
   .room(verb.mul(0.4)).roomsize(fx.reverb.size)

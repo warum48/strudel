@@ -168,6 +168,43 @@ note("c5 e5 g5").s("sawtooth").lpf(slider(3000, 300, 9000, 20))</code></pre>
   <code>lpdepth</code>/<code>lpsync</code>.
 </p>
 
+<h3>Транс-синты: реальные значения в Strudel</h3>
+<p>
+  <code>lpf</code> — Гц, <code>lpq</code> — реальный Q (0–50),
+  <code>lpenv</code> — глубина в октавах. Совет из DAW «cutoff 400–1000,
+  Q 12–15» не переносится 1:1: в Strudel Q 12–15 кричит, а psy top-бас — это
+  не то же самое, что правило «sub ≤80».
+</p>
+<ul>
+  <li><code>lpf</code>: sub 40–80; top-бас 300–600; acid base 80–200;
+    lead 800–2000; pad 200–600; хэты 6k–12k.</li>
+  <li><code>lpq</code>: 0–4 музыкально; 5–15 агрессивно; 12–15 — крик.</li>
+  <li><code>lpenv</code>: 1–4 обычно; acid 3–5 <strong>от низкого base</strong>.</li>
+  <li><code>lpd</code>/<code>lps</code>: acid 0.05–0.15 с / 0–0.2;
+    бас 0.03–0.08 с / 0.</li>
+  <li><code>ftype</code>: ladder для 303 (один worklet на ивент), 24db для
+    баса, 12db для мягкого лида.</li>
+  <li><code>roomsize</code> 0–10, <code>room</code> 0–1,
+    <code>delaytime</code> в секундах, <code>delayfeedback</code> 0–1,
+    <code>distort</code> 0–10 (0–2 достаточно).</li>
+</ul>
+<p>
+  303 — это <strong>низкий базовый срез + глубокая огибающая</strong>, а не
+  высокий base + мелкая огибающая:
+</p>
+<pre><code>.lpf(120)          // Гц: низкий base
+.lpq(4)            // Q: музыкально, не 15
+.lpenv(4.5)        // октавы: глубоко
+.lpa(0.002)        // секунды
+.lpd(0.055)        // секунды
+.lpsustain(0.05)   // 0–1
+.ftype('ladder')   // характер 303; один worklet на ивент
+.decay(0.055).sustain(0.1).release(0.03)</code></pre>
+<p>
+  Бас: <code>.lpf(410).lpq(2).lpenv(3).lpd(0.05).ftype('24db')</code>.
+  Лид: <code>.lpf(1280).lpq(2).lpenv(2).lpd(0.12)</code>.
+</p>
+
 <h3>Медленное LFO на фильтр</h3>
 <p>
   Два способа. Первый — LFO поверх базового среза (ручка остаётся базой):
