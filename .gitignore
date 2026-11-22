@@ -12,3 +12,6 @@ backup/
 
 # local settings dumps (not part of the project)
 dumps/
+
+# local selected copies of existing tracks (duplicates, not part of the project)
+tracks/_selected/

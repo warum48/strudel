@@ -6,6 +6,13 @@
 
 ## Перед новым треком
 
+> **ВАЖНО: любая mini-notation — только через `m(...)`.** В оригинальном
+> strudel.cc в `m()` оборачиваются только **двойные** кавычки; одинарные
+> остаются строкой. Тогда `n('3 4 5')` даёт `"3 4 5" is not a number`,
+> `s('bd*4')` теряет бочку, `struct('x*4')` — сетку, `note('c4 e4')` — тишину.
+> Панель вызывает `miniAllStrings()` и **маскирует** это, поэтому проверяй
+> трек ещё и в strudel.cc. Подробно — `docs/pitfalls.md` (Правило №1).
+
 Сначала `docs/switchangel-recipes.md` — там чужие рецепты (слайд, 303, бас,
 фильтры, грув). Половина ручек, которые мы пишем руками, уже сделана одной
 функцией и сделана лучше.
@@ -36,6 +43,11 @@ tracks/
   02-dnb-live-v2.js   + переключатель ритма, мелодия, злой саб
   03-dnb-live-v3.js   + дрон на такт с качающимся фильтром (38 слайдеров)
   04-dnb-live-v4.js   + бас-линия Bb→C→F с фильтром от нажатия (44 слайдера)
+  psytrance/
+    01-serpent-engine.js 145 BPM full-on psytrance: F# phrygian dominant,
+                      один корень без аккордов, роллинг-бас 12 нот/такт,
+                      оффбит-хэты, 303, psy lead, FM-сквелчи, 192 такта
+                      (5:18); 19 дорожек, 93 слайдера; LOOP/SONG/HOLD
   techno/
     01-berlin.js      130 BPM берлинское техно, без аккордов (43 слайдера)
     02-dub.js         124 BPM техно-даб: пэд, реверб, бульки, глитчи (62 слайдера)
@@ -53,6 +65,9 @@ tracks/
     13-gabber-v3.js   версия 08/09 в схеме 12: дерево, глухая бочка, audible
     14-acid-jazz.js   90 BPM acid jazz: TIA-арпеджио из 06, пэды на partials,
                       контрабас со слайдом, свинг и Rhodes-компинг
+    14-acid-jazz-v2.js v2 14 как композиция: 90 BPM, 128 тактов, TIMELINE,
+                      SONG/LOOP/HOLD, два TIA-арпеджио, автоматика срезов,
+                      gateOf; та же F дорийская гармония и свинг
     15-house-rave.js  120 BPM jazz house / rave: четыре в пол, джазовые
                       Fmaj9–Dm9–C6/9, рифы clav/acid/hoover, ручка rave
     16-minimal-dub.js 120 BPM minimal dub techno: Am9→Bbmaj9, muted 4/4,
@@ -73,8 +88,12 @@ tracks/
                       Gbmaj9, полный дабовый набор (kick/hat/rim/click/shaker,
                       sub/dub, pad/stab/organ/skank/horns, hiss/air/field,
                       delay/reverb) + Moog-линия в духе 17 + 18 кхмерских
-                      перкуссионных каналов через общий delay/reverb;
-                      19 дорожек, 149 слайдеров
+                       перкуссионных каналов через общий delay/reverb;
+                       19 дорожек, 149 слайдеров
+    18-khmer-dub-v2.js v2 18 как композиция: 122 BPM, 192 такта, 16 секций,
+                      LOOP/SONG/HOLD, группы skor/sampho/chhing по секциям,
+                      19 линий AUTOMATION (в основном срезы); 19 дорожек,
+                      151 слайдер
     19-hypnotic-trance.js 138 BPM fat trance: одна строка нот f-минора,
                       роллинг-бас 16-ми, 4-on-floor + distort, supersaw
                       стаб и стена, арп, райзер; 9 дорожек, 5 слайдеров,
@@ -92,6 +111,11 @@ tracks/
                       (72 такта), габбер-бочка на «и» 4-й раз в 4 такта,
                       acidCut 900, bassCut max 220, 2 бас-рисунка, psy-сатурация + sub, немецкая цитата Кафки грануляром;
                       13 дорожек, 66 слайдеров; LOOP/SONG
+    22-dark-trance-160-v2.js 160 BPM dark trance v2: e-фригийский,
+                      96 тактов, мелодии из honcoops/strudel_trance
+                      (роллинг-бас EX3/6, арп EX7/4, pluck EX9, strings
+                      EX12, пентатоника EX6), 4 грува + 3 мелодических
+                      свитча; 18 дорожек, 91 слайдер; LOOP/SONG/HOLD
   experimental/
     01-complex-bass.js 160 BPM Buchla-style complex bass: 5 пар WT+FM,
                       10 осцилляторов, 5 LFO, drone, dirt; тёмные вейвтейблы
@@ -710,6 +734,36 @@ at следующих сдвигается; порядок меняется ст
 `mute: 'muteSkor'` / `muteSampho` / `muteChhing` в дереве, G-кнопки
 подкрашены цветом группы. Верхний ряд `@mutes` для 18 скрыт — G его заменяет.
 
+### Techno 18 v2: Khmer Dub как композиция (`techno/18-khmer-dub-v2.js`)
+
+`18-khmer-dub.js` развёрнут в композицию: 122 BPM, 192 такта, 16 секций,
+19 дорожек, 151 слайдер. Сам 18 не тронут — остаётся референсом.
+Гармония Fm9 → Abmaj9 → Dbmaj9 → Gbmaj9 и 18 кхмерских каналов те же.
+
+- **Форма:** INTRO → INTRO 2 → DUB A → DUB A2 → STRIP → PRESSURE → BREAK →
+  DUB B → CLICK → DUB B2 → STRIP 2 → PRESSURE 2 → BREAK 2 → RETURN →
+  OUT → OUTRO.
+- **Группы перкуссии:** skor / sampho / chhing включаются отдельно по
+  секциям, поэтому меняется ансамбль, а не рисунок каждого канала.
+- **Транспорт:** LOOP/SONG/HOLD (`play` + `holdBar`); `mode` dub/strip/
+  pressure/click, `harmony` warm/air.
+- **Автоматика:** 19 линий, почти все — срезы (pad/stab/organ/skank/horns,
+  Moog note/arp, dub-бас, kick/hat/rim/click/shaker, hiss/air/field).
+  Отдельно `percCut` на всю шину перкуссии, арп-бёрсты `moog.arp.pace`
+  и лёгкое движение `fx.dub.feedback`.
+- **Гигиена:** `gateOf` на всех слоях, постоянные уровни, один `roomsize`,
+  общий delay/reverb для 18 каналов, slider-sync заплатка.
+- **Нагрузка:** ~141 событие и ~168 голосов на такт в LOOP, 15 worklet/такт
+  (8/с). Тяжёлая часть — 18 перкуссионных каналов и длинный реверб, поэтому
+  дефолт `fx.reverb.size` 12 (не 16), `verb` 0.65, `percVerb` 0.58,
+  `percEcho` 0.22; релизы пэда и Moog короче. Если всё ещё рвётся:
+  `fx.reverb.size` 8–10, `percVerb` 0.4 или G-мьют chhing/sampho.
+
+Проверки: `verify` (19 дорожек / 151 слайдер; в LOOP 142 удара за такт),
+`cpu` — 15 worklet/такт (8/с), `gains` — тихо, `tension` — трения нет,
+`doubles` — наложений нет, `live` — eval ок, паттерн играет, слайдер
+180px без рассинхрона.
+
 `dnb/01-atmospheric-jungle.js` — **новый трек, новая подпапка**: 174 BPM,
 атмосферный jungle / liquid dnb в духе LTJ Bukem + jump-up-режим в духе
 Aphrodite. Собран по внешним источникам, а не по прошлым трекам.
@@ -999,6 +1053,36 @@ rim 0.70, clap 0.40, без событий при нулевой громкос�
 `cpu` — 8 worklet/такт (4/с), `gains` — тихо, `levels` — кик 2.20, хэты 1.20,
 sub 1.20, rumble 0.80, tom 0.16.
 
+### Techno 14 v2: Acid Jazz (`techno/14-acid-jazz-v2.js`)
+
+`14-acid-jazz.js` развёрнут в композицию: 90 BPM, 128 тактов, 29 дорожек,
+104 слайдера. Сам 14 не тронут — остаётся референсом того же звука.
+Гармония та же: F дорийский, круг `f bb eb c g eb bb f`; TIA-арпеджио,
+контрабас со слайдом, свинг, кисть и Rhodes-компинг на месте.
+
+- **Форма:** INTRO 8 → INTRO 2 8 → A 16 → A2 16 → BREAK 8 → B 16 → B2 16 →
+  PEAK 16 → DECAY 8 → OUTRO 8 → OUTRO 2 8. Плотность растёт слоями и
+  срезами, громкости постоянны.
+- **Три состояния транспорта:** `play` = LOOP/SONG/HOLD и `holdBar`; в SONG
+  форму ведёт TIMELINE, в LOOP — ручки, в HOLD — секция под `holdBar`.
+- **Два арпеджио:** TIA (восходящий, из 14) и TIA2 (нисходящий, square) —
+  включаются по секциям, а не играют друг на друге. Плюс две мелодии
+  (MEL / MEL2) и часть с двойной гармонией quartal/ninth.
+- **Бас:** контрабас с терцией/квинтой и подходом; `glide` только на 4-й
+  восьмой. Sub ≤80 — только вес, не мелодия.
+- **Ритмы:** `mode` = jazz / break / half / roll. Свинг в хэтах уменьшается
+  от jazz к roll; шейкер входит в break/roll, кисть — в jazz/half.
+  Бочка глухая, с телом и коротким decay.
+- **Автоматика:** срезы пэда, обоих арпеджио, мелодии, баса, Rhodes, бочки,
+  воздуха и дрона. В LOOP множитель 1, в HOLD — снимок на `holdBar`.
+- **Гигиена:** `gateOf` и `.filter(audible)` на всех слоях, один `roomsize`,
+  явные `0` в каждой секции TIMELINE.
+
+Проверки: `verify` (29 дорожек / 104 слайдера; в LOOP 94 удара за такт),
+`cpu` — до 7 worklet/такт (3/с), `gains` — тихо, `tension` — трения нет,
+`levels` на A2 — TIA2 7.04, хэты 2.64, бас 2.00, пэд 1.44; событий при
+нулевой громкости нет.
+
 ### Experimental: Complex Bass (`experimental/01-complex-bass.js`) — Buchla-подход
 
 `experimental/01-complex-bass.js` — 160 BPM, 18 дорожек, 206 слайдеров.
@@ -1148,6 +1232,80 @@ DROP 16 → BREAK 8 → DROP2 16 → OUTRO 8. Каждый слой — своя
 
 Проверки: `verify` (13 дорожек / 66 слайдеров; LOOP 143 удара, SONG 71), `cpu` — 4
 worklet/такт (2/с).
+
+### Techno 22 v2: Dark Trance 160 (`techno/22-dark-trance-160-v2.js`) — мелодии из трансовых примеров
+
+Версия 2 трека 22: та же тёмная основа (160 BPM, e-фригийский, габбер-акцент,
+acid, Кафка), но добавлены **мелодии из `honcoops/strudel_trance`**, переложенные
+в e-фригийский. 96 тактов:
+INTRO 8 → BUILD 8 → ROLL 8 → DROP 16 → BREAK 8 → BUILD2 8 → DROP 2 16 →
+PEAK 16 → OUTRO 8. `TIMELINE` + `AUTOMATION` + `gateOf`, LOOP/SONG/HOLD.
+
+- **EX3/EX6 — бас:** роллинг 16-ми `root–fifth–neighbour` (16 нот на такт,
+  одна гармония на такт) или классический KBBB; свитч `bassVar` = `roll`/`kick`.
+- **EX7/EX4 — арпеджио:** 16 нот на такт по аккордам `Em–F–G–Dm`; `arpVar` =
+  `low` (восходящее) / `high` (октавой выше).
+- **EX9 — pluck:** euphoric-фраза `e5 g5 b5…` на паузах; BREAK, PEAK, OUTRO.
+- **EX12 — strings:** string machine октавой выше пэда, chorus + длинный релиз;
+  BREAK, DROP 2, PEAK.
+- **EX6 — пентатоника:** мелодический лид для DROP 2/PEAK; свитч `leadVar` =
+  `acid` (square, 16-е) / `penta` (saw, 8-е). Тембр меняется вместе с фразой.
+- **EX3 — build:** snare roll 16-ми (`roll`, только BUILD2) + noise riser
+  (`riser`, только BUILD/ROLL/BUILD2; в LOOP оба выключены).
+- Гармония антипоп: `i–bII–bIII–bVII`, без доминанты; acid по-прежнему уходит
+  в b2 (`f`) и тритон (`bb`) — диссонанс намеренный, `tension` не гоняем.
+- Уровни постоянны: энергия — плотность, срезы (AUTOMATION), включение слоёв.
+  Бас ≤80; вес даёт sub. Один `fx.reverb.size` на все слои.
+
+Свитчи: `play` (LOOP/SONG/HOLD), `mode` (straight/rolling/broken/roll),
+`bassVar` (roll/kick), `leadVar` (acid/penta), `arpVar` (low/high).
+
+Проверки: `verify` — exit 0 (18 дорожек / 91 слайдер; LOOP 133 удара),
+`gains` — глушится в ноль, `cpu` — 13 worklet/с в LOOP (3/с в SONG INTRO),
+`modes` — hats/clap/rim меняются во всех 4 грувах, остальные слои от mode
+не зависят, `levels` — лид не тише пэда (DROP: лид 4.8 / пэд 2.7;
+DROP 2: пентатоника 2.4 / пэд 2.7).
+
+### Psytrance 01: Serpent Engine (`psytrance/01-serpent-engine.js`) — full-on без аккордов
+
+Новый жанр в коллекции: **full-on psytrance**, 145 BPM, **F# phrygian
+dominant**, 192 такта (≈5:18). Главное отличие от предыдущих «трансов»:
+**один корень и никакой аккордовой прогрессии** — ни пэд-аккордов, ни
+арпеджио «по аккордам». Гармонию даёт лад (b2-малая секунда, мажорная
+терция), а движение — фильтры, ритм и звук.
+
+Форма: INTRO 16 (только kick+bass) → GROOVE 16 → LIFT 16 → GROOVE 2 16 →
+BREAK 16 → BUILD 16 → DROP 16 → GROOVE 3 16 → PEAK 16 → PEAK 2 16 →
+BREAK 2 16 → OUTRO 16. Смены на 8/16-тактовых границах; open hat не
+держится дольше 64 тактов без сброса.
+
+- **Роллинг-бас:** 12 нот на такт, `~ x x x` на каждую четверть; top-бас
+  (saw, LP 700, filter-envelope, короткий decay, sustain 0, distortion) +
+  отдельный sine-саб F#1 (≤70). Кик короткий и дакает orbit 2; сайдчейн
+  ~0.45. Свитч `bassVar` = `root` / `oct` (октава раз в 4 такта, саб остаётся
+  на корне).
+- **Барабаны:** 4-on-floor, closed hats 16-ми, **open hat на оффбит**, клэп
+  на 2/4, шейкер, райд, том-филлы, rim, snare roll в BUILD. Свитч `mode` =
+  straight/rolling/tribal/stomp.
+- **Мелодии:** 303-линия на F#2/G2/A#2 (b2/3), psy lead `serpent`/`squelch`/
+  `hypno` (свитч `leadVar`), FM-сквелчи `f#4/g4/a#4` с рандомным bandpass.
+- **Атмосфера:** статичный дрон F#1, air pad F#2, розовый воздух, noise
+  riser, reverse crash. Один `fx.reverb.size`; AUTOMATION ведёт мастер-тон,
+  HP, срезы acid/lead/pad/air.
+- **Гигиена:** `gateOf`/`audible` на всех слоях; roll/riser/reverse в LOOP
+  выключены; `TIMELINE`/`AUTOMATION` нативные, без панельной магии.
+
+Свитчи: `play` (LOOP/SONG/HOLD), `mode` (4 грува), `bassVar` (root/oct),
+`leadVar` (serpent/squelch/hypno).
+
+Проверки: `verify` — exit 0 (19 дорожек / 93 слайдера; LOOP 89 ударов/такт),
+`gains` — глушится в ноль, `cpu` — 15 worklet/с в LOOP (10/с в SONG INTRO),
+`modes` — hats/clap/shaker/ride/rim меняются по режимам, `levels` — DROP:
+бас 3.12, acid 2.52, лид 2.40, кик 2.20; лид не в тени пэда.
+`tension` не гоняем: малая секунда/тритон здесь — жанровая краска.
+
+Доки и источники: `docs/psytrance/README.md`,
+`docs/psytrance/strudel-recipes.md`.
 
 ### Darkwave 01: Static Confession (`darkwave/01-static-confession.js`)
 

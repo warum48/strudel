@@ -262,6 +262,28 @@ s('quote').chop(16)      // нарезать на 16 кусков по поря�
   голоса (и нагрузку).
 </p>
 
+<h3>Один реверб на несколько каналов</h3>
+<p>
+  <code>room()</code> — это <strong>send</strong>, а не вставка. Сам реверб
+  создаётся <strong>один на orbit</strong> (по умолчанию orbit 0): все
+  <code>$:</code> с <code>.room()</code> на этом orbit шлют в один и тот же
+  <code>reverbNode</code>. Поэтому 18 каналов <code>stack(...).room(...)</code> —
+  это не 18 ревербов, а один.
+</p>
+<pre><code>// один реверб на весь стек — экономно
+stack(kick, perc).room(0.6).roomsize(10)
+
+// разные roomsize на одном orbit → impulse response пересчитывается
+// разные orbit → отдельные reverb/delay-шины
+stack(a.room(.2).orbit(1), b.room(.8).orbit(2))</code></pre>
+<p>
+  Дорого не число <code>.room()</code>, а размер <code>roomsize</code> (длина
+  impulse response), смена <code>roomsize</code> на лету (реверб
+  пересчитывается) и отдельные <code>orbit</code>. Держи один
+  <code>roomsize</code> на трек; <code>orbit</code> добавляй, только если
+  реально нужен другой простор или дилей.
+</p>
+
 <h2 id="kick">11. Бочка: пропуски, «и» 4-й, every/mask</h2>
 <p>Основной рисунок:</p>
 <pre><code>s('bd').struct('x*4')          // 4-on-floor</code></pre>

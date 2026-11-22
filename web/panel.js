@@ -1234,7 +1234,7 @@ function renderTimeline() {
     nm.textContent = sec.name;
     const mt = document.createElement('span');
     mt.className = 'mt';
-    mt.textContent = `${sec.at}–${sec.at + sec.length} · ${Object.keys(sec.values).length} v`;
+    mt.textContent = `${sec.at}–${sec.at + sec.length}`;
     b.append(nm, mt);
     b.addEventListener('click', (e) => {
       e.stopPropagation();
@@ -2401,13 +2401,31 @@ async function readTrack(p) {
   return res.text();
 }
 
+// Длина трека — из TIMELINE и BPM. Один такт = 4 доли,
+// setcpm(BPM/4) => такт = 4/BPM минуты.
+function trackDuration(src, bpm) {
+  if (!bpm) return '';
+  const sections = scanTimeline(src);
+  if (!sections.length) return '';
+  const bars = Math.max(...sections.map((s) => s.at + s.length));
+  if (!(bars > 0)) return '';
+  const total = Math.round((bars * 4 * 60) / bpm);
+  const m = Math.floor(total / 60);
+  const sec = total % 60;
+  return `${m}:${String(sec).padStart(2, '0')}`;
+}
+
 // Заголовок и подпись — из самого файла: BPM берём из кода, а не из константы
-// в панели, иначе при смене трека шапка врёт.
+// в панели, иначе при смене трека шапка врёт. Время — после BPM.
 function showTrackInfo(p, src) {
   $('title').textContent = trackTitle(p);
   $('trackPath').textContent = trackName(p) + '.js';
   const bpm = /const\s+BPM\s*=\s*(\d+(?:\.\d+)?)/.exec(src);
-  $('sub').textContent = bpm ? `${bpm[1]} BPM` : '';
+  const parts = [];
+  if (bpm) parts.push(`${bpm[1]} BPM`);
+  const dur = trackDuration(src, bpm ? Number(bpm[1]) : 0);
+  if (dur) parts.push(dur);
+  $('sub').textContent = parts.join(' · ');
 }
 
 async function loadTrack(p) {

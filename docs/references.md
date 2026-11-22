@@ -15,6 +15,9 @@
 - `docs/techno/README.md` — berlin techno: кик/rumble/сайдчейн, клэп на
   второй кик, индустриальная перкуссия, форма, источники.
 - `docs/coldwave/README.md` — coldwave: разреженность, 606/808/Linn, форма.
+- `docs/psytrance/README.md` — psytrance: один корень, роллинг-бас, оффбит-хэты,
+  acid/psy lead/сквелч, аранжировка, микс, источники.
+- `docs/psytrance/strudel-recipes.md` — рабочие Strudel-куски для psytrance.
 
 ## Доки Strudel
 
@@ -56,6 +59,28 @@
   сетки и длины нот.
 - https://www.psytrance-blueprint.com/tutorials/triplet-bass/ — триоли/свинг,
   чтобы прямой 16-й бас не звучал жёстко.
+- https://www.myloops.net/how-to-make-a-psytrance-rolling-bassline — полный
+  разбор: 12 нот/такт, 50–75 мс, sub+top, sidechain 2–4 дБ, EQ, моно <200 Гц.
+- https://www.myloops.net/designing-psytrance-bass-sounds-in-spire — HPF
+  35–40 Гц, сайдчейн, огибающие под BPM.
+- https://psytrance-blueprint.com/tutorials/psytrance-quickstart/ — порядок:
+  kick+bass → drums → leads → FX; референсы.
+- https://psytrance-blueprint.com/tutorials/better-psytrance-arrangement/ —
+  16 тактов kick+bass, слои по 8–16, границы 8/16, open hat до 64 тактов.
+- https://psytrance-blueprint.com/tutorials/three-tips-better-melodies/ —
+  ритм/мотивы, вопрос-ответ, простота, автоматика.
+- https://psytrance-blueprint.com/tutorials/psytrance-grids-rhythm/ — 16-е
+  на корне, оффбит, core/accent, 2–4 сквелча.
+- https://dsokolovskiy.com/blog/all/psytrance-bassline-synthesis/ — saw −1
+  октава, LP 24 дБ, короткий decay без sustain, ресемплинг.
+- https://dsokolovskiy.com/blog/all/creating-a-weird-psychedelic-lead/ —
+  bandpass + Sample&Hold LFO, distortion/phaser/reverb.
+- https://www.theoryhelper.com/genres/psytrance/scales — phrygian dominant,
+  double harmonic, малая секунда, минимум гармонии.
+- https://www.starseedinvaded.com/post/advanced-techniques-for-psytrance-production —
+  140–150 BPM, rolling 16th bass, оффбит-хэты, модуляция, микс.
+- https://en.wikipedia.org/wiki/Psychedelic_trance — поджанры/темпы, слои
+  каждые 4–8 тактов, длина 6–10 минут.
 
 Рецепты, которые реально дают «жир»: 4-on-floor + `distort` + `duck`,
 роллинг-бас 16-ми с `lpenv`/`shape`, `supersaw` с `unison 5-7` и `jux(rev)`,
