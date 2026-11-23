@@ -1,14 +1,6 @@
-// DARKWAVE 01 · STATIC CONFESSION · 124 BPM
-// Тёмная сторона новой волны: Depeche-середина (Black Celebration → Violator).
-// A минор/фригийский, БЕЗ доминанты: Am9 – Bbmaj7 – Fmaj7 – Dm7 (i–bII–bVI–iv).
-// Бас — педаль A с b2-соседом, не проход по корням аккордов (антипоп).
-// Синтетика: TR-909/808, pulse-бас, полый pulse-пэд, string machine,
-// FM-колокол, арпеджио из аккордов, моно-лид.
-// 104 такта: INTRO → VERSE → PRE → CHORUS → INTERLUDE → VERSE 2 → CHORUS 2 →
-// OUTRO (последние 8 — без барабанов и баса). Гайд: docs/darkwave/README.md.
+// DARKWAVE · EIN FEST · 124 BPM
 setcpm(124 / 4)
 
-// UI-манифест для панели: обычный JS-объект в коде (строки — одинарные).
 const UI = {
   transport: { name: 'play', labels: ['loop', 'song', 'hold'] },
   holdBar: 'holdBar',
@@ -19,14 +11,12 @@ const UI = {
   },
 }
 
-// ── переключатели ────────────────────────────────────────────────
-const play = slider(1, 0, 2, 1)   // 0 LOOP, 1 SONG, 2 HOLD
-const mode = slider(0, 0, 3, 1)   // четыре грува
-const arpVar = slider(0, 0, 1, 1) // арп: low / high
-const leadVar = slider(0, 0, 1, 1) // лид: verse / chorus
+const play = slider(1, 0, 2, 1)
+const mode = slider(0, 0, 3, 1)
+const arpVar = slider(0, 0, 1, 1)
+const leadVar = slider(0, 0, 1, 1)
 const holdBar = slider(0, 0, 127, 1)
 
-// ── глобальные ───────────────────────────────────────────────────
 const verb = slider(0.9, 0, 1, 0.01)
 const tape = slider(0.4, 0, 1, 0.01)
 
@@ -174,7 +164,6 @@ const instruments = {
 }
 const { drums, low, keys, atmos, fx } = instruments
 
-// ── TIMELINE: 104 такта ───────────────────────────────────────────
 const TIMELINE = [
   { at: 0,  len: 8,  name: 'INTRO',  values: { kick: 0, snare: 0, clap: 0, hat: 0, ohat: 0, tom: 0, rim: 0, bass: 0, sub: 0, pad: 1, strings: 0, bell: 1, arp: 0, lead: 0, air: 1, tape: 1, riser: 0, mode: 2, arpVar: 0, leadVar: 0  } },
   { at: 8,  len: 16, name: 'VERSE',  values: { kick: 1, snare: 1, clap: 0, hat: 1, ohat: 0.2, tom: 0.2, rim: 0.3, bass: 1, sub: 0, pad: 1, strings: 0, bell: 1, arp: 1, lead: 1, air: 1, tape: 1, riser: 0, mode: 0, arpVar: 0, leadVar: 0  } },
@@ -187,7 +176,6 @@ const TIMELINE = [
   { at: 96, len: 8,  name: 'OUTRO 2',values: { kick: 0, snare: 0, clap: 0, hat: 0, ohat: 0, tom: 0, rim: 0, bass: 0, sub: 0, pad: 1, strings: 1, bell: 1, arp: 0, lead: 0, air: 1, tape: 1, riser: 0, mode: 3, arpVar: 0, leadVar: 0  } },
 ]
 
-// ── AUTOMATION: множители к слайдерам во времени (нативно) ────────
 const AUTOMATION = [
   { path: 'keys.pad.cut',     points: [[0, 1], [24, 1.4], [32, 2.2], [48, 2.2], [56, 1], [72, 2.2], [88, 1], [104, 0.15]] },
   { path: 'keys.strings.cut', points: [[48, 1], [56, 2], [72, 1.6], [88, 1.2], [96, 0.4], [104, 0.1]] },
@@ -237,7 +225,6 @@ const sectionAt = (bar) => {
 const holdIndex = holdBar.fmap((bar) => sectionAt(Math.max(0, Math.round(bar))))
 const sectionValue = (key) =>
   holdIndex.pick(TIMELINE.map((sec) => pure(sec.values[key] ?? 0)))
-// SONG → TIMELINE, LOOP → loopLevel, HOLD → значения секции.
 const tlOr = (key, loopLevel = pure(1)) => {
   const base = tlCurve(key).mul(songGate).add(loopLevel.mul(loopGate))
   return base.add(sectionValue(key).mul(holdGate))
@@ -247,7 +234,6 @@ const autoSwitch = (key, knob) =>
 const modeAuto = autoSwitch('mode', mode)
 const arpAuto = autoSwitch('arpVar', arpVar)
 const leadAuto = autoSwitch('leadVar', leadVar)
-// AUTOMATION: SONG — кривая, LOOP — ×1, HOLD — снимок на holdBar.
 const autoValueAt = (path, bar) => {
   const pts = AUTOMATION.find((a) => a.path === path)?.points || []
   if (!pts.length) return 1
@@ -267,13 +253,8 @@ const audible = (hap) => {
   const g = hap.value?.gain
   return typeof g !== 'number' || g > 0.001
 }
-// Гейт на уровне паттерна: выключенные секции не порождают событий вообще
-// (экономия осцилляторов/сэмплеров), а не просто играют в ноль.
 const gateOf = (key) => tlOr(key).fmap((v) => v > 0.001)
 
-// ── МАТЕРИАЛ (figures): A minor ─────────────────────────────────
-// Антипоп: никакой доминанты с G#; bII (Bb) — неаполитанская краска,
-// 9-ки и 7-ки вместо «разрешения». Бас не идёт по корням — педаль A.
 const figures = {
   chords: note(m('<[a3,c4,e4,b4] [bb2,d3,f3,a3] [f2,a2,c3,e3] [d3,f3,a3,c4]>')),
   pedal: note(m('<a1 a1 bb1 a1>')),
@@ -284,7 +265,6 @@ const figures = {
 }
 const { chords } = figures
 
-// ── РИТМЫ (grooves): mode 0..3 ──────────────────────────────────
 const grooves = {
   kick: [
     m('x ~ ~ ~ x ~ ~ ~ x ~ ~ ~ x ~ ~ ~'),
@@ -313,7 +293,6 @@ const grooves = {
 }
 const groove = (part) => modeAuto.pick(grooves[part])
 
-// ── СЛОИ ────────────────────────────────────────────────────────
 $: s('bd').bank('RolandTR909').struct(groove('kick'))
   .gain(drums.kick.vol.mul(tlOr('kick')))
   .lpf(drums.kick.cut).lpq(1)
@@ -355,7 +334,6 @@ $: s('oh').bank('RolandTR909').struct(m('~ ~ x ~ ~ ~ x ~ ~ ~ x ~ ~ ~ x ~'))
   .mask(gateOf('ohat'))
   .filter(audible)
 
-// Томы — филлы, не в каждом такте.
 $: s('lt').bank('RolandTR808').struct('~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ x ~ x ~')
   .sometimesBy(0.5, (x) => x.struct('~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ x ~ x x ~'))
   .gain(drums.tom.vol.mul(tlOr('tom')))
@@ -373,7 +351,6 @@ $: s('rim').bank('RolandTR808').struct('~ ~ x ~ ~ ~ x ~ ~ ~ x ~ ~ ~ x ~')
   .mask(gateOf('rim'))
   .filter(audible)
 
-// Pulse-бас: педаль A + b2-сосед, не корни аккордов; редкий октавный бросок.
 $: figures.pedal.struct(groove('bass'))
   .sometimesBy(0.14, (x) => x.add(note(12)))
   .s('pulse').pw(low.bass.pw).unison(1)
@@ -386,7 +363,6 @@ $: figures.pedal.struct(groove('bass'))
   .mask(gateOf('bass'))
   .filter(audible)
 
-// Sine-саб в припевах: тот же педальный A, без гармонического хода.
 $: figures.sub.s('sine')
   .gain(low.sub.vol.mul(tlOr('sub')))
   .lpf(low.sub.cut)
@@ -395,7 +371,6 @@ $: figures.sub.s('sine')
   .mask(gateOf('sub'))
   .filter(audible)
 
-// Полый pulse-пэд: не Juno-стек, а «дудка» с chorus.
 $: chords.slow(2)
   .s('pulse').pw(keys.pad.pw).unison(2).detune(keys.pad.det)
   .gain(keys.pad.vol.mul(tlOr('pad')))
@@ -407,7 +382,6 @@ $: chords.slow(2)
   .mask(gateOf('pad'))
   .filter(audible)
 
-// String machine: октавой выше, только когда есть место.
 $: chords.slow(2).add(note(12))
   .s('sawtooth').unison(4).detune(0.18)
   .gain(keys.strings.vol.mul(tlOr('strings')))
@@ -419,7 +393,6 @@ $: chords.slow(2).add(note(12))
   .mask(gateOf('strings'))
   .filter(audible)
 
-// FM-колокол: редкие украшения, dotted delay.
 $: figures.bell
   .s('sine').fmi(keys.bell.fm).fmh(keys.bell.ratio)
   .gain(keys.bell.vol.mul(tlOr('bell')))
@@ -431,7 +404,6 @@ $: figures.bell
   .mask(gateOf('bell'))
   .filter(audible)
 
-// Арпеджио из аккордов (а не из отдельной строки).
 const arpLine = arpAuto.pick([
   chords.slow(2).arp('0 1 2 1 2 3 2 1'),
   chords.slow(2).arp('0 2 3 2 1 0 1 2').add(note(12)),
@@ -447,7 +419,6 @@ $: arpLine
   .mask(gateOf('arp'))
   .filter(audible)
 
-// Лид: две фразы — куплетная и припевная.
 const leadLine = leadAuto.pick([
   figures.leadVerse.struct('x ~ ~ ~ x ~ ~ ~'),
   figures.leadChorus.struct('x ~ x ~ x ~ x ~'),
@@ -463,21 +434,18 @@ $: leadLine
   .mask(gateOf('lead'))
   .filter(audible)
 
-// Воздух: не «pink», а тёмный brown-шум.
 $: s('brown').struct('x*2')
   .gain(atmos.air.vol.mul(tlOr('air')))
   .lpf(atmos.air.cut.mul(atmos.air.lfo.fmap((v) => 0.5 + v * 4))).hpf(300)
   .mask(gateOf('air'))
   .filter(audible)
 
-// Лента — тихо, в паузах.
 $: s('crackle').struct('x*2')
   .gain(atmos.tape.vol.mul(tape).mul(tlOr('tape')))
   .lpf(atmos.tape.cut).hpf(400)
   .mask(gateOf('tape'))
   .filter(audible)
 
-// Riser: длинный шум, открывается фильтром.
 $: s('white').slow(4)
   .gain(atmos.riser.vol.mul(tlOr('riser')))
   .hpf(atmos.riser.hpf)

@@ -2592,7 +2592,10 @@ async function fillTrackSelect() {
   }
   const all = [...list, ...refs];
   const fromHash = decodeURIComponent(location.hash.slice(1));
-  const want = all.includes(fromHash) ? fromHash : DEFAULT_TRACK;
+  // На публичном хосте /api/tracks отдаёт только curated `_selected/`, и
+  // DEFAULT_TRACK там нет — 404 при старте валил всю инициализацию. Берём
+  // первый доступный трек, DEFAULT_TRACK остаётся последним фолбэком.
+  const want = all.includes(fromHash) ? fromHash : (list[0] ?? DEFAULT_TRACK);
   sel.value = want;
   return want;
 }
@@ -2663,7 +2666,21 @@ async function loadTrack(p) {
 
 async function boot() {
   setStatus('loading engine…');
-  const audioReady = wa.initAudioOnFirstClick();
+  // Registers Strudel's own first-click unlock listener; our capture handler
+  // below is a belt-and-braces resume that also survives stopPropagation.
+  wa.initAudioOnFirstClick();
+  // Mobile (iOS especially) needs the AudioContext resumed inside the very
+  // first trusted gesture. Listen in the capture phase so a button that calls
+  // stopPropagation (play) still unlocks audio.
+  const unlockAudio = () => {
+    try {
+      const ac = wa.getAudioContext();
+      if (ac.state !== 'running') ac.resume().catch(() => {});
+    } catch {}
+  };
+  for (const ev of ['pointerdown', 'touchstart', 'keydown']) {
+    window.addEventListener(ev, unlockAudio, { once: true, capture: true });
+  }
   mini.miniAllStrings();
 
   setStatus('reading track…');
@@ -2738,12 +2755,15 @@ async function boot() {
   fillThemes();
   requestAnimationFrame(drawSpectrum);
   setStatus('ready — hit PLAY');
-  return audioReady;
 }
 
 let audioReady;
 async function play() {
   if (!mirror) return;
+  try {
+    const ac = wa.getAudioContext();
+    if (ac.state !== 'running') await ac.resume();
+  } catch {}
   await audioReady;
   if (!eq) buildMasterChain();
   setStatus('starting…');

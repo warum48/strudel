@@ -1,14 +1,4 @@
-// COLDWAVE 03 · COLD ROOMS v3 · 108 BPM
-// Классический kit: TR-606 (kick/hats), LinnDrum (snare), TR-808 (rim/toms).
-// Холодный пост-панк/минимал-вейв: механические барабаны, обрезанный бас,
-// Juno-пэд, угловатая гитара, тонкий лид. Dm, почти статичная гармония.
-// v3: +VERSE 3 (уровни как в VERSE 2, гитара тем же плаком но реже,
-//     шершавый бас-пэд по реф. «Horn») и долгий фузз-аккорд из шума
-//     (ветер + гул в Dm). Форма 88 тактов:
-//     OUTRO 72–80, OUTRO 2 80–88 без барабанов и баса.
-// Живые свитчи: play (LOOP/SONG/HOLD), mode (4 грува), gtr (riff/sparse),
-// arp (wall/high). Материал — figures, ритмы — grooves, свитчи — autoSwitch.
-// Гайд: docs/coldwave/README.md. Моды: 4 рисунка, состав не выключается.
+// COLDWAVE · COLD ROOMS · 108 BPM
 setcpm(108 / 4)
 
 if (typeof samples === 'function') {
@@ -18,13 +8,9 @@ if (typeof samples === 'function') {
     rim: ['rim/10_rim_switchangel.wav'], hh: ['hh/10_hh_switchangel.wav'],
     oh: ['oh/10_oh_switchangel.wav'], lt: ['lt/10_lt_mot4i.wav'],
   }, CDN)
-  // Грустная немецкая фраза (Рильке, public domain), локальный wav.
   samples({ rilke: ['https://cdn.jsdelivr.net/gh/warum48/strudel@main/samples/de-quote/rilke.wav'] })
 }
 
-// ── переключатели ────────────────────────────────────────────────
-// UI-манифест для панели: обычный JS-объект в коде, а не комментарий.
-// Удалишь комментарии — панель всё равно знает роли и варианты.
 const UI = {
   transport: { name: 'play', labels: ['loop', 'song', 'hold'] },
   holdBar: 'holdBar',
@@ -34,13 +20,12 @@ const UI = {
     arp: ['wall', 'high'],
   },
 }
-const play = slider(1, 0, 2, 1)   // 0 LOOP (без TIMELINE), 1 SONG, 2 HOLD
-const mode = slider(0, 0, 3, 1)   // четыре механических рисунка
-const gtr = slider(0, 0, 1, 1)    // гитара: riff / sparse
-const arp = slider(0, 0, 1, 1)    // арп: wall (+12) / high (+24)
-const holdBar = slider(0, 0, 127, 1) // такт снимка AUTOMATION для HOLD
+const play = slider(1, 0, 2, 1)
+const mode = slider(0, 0, 3, 1)
+const gtr = slider(0, 0, 1, 1)
+const arp = slider(0, 0, 1, 1)
+const holdBar = slider(0, 0, 127, 1)
 
-// ── глобальные ───────────────────────────────────────────────────
 const verb = slider(0.8, 0, 1, 0.01)
 const tape = slider(0.5, 0, 1, 0.01)
 
@@ -99,10 +84,10 @@ const instruments = {
     },
     bassPad: {
       name: 'Bass pad',
-      vol: slider(0.05, 0, 2, 0.05),     // drone из рефа
-      hpf: slider(60, 20, 2000, 5),      // ниже — проходит тело, не только шипение
-      oct: slider(2, 0, 5, 1),           // октав вниз (2 по умолчанию)
-      tri: slider(0.25, 0, 2, 0.05),     // слой tri
+      vol: slider(0.05, 0, 2, 0.05),
+      hpf: slider(60, 20, 2000, 5),
+      oct: slider(2, 0, 5, 1),
+      tri: slider(0.25, 0, 2, 0.05),
     },
   },
   keys: {
@@ -147,10 +132,10 @@ const instruments = {
       vol: slider(0.13, 0, 0.5, 0.01),
       cut: slider(2400, 200, 9000, 20),
       decay: slider(0.06, 0.01, 0.3, 0.005),
-      rate: slider(4, 1, 8, 0.5),        // частота арпеджио
-      q: slider(6, 3, 17, 0.5),          // резонанс
-      period: slider(2, 1, 8, 1),        // тактов на цикл LFO
-      depth: slider(1500, 0, 3000, 50),  // глубина LFO по срезу, Гц
+      rate: slider(4, 1, 8, 0.5),
+      q: slider(6, 3, 17, 0.5),
+      period: slider(2, 1, 8, 1),
+      depth: slider(1500, 0, 3000, 50),
       echo: slider(0.45, 0, 0.85, 0.01),
     },
     leadBreak: {
@@ -188,16 +173,14 @@ const instruments = {
     grain: {
       name: 'Grain texture',
       vol: slider(0.23, 0, 0.5, 0.01),
-      // ── нарезка / скан сэмпла ──
-      begin: slider(0, 0, 1, 0.01),       // окно в сэмпле
+      begin: slider(0, 0, 1, 0.01),
       end: slider(1, 0, 1, 0.01),
-      slices: slider(55, 2, 64, 1),       // мелкость кусочков (striate)
-      scan: slider(10, 1, 32, 1),         // за сколько циклов головка проходит сэмпл
-      density: slider(2.7, 0.25, 4, 0.05), // плотность гранул (fast)
-      speed: slider(1, 0.25, 2, 0.01),   // скорость = высота голоса
-      clip: slider(1, 0.05, 2, 0.01),    // длина гранулы
-      revProb: slider(0, 0, 1, 0.01),    // доля реверс-гранул
-      // тембр/пространство
+      slices: slider(55, 2, 64, 1),
+      scan: slider(10, 1, 32, 1),
+      density: slider(2.7, 0.25, 4, 0.05),
+      speed: slider(1, 0.25, 2, 0.01),
+      clip: slider(1, 0.05, 2, 0.01),
+      revProb: slider(0, 0, 1, 0.01),
       cut: slider(3600, 300, 10000, 20),
       echo: slider(0.45, 0, 0.85, 0.01),
     },
@@ -210,13 +193,13 @@ const instruments = {
       cut: slider(3600, 600, 12000, 20),
       hpf: slider(420, 60, 4000, 10),
       q: slider(1.6, 0.5, 12, 0.1),
-      wind: slider(1.6, 0, 4, 0.1),      // глубина хода среза, октавы
-      windAtk: slider(5, 0.2, 12, 0.1),  // ветер налетает, с
-      windDec: slider(6, 0.5, 16, 0.1),  // и стихает, с
-      atk: slider(2.5, 0.05, 8, 0.05),   // амплитуда, с
+      wind: slider(1.6, 0, 4, 0.1),
+      windAtk: slider(5, 0.2, 12, 0.1),
+      windDec: slider(6, 0.5, 16, 0.1),
+      atk: slider(2.5, 0.05, 8, 0.05),
       rel: slider(4, 0.2, 12, 0.1),
-      hum: slider(0.25, 0, 1, 0.01),      // гул-слой (×vol на голос)
-      humQ: slider(14, 4, 30, 0.5),      // резонанс гула = высота
+      hum: slider(0.25, 0, 1, 0.01),
+      humQ: slider(14, 4, 30, 0.5),
     },
   },
   fx: {
@@ -229,7 +212,6 @@ const instruments = {
 }
 const { drums, low, keys, voice, noise, atmos, fx } = instruments
 
-// ── TIMELINE: 88 тактов ───────────────────────────────────────────
 const TIMELINE = [
   { at: 0,  len: 8,  name: 'INTRO',  values: { kick: 0, snare: 0, rim: 0, hat: 0.5, ohat: 0, tom: 0, bass: 0.6, pad: 1, guitar: 0, lead: 0, air: 1, hiss: 1, mode: 2, wall: 0, arpwall: 0, leadBreak: 0, voxClean: 0, voxGrain: 0, gtr: 0, arp: 0, bassPad: 0, noise: 0  } },
   { at: 8,  len: 16, name: 'VERSE',  values: { kick: 1, snare: 1, rim: 0.4, hat: 1, ohat: 0.2, tom: 0, bass: 1, pad: 1, guitar: 0.6, lead: 0, air: 0.8, hiss: 0.8, mode: 0, wall: 0, arpwall: 0, leadBreak: 0, voxClean: 0, voxGrain: 0, gtr: 0, arp: 0, bassPad: 0, noise: 0  } },
@@ -240,14 +222,6 @@ const TIMELINE = [
   { at: 72, len: 8,  name: 'OUTRO',  values: { kick: 0.4, snare: 0, rim: 0, hat: 0.3, ohat: 0, tom: 0, bass: 0.5, pad: 1, guitar: 0, lead: 0.2, air: 1.1, hiss: 1.1, mode: 3, wall: 0.6, arpwall: 0, leadBreak: 0, voxClean: 0, voxGrain: 1, gtr: 0, arp: 0, bassPad: 0, noise: 0  } },
   { at: 80, len: 8,  name: 'OUTRO 2',values: { kick: 0, snare: 0, rim: 0, hat: 0, ohat: 0, tom: 0, bass: 0, pad: 1, guitar: 0, lead: 0.1, air: 1.2, hiss: 1.2, mode: 3, wall: 0.35, arpwall: 0, leadBreak: 0, voxClean: 0, voxGrain: 0, gtr: 0, arp: 0, bassPad: 0, noise: 0.25  } },
 ]
-// ── AUTOMATION: множители к слайдерам во времени (нативно) ────────
-// Читается и панелью (визуализация), и этим кодом (звук). В обычном
-// Strudel работает так же: autoCurve строит arrange из saw.range/pure.
-// Chorus 24–40: lead cut ×1 → ×2.4 (2200→5280) → ×1.
-// Verse 2 48–64: lead снова; guitar ×2.3; arp wall vol ×2.75 — держим и в VERSE 3.
-// VERSE 3 64–72: уровни как в VERSE 2, гитара реже + шум; арп-срез ползёт
-// в минимум. OUTRO 72–80: бас-срез в минимум, grain гаснет на середине.
-// OUTRO 2 80–88 без барабанов и баса, хвост в темноту.
 const AUTOMATION = [
   { path: 'keys.lead.cut',    points: [[24, 1], [35, 2.4], [40, 1], [48, 1], [59, 2.4], [64, 1], [72, 1], [80, 0.14]] },
   { path: 'keys.guitar.cut',  points: [[48, 1], [59, 2.3], [64, 1], [72, 1], [80, 0.11]] },
@@ -256,7 +230,6 @@ const AUTOMATION = [
   { path: 'low.bass.cut',     points: [[72, 1], [80, 0.05]] },
   { path: 'keys.pad.cut',     points: [[72, 1], [80, 0.1]] },
   { path: 'keys.wall.cut',    points: [[72, 1], [80, 0.11]] },
-  // grain: вход из тишины в BREAK (40.5→40.75) и в OUTRO гаснет на середине (76→76.5).
   { path: 'voice.grain.vol',  points: [[40, 0], [40.5, 0], [40.75, 1], [48, 1], [72, 1], [76, 1], [76.5, 0]] },
 ]
 
@@ -293,7 +266,6 @@ const state = play.fmap((v) => Math.round(v))
 const songGate = state.fmap((v) => (v === 1 ? 1 : 0))
 const loopGate = state.fmap((v) => (v === 0 ? 1 : 0))
 const holdGate = state.fmap((v) => (v === 2 ? 1 : 0))
-// Секция, в которую попадает holdBar (HOLD держит её состояние).
 const sectionAt = (bar) => {
   for (let i = 0; i < TIMELINE.length; i++) {
     if (bar < TIMELINE[i].at + TIMELINE[i].len) return i
@@ -303,18 +275,15 @@ const sectionAt = (bar) => {
 const holdIndex = holdBar.fmap((bar) => sectionAt(Math.max(0, Math.round(bar))))
 const sectionValue = (key) =>
   holdIndex.pick(TIMELINE.map((sec) => pure(sec.values[key] ?? 0)))
-// SONG → TIMELINE, LOOP → loopLevel, HOLD → значения секции.
 const tlOr = (key, loopLevel = pure(1)) => {
   const base = tlCurve(key).mul(songGate).add(loopLevel.mul(loopGate))
   return base.add(sectionValue(key).mul(holdGate))
 }
-// Свитч: SONG — значение секции, LOOP — ручка, HOLD — значение секции.
 const autoSwitch = (key, knob) =>
   tlCurve(key).mul(songGate).add(knob.mul(loopGate)).add(sectionValue(key).mul(holdGate))
 const modeAuto = autoSwitch('mode', mode)
 const gtrAuto = autoSwitch('gtr', gtr)
 const arpAuto = autoSwitch('arp', arp)
-// AUTOMATION: SONG — кривая по форме, LOOP — нейтрально (×1), HOLD — снимок.
 const autoValueAt = (path, bar) => {
   const pts = AUTOMATION.find((a) => a.path === path)?.points || []
   if (!pts.length) return 1
@@ -335,15 +304,13 @@ const audible = (hap) => {
   return typeof g !== 'number' || g > 0.001
 }
 
-// ── МАТЕРИАЛ (figures): ноты, один источник правды ───────────────
 const figures = {
-  riff: note(m('d3 f3 a3 c4 a3 f3 d3 a3')), // узкий диапазон
+  riff: note(m('d3 f3 a3 c4 a3 f3 d3 a3')),
   chords: note(m('<[d3,f3,a3] [d3,f3,a3] [bb2,d3,f3] [g2,bb2,d3]>')),
   roots: note(m('<d1 d1 d1 d1>')),
 }
 const { riff, chords } = figures
 
-// ── РИТМЫ (grooves): mode 0..3, слоты по инструментам ────────────
 const grooves = {
   kick: [
     m('x ~ ~ ~ ~ ~ ~ ~ x ~ ~ ~ ~ ~ ~ ~'),
@@ -372,7 +339,6 @@ const grooves = {
 }
 const groove = (part) => modeAuto.pick(grooves[part])
 
-// ── СЛОИ ─────────────────────────────────────────────────────────
 $: s('bd').bank('RolandTR606').struct(groove('kick'))
   .gain(drums.kick.vol.mul(tlOr('kick')))
   .lpf(drums.kick.cut).lpq(1)
@@ -407,7 +373,6 @@ $: s('oh').bank('RolandTR606').struct('~ ~ x ~ ~ ~ x ~ ~ ~ x ~ ~ ~ x ~')
   .room(verb.mul(0.5)).roomsize(fx.reverb.size)
   .filter(audible)
 
-// Toms — заполнения в конце фраз, не в каждом такте.
 $: s('lt').bank('RolandTR808').struct('~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ x ~ x ~')
   .sometimesBy(0.5, (x) => x.struct('~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ x ~ x x ~'))
   .gain(drums.tom.vol.mul(tlOr('tom')))
@@ -416,7 +381,6 @@ $: s('lt').bank('RolandTR808').struct('~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ x ~ x ~')
   .room(verb.mul(0.4)).roomsize(fx.reverb.size)
   .filter(audible)
 
-// Бас: обрезанный, повторяющийся; иногда октава.
 $: figures.roots.struct(groove('bass'))
   .sometimesBy(0.18, (x) => x.add(note(12)))
   .s('sawtooth').unison(1)
@@ -427,7 +391,6 @@ $: figures.roots.struct(groove('bass'))
   .orbit(2)
   .filter(audible)
 
-// Juno-пэд: долгая атака/релиз, тёмный срез, один общий рум.
 $: chords.slow(2)
   .s('sawtooth').unison(3).detune(keys.pad.det)
   .gain(keys.pad.vol.mul(tlOr('pad')))
@@ -437,8 +400,6 @@ $: chords.slow(2)
   .room(verb).roomsize(fx.reverb.size)
   .filter(audible)
 
-// Гитара: угловатый короткий плак, chorus и дилей. Одна и та же цепь на
-// оба рисунка — VERSE 2 и разреженный VERSE 3; никакого тремоло/пэда.
 const guitarVoice = (rhythm) =>
   riff.struct(rhythm)
     .sometimesBy(0.2, (x) => x.rev())
@@ -451,17 +412,12 @@ const guitarVoice = (rhythm) =>
     .filter(audible)
 
 const guitarRhythm = gtrAuto.pick([
-  m('~ ~ x ~ ~ x ~ ~ x ~ ~ x ~ ~ x ~'), // riff (как в VERSE 2)
-  m('~ ~ ~ ~ x ~ ~ ~ ~ ~ ~ ~ x ~ ~ ~'), // sparse (как в VERSE 3)
+  m('~ ~ x ~ ~ x ~ ~ x ~ ~ x ~ ~ x ~'),
+  m('~ ~ ~ ~ x ~ ~ ~ ~ ~ ~ ~ x ~ ~ ~'),
 ])
 
-// Гитара: короткий плак; рисунок — свитч gtr (в SONG ведёт TIMELINE).
 $: guitarVoice(guitarRhythm).gain(keys.guitar.vol.mul(tlOr('guitar')))
 
-// БАС-ПЭД: drone из реф. Strudel Market «Horn» на наших аккордах.
-// Один saw + unison(3) (supersaw и brown убраны — вешали VERSE 3 и давали
-// «белый шум»), seg(8) — шершавый chug, dist 3; изредка glitch seg(16)+pan.
-// Только VERSE 3. Октавы — oct (0…5 вниз), знак ставим в коде.
 const droneBody = s('saw').unison(3).detune(0.2)
   .lpf(perlin.range(500, 8000))
   .hpf(low.bassPad.hpf)
@@ -481,10 +437,8 @@ const droneTri = s('tri')
   .orbit(4)
   .filter(audible)
 
-// Бас-пэд: drone + tri.
 $: stack(droneBody, droneTri)
 
-// Моно-лид: редкая фраза, dotted-eighth delay.
 $: riff.slow(2).struct('x ~ ~ ~ ~ x ~ ~')
   .s('square').unison(1)
   .gain(keys.lead.vol.mul(tlOr('lead')))
@@ -495,7 +449,6 @@ $: riff.slow(2).struct('x ~ ~ ~ ~ x ~ ~')
   .pan(sine.slow(8).range(0.4, 0.6))
   .filter(audible)
 
-// Стена: вторая октава пэда, появляется к середине (lane wall).
 $: chords.slow(2).add(note(12))
   .s('sawtooth').unison(4).detune(keys.wall.det)
   .gain(keys.wall.vol.mul(tlOr('wall')))
@@ -506,7 +459,6 @@ $: chords.slow(2).add(note(12))
   .room(verb).roomsize(fx.reverb.size)
   .filter(audible)
 
-// Стена арпеджио: та же строка в rate× быстрее, высоко, в дилее (VERSE 2–3).
 $: riff.fast(keys.arpwall.rate).add(arpAuto.pick([note(12), note(24)])).degradeBy(0.1)
   .sometimesBy(0.2, (x) => x.rev())
   .s('sawtooth').unison(1)
@@ -519,7 +471,6 @@ $: riff.fast(keys.arpwall.rate).add(arpAuto.pick([note(12), note(24)])).degradeB
   .pan(sine.slow(8).range(0.3, 0.7))
   .filter(audible)
 
-// Break lead: редкая фраза вместо основного лида (только BREAK).
 $: riff.slow(2).struct('x ~ ~ ~ ~ ~ ~ ~')
   .s('square').unison(1)
   .gain(keys.leadBreak.vol.mul(tlOr('leadBreak')))
@@ -530,9 +481,6 @@ $: riff.slow(2).struct('x ~ ~ ~ ~ ~ ~ ~')
   .pan(sine.slow(8).range(0.4, 0.6))
   .filter(audible)
 
-// ШУМ: не перкуссия, а один долгий аккорд. Верхний слой — широкий шум,
-// срез медленно налетает и стихает (ветер). Нижний — три узких резонанса
-// на d5/f5/a5: гул фильтра в Dm, но выше пэда — не подмешивается в его тело.
 const windFuzz = s('white').slow(8)
   .gain(noise.fuzz.vol.mul(tlOr('noise', pure(0))))
   .lpf(noise.fuzz.cut).lpq(noise.fuzz.q).hpf(noise.fuzz.hpf)
@@ -550,10 +498,8 @@ const humChord = stack(...[587.33, 698.46, 880.0].map((hz, i) =>
     .pan(0.3 + i * 0.2).filter(audible),
 ))
 
-// ШУМ: долгий фузз-аккорд; ветер + гул в Dm.
 $: stack(windFuzz, humChord)
 
-// ГОЛОС: чистая фраза целиком — один раз в начале OUTRO (узнаваемо).
 $: s('rilke').struct('<x ~ ~ ~ ~ ~ ~ ~>')
   .speed(voice.clean.speed)
   .gain(voice.clean.vol.mul(tlOr('voxClean')))
@@ -562,7 +508,6 @@ $: s('rilke').struct('<x ~ ~ ~ ~ ~ ~ ~>')
   .room(verb.mul(0.45)).roomsize(fx.reverb.size)
   .filter(audible)
 
-// ГОЛОС: гранулярное облако — BREAK и OUTRO 1 (в OUTRO гаснет на середине).
 $: s('rilke')
   .begin(voice.grain.begin).end(voice.grain.end)
   .striate(voice.grain.slices)
@@ -577,7 +522,6 @@ $: s('rilke')
   .room(verb.mul(0.6)).roomsize(fx.reverb.size)
   .pan(sine.slow(8).range(0.3, 0.7))
 
-// Воздух и лента.
 $: s('pink').struct('x*16')
   .gain(atmos.air.vol.mul(tlOr('air')))
   .lpf(atmos.air.cut.mul(atmos.air.lfo.fmap((v) => 0.5 + v * 6))).hpf(200)
@@ -589,8 +533,3 @@ $: s('crackle').struct('x*16')
   .lpf(atmos.hiss.cut).hpf(400)
   .room(verb.mul(0.2)).roomsize(fx.reverb.size)
   .filter(audible)
-
-// ──────────────────────────────────────────────────────────────────
-//  Если тормозит: verb → 0.3, room size 10 → 6, убери «tape» crackle,
-//  затем гитару/лид. Один общий roomsize уже выставлен — не плоди IR.
-//  LOOP — постоянный микс, SONG — форма. Запись: прогрев 8–16 тактов.

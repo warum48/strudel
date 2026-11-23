@@ -426,14 +426,16 @@ async function tracksWithMeta() {
   return Promise.all(
     list.map(async (path) => {
       let title = fallbackTitle(path);
-      const genre = fallbackGenre(path);
+      let genre = fallbackGenre(path);
       try {
         const res = await fetch(path, { cache: 'no-store' });
         if (res.ok) {
           const src = await res.text();
-          const header = (src.split('\n')[1] ?? '').replace(/^\/\/\s*/, '');
-          const parsed = header.split('·')[0].trim();
-          if (parsed) title = parsed;
+          const first = (src.split('\n')[0] ?? '').replace(/^\/\/\s*/, '').trim();
+          const parts = first.split('·').map((v) => v.trim()).filter(Boolean);
+          if (parts.length >= 2) title = parts[1];
+          if (parts.length >= 3) genre = `${parts[0]} · ${parts[2]}`;
+          else if (parts.length >= 1) genre = parts[0];
         }
       } catch {}
       return { path, title, genre };

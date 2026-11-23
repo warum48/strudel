@@ -1,97 +1,13 @@
-// ══════════════════════════════════════════════════════════════════
-//  KHMER DUB 18 · v5 · Strudel · 122 BPM · 144 такта
-//
-//  v5 собран из дампа v4: тише хэты/chhing/samRim, снята автоматика
-//  hat/rim. DUB A и DUB A2 убраны — после INTRO 2 сразу STRIP.
-//  RELEASE/OUT заменены на DEEP 2 (копия DEEP; открытый хэт в 2 раза реже).
-//  Между DEEP и DEEP 2 вставлена копия DUB B без chhing; в OUTRO chhing тоже нет.
-//
-//  ── ФОРМА ────────────────────────────────────────────────────────
-//  INTRO 8 → INTRO 2 8 → STRIP 8 → PRESSURE 16 → BREAK 8 →
-//  DUB B 16 → DEEP 16 → DEEP 2A 16 → DEEP 2 16 → DEEP 3 16 → OUTRO 16.
-//  Всего 144 такта ≈ 4:43.
-//
-//  DEEP 2A — копия DEEP 2, но открытый хэт играет как в DUB B.
-//  DEEP 3 — копия DEEP 2 без Muted kick, Soft hats, Rim и всей кхмерской
-//  перкуссии. Оба арпеджио в первой половине DEEP 3 уходят в 0 по cutoff
-//  и громкости (к 120-му такту уже 0); shaker и оба баса гаснут во второй
-//  половине (120→128). Click-дорожка выставлена в 0; все cut-слайдеры
-//  имеют минимум 50. Dub stab продолжается в OUTRO: cutoff в 0 к 136,
-//  громкость — к 144.
-//
-//  ── ЧТО ДОБАВЛЕНО ───────────────────────────────────────────────
-//  • 11 секций; группы Khmer-перкуссии (skor/sampho/chhing)
-//    включаются отдельно, поэтому секции звучат разными ансамблями.
-//  • TIMELINE ведёт включённость слоёв, mode/harmony/bassVar: LOOP — ручки,
-//    SONG — форма, HOLD — снимок под holdBar.
-//  • 19 линий AUTOMATION; почти все — срезы (pad/stab/organ/skank/horns,
-//    Moog note/arp, dub-бас, kick/hat/rim/click/shaker, hiss/air/field,
-//    общий percCut). Плюс арп-бёрсты и лёгкое движение dub-feedback.
-//  • Уровни инструментов постоянны; энергия — плотность, группы перкуссии
-//    и срезы. Перкуссия — исключение: у каждого канала свой vol/cut/clip.
-//
-//  ── ПРАВИЛА ──────────────────────────────────────────────────────
-//  • Khmer-перкуссия — только ритм/остинато, без мелодий.
-//  • mode: dub / strip / pressure / click — меняет только верх.
-//  • harmony: warm / air — укладка пэда.
-//  • Никаких райзеров, sidechain-пумпа, snare 2/4 и поп-дропов.
-//  • Один roomsize на все слои; общий delay/reverb для перкуссии.
-//  • Низ: sub/dub по умолчанию ≤80; слайдер среза открыт до 200.
-//
-//  ── НАГРУЗКА ─────────────────────────────────────────────────────
-//  Worklet'ов мало (shape только на кике и Moog), но 18 каналов плюс
-//  длинный реверб — самая тяжёлая часть. Поэтому дефолт roomsize 12
-//  (не 16), verb 0.65, percVerb 0.58, percEcho 0.22; релизы пэда и Moog
-//  короче, чтобы не копить хвосты. Если всё ещё рвётся: roomsize 8–10,
-//  percVerb 0.4 или G-мьют групп chhing/sampho.
-// ══════════════════════════════════════════════════════════════════
+//  LOUNGE · MEKONG SUNRISE · 122 BPM
 
 const BPM = 122
-setcpm(BPM / 4) // один цикл = один такт 4/4
+setcpm(BPM / 4)
 
-// ══════════════════════════════════════════════════════════════════
-//  СЭМПЛЫ
-// ══════════════════════════════════════════════════════════════════
 if (typeof samples === 'function') {
   samples('github:tidalcycles/uzu-drumkit')
   samples('github:tidalcycles/Dirt-Samples')
 }
 
-// ══════════════════════════════════════════════════════════════════
-//  ШИРИНА СЛАЙДЕРОВ + СИНХРОНИЗАЦИЯ
-// ══════════════════════════════════════════════════════════════════
-// Штатные 64px — мышкой в шаг 0.01 не попасть. Строки только в
-// одинарных кавычках: двойные транспайлер превращает в m().
-const SLIDER_PX = 180
-if (typeof document !== 'undefined' && !document.getElementById('slider-w')) {
-  const st = document.createElement('style')
-  st.id = 'slider-w'
-  st.textContent = '.cm-slider input { width: ' + SLIDER_PX + 'px !important; }'
-  document.head.appendChild(st)
-}
-
-// Заплатка на рассинхрон виджета слайдера в strudel.cc (docs/slider-bug.md).
-if (typeof document !== 'undefined' && !window.__sliderSync) {
-  const syncSliders = () => {
-    const m = window.strudelMirror
-    if (!m || !m.editor) return
-    const doc = m.editor.state.doc
-    for (const el of document.querySelectorAll('.cm-slider input')) {
-      if (typeof el.from !== 'number') continue
-      const t = doc.sliceString(el.from, el.from + 24).match(/^-?\d+(?:\.\d+)?/)
-      if (!t) continue
-      if (el.originalValue !== t[0]) el.originalValue = t[0]
-      if (Number(el.value) !== Number(t[0])) el.value = t[0]
-    }
-  }
-  window.__sliderSync = setInterval(syncSliders, 200)
-  document.addEventListener('scroll', () => requestAnimationFrame(syncSliders), true)
-  document.addEventListener('pointerdown', syncSliders, true)
-}
-
-// ══════════════════════════════════════════════════════════════════
-//  UI + ПЕРЕКЛЮЧАТЕЛИ
-// ══════════════════════════════════════════════════════════════════
 const UI = {
   transport: { name: 'play', labels: ['loop', 'song', 'hold'] },
   holdBar: 'holdBar',
@@ -102,27 +18,22 @@ const UI = {
   },
 }
 
-const play = slider(1, 0, 2, 1) // 0 LOOP, 1 SONG, 2 HOLD
-const mode = slider(0, 0, 3, 1) // dub / strip / pressure / click
-const harmony = slider(0, 0, 1, 1) // warm / air
-const bassVar = slider(0, 0, 1, 1) // straight / deep
+const play = slider(1, 0, 2, 1)
+const mode = slider(0, 0, 3, 1)
+const harmony = slider(0, 0, 1, 1)
+const bassVar = slider(0, 0, 1, 1)
 const holdBar = slider(0, 0, 143, 1)
 
-// Глобальные ручки: реверб/дилей и шина перкуссии.
 const verb = slider(0.65, 0, 1, 0.01)
 const percEcho = slider(0.22, 0, 0.8, 0.01)
 const percVerb = slider(0.58, 0, 1, 0.01)
 const percLevel = slider(1, 0, 1, 0.01)
 const percCut = slider(1, 0.15, 2.5, 0.01)
 
-// @mutes muteSkor,muteSampho,muteChhing
 const muteSkor = slider(0, 0, 1, 1)
 const muteSampho = slider(0, 0, 1, 1)
 const muteChhing = slider(0, 0, 1, 1)
 
-// ══════════════════════════════════════════════════════════════════
-//  ИНСТРУМЕНТЫ — дерево для панели
-// ══════════════════════════════════════════════════════════════════
 const instruments = {
   atmos: {
     name: 'Atmos',
@@ -440,11 +351,6 @@ const MUTES = {
 }
 const unmuted = (m) => m.fmap((v) => (v ? 0 : 1))
 
-// ══════════════════════════════════════════════════════════════════
-//  TIMELINE — 144 такта, 12 секций
-// ══════════════════════════════════════════════════════════════════
-// Все 23 ключа явно в каждой секции: tlCurve несёт последнее значение
-// вперёд, поэтому 0 важнее памяти. Уровни не трогаем — только включение.
 const TIMELINE = [
   { at: 0,   len: 8,  name: 'INTRO',      values: { hiss: 1, air: 1, field: 1, kick: 0, hat: 0, rim: 0, click: 0, shaker: 0, sub: 0, dub: 0, pad: 1, stab: 0, organ: 0, skank: 0, horns: 0, moog: 0, arp: 0, arp2: 0, perc: 1, skor: 0, sampho: 0, chhing: 1, mode: 0, harmony: 0, bassVar: 0, hatSparse: 0, hatVar: 0 } },
   { at: 8,   len: 8,  name: 'INTRO 2',    values: { hiss: 1, air: 1, field: 1, kick: 0, hat: 0, rim: 0, click: 0, shaker: 0, sub: 0, dub: 0, pad: 1, stab: 0, organ: 0, skank: 0, horns: 0, moog: 1, arp: 0, arp2: 0, perc: 1, skor: 0, sampho: 1, chhing: 1, mode: 0, harmony: 1, bassVar: 0, hatSparse: 0, hatVar: 0 } },
@@ -459,9 +365,6 @@ const TIMELINE = [
   { at: 128, len: 16, name: 'OUTRO',      values: { hiss: 1, air: 1, field: 1, kick: 0, hat: 0, rim: 0, click: 0, shaker: 0, sub: 0, dub: 0, pad: 1, stab: 1, organ: 0, skank: 0, horns: 0, moog: 1, arp: 1, arp2: 0, perc: 1, skor: 0, sampho: 0, chhing: 0, mode: 0, harmony: 1, bassVar: 0, hatSparse: 0, hatVar: 0 } },
 ]
 
-// ══════════════════════════════════════════════════════════════════
-//  AUTOMATION — в основном срезы
-// ══════════════════════════════════════════════════════════════════
 const AUTOMATION = [
   { path: 'chords.pad.cut',    points: [[0, 0.35], [8, 0.5], [16, 0.65], [24, 1.2], [40, 0.55], [48, 0.9], [64, 1.6], [80, 1.5], [96, 1.5], [112, 1.4], [128, 0.7], [144, 0.15]] },
   { path: 'chords.stab.cut',   points: [[0, 0.4], [8, 0.6], [16, 0.7], [24, 1.4], [40, 0.5], [48, 1], [64, 2.2], [80, 2], [96, 2], [112, 1.8], [128, 2], [140, 0], [144, 0]] },
@@ -567,10 +470,6 @@ const audible = (hap) => {
 const gateOf = (key, loopLevel = pure(1)) => tlOr(key, loopLevel).fmap((v) => v > 0.001)
 const phrase = (bars) => m('<' + bars.join(' ') + '>')
 
-// ══════════════════════════════════════════════════════════════════
-//  ФРАЗЫ — Fm9 → Abmaj9 → Dbmaj9 → Gbmaj9
-// ══════════════════════════════════════════════════════════════════
-// @roots f f ab ab db db gb gb
 
 const ROOT = phrase([
   '[f1]', '[f1]', '[ab1]', '[ab1]',
@@ -588,7 +487,6 @@ const BASS = phrase([
   '[~ gb1 ~ ~ db2 ~ ~ f1]',
 ])
 
-// BASS_VAR — deep variant: same roots, more rests and a different contour.
 const BASS_VAR = phrase([
   '[f1 ~ ~ c2 ~ ~ eb2 ~]',
   '[~ f1 ~ ~ ab1 ~ c2 ~]',
@@ -678,9 +576,6 @@ const MOOG_ARP_CHORDS = phrase([
   '[gb5,bb4,db5]', '[gb5,bb4,db5]',
 ])
 
-// ══════════════════════════════════════════════════════════════════
-//  РИТМЫ — верх меняется по mode
-// ══════════════════════════════════════════════════════════════════
 const hats = [
   m('~ ~ x ~ ~ ~ x ~ ~ ~ x ~ ~ ~ x ~'),
   m('~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~'),
@@ -706,7 +601,6 @@ const shakers = [
   m('~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~'),
 ]
 const hatPat = modeAuto.pick(hats)
-// DEEP 2A uses the DUB B open-hat figure; DEEP 2 uses only its 2nd/4th hits.
 const hatPatSparse = m('~ ~ ~ ~ x ~ ~ ~ ~ ~ ~ ~ x ~ ~ ~')
 const hatBase = tlOr('hatVar', pure(0)).pick([hatPat, hats[0]])
 const hatLine = tlOr('hatSparse', pure(0)).pick([hatBase, hatPatSparse])
@@ -714,9 +608,6 @@ const rimPat = modeAuto.pick(rims)
 const clickPat = modeAuto.pick(clicks)
 const shakerPat = modeAuto.pick(shakers)
 
-// ══════════════════════════════════════════════════════════════════
-//  18 KHMER DRUMS — один автобус, 18 каналов
-// ══════════════════════════════════════════════════════════════════
 const PERC = [
   { key: 'skorHighA', group: 'skor', s: 'east', n: '3 4 5', pat: '~ ~ x ~ ~ x ~ ~ ~ ~ x ~ ~ x ~ ~', speed: 1.0, pan: 0.47, hpf: 40 },
   { key: 'skorHighB', group: 'skor', s: 'east', n: '5 4 3', pat: 'x ~ ~ ~ x ~ ~ ~ x ~ ~ ~ x ~ ~ ~', speed: 1.05, pan: 0.55, hpf: 40 },
@@ -738,9 +629,6 @@ const PERC = [
   { key: 'chhingRollB', group: 'chhing', s: 'metal', n: '9', pat: '~ x x ~ x x ~ x x ~ x x ~ x x ~', speed: 1.0, pan: 0.46, hpf: 5200 },
 ]
 
-// ══════════════════════════════════════════════════════════════════
-//  АТМОСФЕРА
-// ══════════════════════════════════════════════════════════════════
 $: s('crackle')
   .gain(atmos.hiss.vol.mul(tlOr('hiss')).mul(m('<1 .8 1 1 .9 1 1 .85 1 1 .9 1>')))
   .lpf(atmos.hiss.cut.mul(autoAt('atmos.hiss.cut'))).hpf(atmos.hiss.hpf)
@@ -761,9 +649,6 @@ $: s('brown')
   .pan(sine.slow(64).range(0.3, 0.7))
   .mask(gateOf('field')).filter(audible)
 
-// ══════════════════════════════════════════════════════════════════
-//  ДАБОВЫЙ НАБОР
-// ══════════════════════════════════════════════════════════════════
 $: s(m('bd*4'))
   .gain(drums.kick.vol.mul(tlOr('kick')))
   .lpf(drums.kick.cut.mul(autoAt('drums.kick.cut'))).lpq(1)
@@ -889,9 +774,6 @@ $: note(HORNS)
   .room(verb.mul(0.45)).roomsize(fx.reverb.size)
   .mask(gateOf('horns')).filter(audible)
 
-// ══════════════════════════════════════════════════════════════════
-//  MOOG — редкая нота и арпеджио
-// ══════════════════════════════════════════════════════════════════
 $: note(MOOG)
   .withValue((v) => (o) => ({ ...v, note: midi2note(noteToMidi(v.note) + o * 12) }))
   .appLeft(moog.note.octave.sub(2))
@@ -922,7 +804,6 @@ $: note(MOOG_ARP_CHORDS)
   .room(verb.mul(moog.arp.room)).roomsize(fx.reverb.size)
   .mask(gateOf('arp')).filter(audible)
 
-// ARP2 — octave-up Moog arp, only in DEEP; more saturated and open.
 $: note(MOOG_ARP_CHORDS)
   .add(note(12))
   .arp(run(moog.arp2.pace))
@@ -938,9 +819,6 @@ $: note(MOOG_ARP_CHORDS)
   .room(verb.mul(moog.arp2.room)).roomsize(fx.reverb.size)
   .mask(gateOf('arp2', pure(0))).filter(audible)
 
-// ══════════════════════════════════════════════════════════════════
-//  18 KHMER DRUMS — общий delay/reverb, группы по секциям
-// ══════════════════════════════════════════════════════════════════
 const percLayers = PERC.map((p) => {
   const gate = tlOr('perc').mul(tlOr(p.group)).fmap((v) => v > 0.001)
   return s(p.s).n(m(p.n))
@@ -959,16 +837,3 @@ $: stack(...percLayers)
   .delayfeedback(fx.dub.feedback.mul(0.7))
   .room(verb.mul(percVerb)).roomsize(fx.reverb.size)
   .filter(audible)
-
-// ══════════════════════════════════════════════════════════════════
-//  ШПАРГАЛКА
-// ══════════════════════════════════════════════════════════════════
-//  транспорт: play 0 LOOP / 1 SONG / 2 HOLD, holdBar — такт для HOLD
-//  режимы:    mode 0 dub / 1 strip / 2 pressure / 3 click
-//  гармония:  harmony 0 warm / 1 air
-//  mutes:     skor · sampho · chhing
-//  низ:       sub ≤80 + dub ≤80; kick.cut 270
-//  перкуссия: 18 каналов, группы skor/sampho/chhing включаются секциями
-//  реверб:    один fx.reverb.size на все слои
-//  автоматика: почти всё — срезы; арп-бёрсты на moog.arp.pace
-// ══════════════════════════════════════════════════════════════════

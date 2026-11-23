@@ -1,8 +1,4 @@
-// HALFSTEP DUB 17 · v3 · 104 BPM · 112 такта · Burial-leaning dub
-// v2 (17-halfstep-dub-v2.js) не тронута — референс. v3: та же гармония
-// Dm9 → Bbmaj9, vowel-пэд, Moog-нота/арп, даб-стаб и halfstep, но теперь
-// композиция с TIMELINE, автоматикой, SONG/LOOP/HOLD и gateOf.
-// @roots d d d d bb bb bb bb
+// DUB TECHNO · BODHI · 104 BPM
 setcpm(104 / 4)
 
 if (typeof samples === 'function') {
@@ -199,7 +195,6 @@ const AUTOMATION = [
   { path: 'bass.growl.cut', points: [[32, 0.5], [40, 0.9], [56, 1.2], [72, 0.7], [96, .8], [112, 0]] },
   { path: 'moog.note.cut',  points: [[0, 0.7], [16, 1], [56, 1.3], [72, 0.8], [82, 2.8], [96, .8], [112, 0]] },
   { path: 'moog.arp.cut',   points: [[32, 0.6], [40, 1], [56, .8], [60, 1.9], [72, 0.7], [82, 1.2], [96, .2], [112, 0]] },
-  // 48–52: арп-бёрст, pace ×4 (4 → 16 нот на такт) и назад
   { path: 'moog.arp.pace',  points: [[48, 1], [49, 4], [51, 4], [52, 1], [58, 1], [59, 4], [61, 4], [62, 1], [68, 1], [69, 4], [71, 4], [72, 1], [78, 1], [79, 4], [81, 4], [82, 1], [88, 1], [89, 4], [91, 4], [92, 1]] },
   { path: 'atmos.field.cut', points: [[0, 0.7], [40, 1], [56, 1.2], [72, 1], [96, 0.4], [112, 0.2]] },
 ]
@@ -271,7 +266,6 @@ const audible = (hap) => {
 const gateOf = (key) => tlOr(key).fmap((v) => v > 0.001)
 const phrase = (bars) => m('<' + bars.join(' ') + '>')
 
-// ── МАТЕРИАЛ ────────────────────────────────────────────────────
 const SUB = phrase([
   '[d1 ~ ~ ~ ~ ~ ~ ~ ~ ~ d1 ~ ~ ~ ~ ~]',
   '[d1 ~ ~ ~ ~ ~ ~ ~ ~ ~ d1 ~ ~ ~ ~ ~]',
@@ -340,7 +334,6 @@ const hatPat = modeAuto.pick(hats)
 const openPat = modeAuto.pick(opens)
 const rimPat = modeAuto.pick(rims)
 
-// ── СЛОИ ────────────────────────────────────────────────────────
 $: s('crackle')
   .gain(atmos.hiss.vol.mul(tlOr('hiss')))
   .lpf(atmos.hiss.cut).hpf(atmos.hiss.hpf)
