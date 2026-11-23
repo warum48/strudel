@@ -76,6 +76,15 @@ const trackTitle = (p) => {
   const base = trackName(p).split('/').pop() ?? p;
   return base.replace(/^\d+-/, '').replace(/-/g, ' ');
 };
+const trackHeaderInfo = (p, src) => {
+  const first = (src.split('\n')[0] ?? '').replace(/^\/\/\s*/, '').trim();
+  const parts = first.split('·').map((v) => v.trim()).filter(Boolean);
+  return {
+    title: parts[1] || trackTitle(p),
+    style: parts[0] || '',
+    bpm: parts[2] || '',
+  };
+};
 
 const $ = (id) => document.getElementById(id);
 const statusEl = $('status');
@@ -2623,12 +2632,17 @@ function trackDuration(src, bpm) {
 // Заголовок и подпись — из самого файла: BPM берём из кода, а не из константы
 // в панели, иначе при смене трека шапка врёт. Время — после BPM.
 function showTrackInfo(p, src) {
-  $('title').textContent = trackTitle(p);
+  const info = trackHeaderInfo(p, src);
+  $('title').textContent = info.title;
   $('trackPath').textContent = trackName(p) + '.js';
-  const bpm = /const\s+BPM\s*=\s*(\d+(?:\.\d+)?)/.exec(src);
+  const codeBpm = /const\s+BPM\s*=\s*(\d+(?:\.\d+)?)/.exec(src);
+  const commentBpm = info.bpm.match(/\d+(?:\.\d+)?/);
+  const bpm = commentBpm ? Number(commentBpm[0]) : (codeBpm ? Number(codeBpm[1]) : 0);
   const parts = [];
-  if (bpm) parts.push(`${bpm[1]} BPM`);
-  const dur = trackDuration(src, bpm ? Number(bpm[1]) : 0);
+  if (info.style) parts.push(info.style);
+  if (info.bpm) parts.push(info.bpm);
+  else if (codeBpm) parts.push(`${codeBpm[1]} BPM`);
+  const dur = trackDuration(src, bpm);
   if (dur) parts.push(dur);
   $('sub').textContent = parts.join(' · ');
 }
