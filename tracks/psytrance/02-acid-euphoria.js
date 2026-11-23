@@ -1,4 +1,4 @@
-// PSYTRANCE 02 · ACID EUPHORIA · 140 BPM · F# minor · 160 bars
+// PSYTRANCE 02 · ACID EUPHORIA · 140 BPM · F# minor · 168 bars
 // Best practices copied from the reference files:
 // - refs/strudel/github/dotcomdudee/strudel-tracks/switchangel_acid.js
 //   acid sound: distort 2.2:.3 -> sawtooth -> lpf + lpenv 2.256 + lpq 12;
@@ -12,7 +12,8 @@
 //   EX7 wide arp, EX9 triangle pluck, EX12 slow saw strings
 // Added on top: every synth has a slow dynamic cutoff (lpf slider x sine LFO x
 // section automation), because the examples are mostly static.
-// Psy FX inserts: laser / bubble / fat / crunch in the gaps, one bar in four.
+// Psy FX: fat every 4 bars (3x A1, then A0); laser 1/8; bubble/crunch 1/16.
+// OUTRO = BREAK 2 copy; all AUTOMATION lanes fade to 0.2 cutoff at bar 168.
 const BPM = 140
 setcpm(BPM / 4)
 
@@ -38,7 +39,7 @@ const mode = slider(0, 0, 2, 1)
 const arpVar = slider(0, 0, 1, 1)
 const riffVar = slider(1, 0, 1, 1)
 const pluckVar = slider(0, 0, 2, 1)
-const holdBar = slider(0, 0, 159, 1)
+const holdBar = slider(0, 0, 167, 1)
 
 const verb = slider(0.5, 0, 1, 0.01)
 const duck = slider(0.8, 0, 1, 0.01)
@@ -60,7 +61,7 @@ const instruments = {
     },
     oh: {
       name: 'Open hat',
-      vol: slider(0.4, 0, 0.8, 0.01),
+      vol: slider(0.31, 0, 0.8, 0.01),
       cut: slider(7000, 1000, 16000, 100),
       decay: slider(0.2, 0.05, 0.6, 0.01),
     },
@@ -87,13 +88,13 @@ const instruments = {
     sub: {
       name: 'Sub',
       vol: slider(0.20, 0, 0.8, 0.01),
-      cut: slider(42, 35, 90, 1),
-      decay: slider(0.08, 0.03, 0.2, 0.005),
+      cut: slider(37, 35, 90, 1),
+      decay: slider(0.07, 0.03, 0.2, 0.005),
     },
     bass: {
       name: 'Rolling bass',
       vol: slider(0.42, 0, 0.9, 0.01),
-      cut: slider(700, 200, 2000, 10),
+      cut: slider(1450, 200, 2000, 10),
       res: slider(7, 0, 20, 0.5),
       release: slider(0.1, 0.02, 0.3, 0.005),
     },
@@ -102,14 +103,14 @@ const instruments = {
     acid: {
       name: 'Acid 303',
       vol: slider(0.32, 0, 0.7, 0.01),
-      cut: slider(250, 100, 2000, 10),
+      cut: slider(300, 80, 2000, 10),
       res: slider(12, 0, 20, 0.5),
       env: slider(2.256, 0, 8, 0.001),
     },
     arp: {
       name: 'Arp',
       vol: slider(0.35, 0, 0.7, 0.01),
-      cut: slider(2500, 500, 8000, 20),
+      cut: slider(2240, 500, 8000, 20),
       echo: slider(0.6, 0, 0.9, 0.01),
     },
     pluck: {
@@ -157,7 +158,7 @@ const instruments = {
     },
     bubble: {
       name: 'Bubble / clicks',
-      vol: slider(0.18, 0, 0.6, 0.01),
+      vol: slider(0.39, 0, 0.6, 0.01),
       cut: slider(8000, 1000, 16000, 100),
       fm: slider(2, 0, 8, 0.1),
       decay: slider(0.03, 0.01, 0.15, 0.005),
@@ -165,7 +166,7 @@ const instruments = {
     },
     fat: {
       name: 'Fat low note',
-      vol: slider(0.38, 0, 0.8, 0.01),
+      vol: slider(0.08, 0, 0.8, 0.01),
       cut: slider(2100, 1000, 3000, 10),   // 1800–2400 with the 4-bar LFO
       res: slider(19, 4, 30, 0.5),         // 14–24 with the 8-bar LFO
       attack: slider(0.02, 0.001, 1, 0.001),
@@ -191,28 +192,30 @@ const instruments = {
 }
 const { drums, low, keys, atmos, inserts, fx } = instruments
 
-// ── TIMELINE: 160 bars, changes on 8/16-bar boundaries ──────────
+// ── TIMELINE: 168 bars, changes on 8/16-bar boundaries ──────────
 const TIMELINE = [
   { at: 0,   len: 8,  name: 'INTRO',   values: { kick: 1, hats: 0, oh: 0, clap: 0, shaker: 0, roll: 0, sub: 1, bass: 1, acid: 0, arp: 0, pluck: 0, strings: 0, riser: 0, reverse: 0, mode: 0, arpVar: 0, riff: 1, pluckVar: 0, laser: 0, bubble: 0, fat: 1, crunch: 0 } },
   { at: 8,   len: 8,  name: 'INTRO 2', values: { kick: 1, hats: 1, oh: 0, clap: 0, shaker: 0, roll: 0, sub: 1, bass: 1, acid: 0, arp: 0, pluck: 0, strings: 0, riser: 0, reverse: 0, mode: 0, arpVar: 0, riff: 1, pluckVar: 0, laser: 1, bubble: 1, fat: 1, crunch: 0 } },
-  { at: 16,  len: 16, name: 'GROOVE',  values: { kick: 1, hats: 1, oh: 1, clap: 1, shaker: 1, roll: 0, sub: 1, bass: 1, acid: 1, arp: 0, pluck: 0, strings: 0, riser: 0, reverse: 0, mode: 0, arpVar: 0, riff: 1, pluckVar: 0, laser: 0, bubble: 0, fat: 1, crunch: 0 } },
-  { at: 32,  len: 16, name: 'LIFT',    values: { kick: 1, hats: 1, oh: 1, clap: 1, shaker: 1, roll: 0, sub: 1, bass: 1, acid: 1, arp: 0, pluck: 1, strings: 0, riser: 0, reverse: 0, mode: 1, arpVar: 0, riff: 1, pluckVar: 1, laser: 0, bubble: 0, fat: 1, crunch: 0 } },
-  { at: 48,  len: 16, name: 'BREAK',   values: { kick: 0, hats: 0, oh: 0, clap: 0, shaker: 0, roll: 0, sub: 0, bass: 0, acid: 1, arp: 0, pluck: 1, strings: 1, riser: 1, reverse: 1, mode: 0, arpVar: 0, riff: 0, pluckVar: 2, laser: 0, bubble: 0, fat: 0, crunch: 0 } },
-  { at: 64,  len: 16, name: 'BUILD',   values: { kick: 1, hats: 1, oh: 1, clap: 1, shaker: 1, roll: 1, sub: 1, bass: 1, acid: 1, arp: 0, pluck: 0, strings: 0, riser: 1, reverse: 1, mode: 2, arpVar: 0, riff: 1, pluckVar: 0, laser: 1, bubble: 0, fat: 1, crunch: 1 } },
-  { at: 80,  len: 16, name: 'DROP',    values: { kick: 1, hats: 1, oh: 1, clap: 1, shaker: 1, roll: 0, sub: 1, bass: 1, acid: 1, arp: 1, pluck: 1, strings: 1, riser: 0, reverse: 0, mode: 0, arpVar: 0, riff: 1, pluckVar: 0, laser: 0, bubble: 0, fat: 1, crunch: 0 } },
-  { at: 96,  len: 16, name: 'GROOVE 2',values: { kick: 1, hats: 1, oh: 1, clap: 0, shaker: 1, roll: 0, sub: 1, bass: 1, acid: 1, arp: 0, pluck: 0, strings: 0, riser: 0, reverse: 0, mode: 1, arpVar: 0, riff: 1, pluckVar: 0, laser: 0, bubble: 0, fat: 1, crunch: 0 } },
-  { at: 112, len: 16, name: 'PEAK',    values: { kick: 1, hats: 1, oh: 1, clap: 1, shaker: 1, roll: 0, sub: 1, bass: 1, acid: 1, arp: 1, pluck: 1, strings: 1, riser: 0, reverse: 0, mode: 2, arpVar: 1, riff: 1, pluckVar: 0, laser: 0, bubble: 0, fat: 1, crunch: 0 } },
-  { at: 128, len: 16, name: 'BREAK 2', values: { kick: 0, hats: 0, oh: 0, clap: 0, shaker: 0, roll: 0, sub: 0, bass: 0, acid: 1, arp: 0, pluck: 1, strings: 1, riser: 1, reverse: 1, mode: 0, arpVar: 0, riff: 1, pluckVar: 0, laser: 0, bubble: 0, fat: 0, crunch: 0 } },
-  { at: 144, len: 16, name: 'OUTRO',   values: { kick: 1, hats: 1, oh: 0, clap: 0, shaker: 1, roll: 0, sub: 1, bass: 1, acid: 0, arp: 0, pluck: 0, strings: 0, riser: 0, reverse: 0, mode: 0, arpVar: 0, riff: 1, pluckVar: 0, laser: 0, bubble: 1, fat: 1, crunch: 0 } },
+  { at: 16,   len: 8,  name: 'INTRO 3', values: { kick: 1, hats: 1, oh: 1, clap: 0, shaker: 0, roll: 0, sub: 1, bass: 1, acid: 0, arp: 0, pluck: 0, strings: 0, riser: 0, reverse: 0, mode: 0, arpVar: 0, riff: 1, pluckVar: 0, laser: 1, bubble: 1, fat: 1, crunch: 0 } },
+  { at: 24,  len: 16, name: 'GROOVE',  values: { kick: 1, hats: 1, oh: 1, clap: 1, shaker: 1, roll: 0, sub: 1, bass: 1, acid: 1, arp: 0, pluck: 0, strings: 0, riser: 0, reverse: 0, mode: 0, arpVar: 0, riff: 1, pluckVar: 0, laser: 0, bubble: 0, fat: 1, crunch: 0 } },
+  { at: 40,  len: 16, name: 'LIFT',    values: { kick: 1, hats: 1, oh: 1, clap: 1, shaker: 1, roll: 0, sub: 1, bass: 1, acid: 1, arp: 0, pluck: 1, strings: 0, riser: 0, reverse: 0, mode: 1, arpVar: 0, riff: 1, pluckVar: 1, laser: 0, bubble: 0, fat: 1, crunch: 0 } },
+  { at: 56,  len: 16, name: 'BREAK',   values: { kick: 0, hats: 0, oh: 0, clap: 0, shaker: 0, roll: 0, sub: 0, bass: 0, acid: 1, arp: 0, pluck: 1, strings: 1, riser: 1, reverse: 1, mode: 0, arpVar: 0, riff: 0, pluckVar: 2, laser: 0, bubble: 0, fat: 0, crunch: 0 } },
+  { at: 72,  len: 16, name: 'BUILD',   values: { kick: 1, hats: 1, oh: 1, clap: 1, shaker: 1, roll: 1, sub: 1, bass: 1, acid: 1, arp: 0, pluck: 0, strings: 0, riser: 1, reverse: 1, mode: 2, arpVar: 0, riff: 1, pluckVar: 0, laser: 1, bubble: 0, fat: 1, crunch: 1 } },
+  { at: 88,  len: 16, name: 'DROP',    values: { kick: 1, hats: 1, oh: 1, clap: 1, shaker: 1, roll: 0, sub: 1, bass: 1, acid: 1, arp: 1, pluck: 1, strings: 1, riser: 0, reverse: 0, mode: 0, arpVar: 0, riff: 1, pluckVar: 0, laser: 0, bubble: 0, fat: 1, crunch: 0 } },
+  { at: 104,  len: 16, name: 'GROOVE 2',values: { kick: 1, hats: 1, oh: 1, clap: 0, shaker: 1, roll: 0, sub: 1, bass: 1, acid: 1, arp: 0, pluck: 0, strings: 0, riser: 0, reverse: 0, mode: 1, arpVar: 0, riff: 1, pluckVar: 0, laser: 0, bubble: 0, fat: 1, crunch: 0 } },
+  { at: 120, len: 16, name: 'PEAK',    values: { kick: 1, hats: 1, oh: 1, clap: 1, shaker: 1, roll: 0, sub: 1, bass: 1, acid: 1, arp: 1, pluck: 1, strings: 1, riser: 0, reverse: 0, mode: 2, arpVar: 1, riff: 1, pluckVar: 0, laser: 0, bubble: 0, fat: 1, crunch: 0 } },
+  { at: 136, len: 16, name: 'BREAK 2', values: { kick: 0, hats: 0, oh: 0, clap: 0, shaker: 0, roll: 0, sub: 0, bass: 0, acid: 1, arp: 0, pluck: 1, strings: 1, riser: 1, reverse: 1, mode: 0, arpVar: 0, riff: 1, pluckVar: 0, laser: 0, bubble: 0, fat: 0, crunch: 0 } },
+  { at: 152, len: 16, name: 'OUTRO',   values: { kick: 0, hats: 0, oh: 0, clap: 0, shaker: 0, roll: 0, sub: 0, bass: 0, acid: 1, arp: 0, pluck: 1, strings: 1, riser: 1, reverse: 1, mode: 0, arpVar: 0, riff: 1, pluckVar: 0, laser: 0, bubble: 0, fat: 0, crunch: 0 } },
 ]
 
 // ── AUTOMATION: section-level cutoff movement on top of the LFOs ─
 const AUTOMATION = [
-  { path: 'low.bass.cut',   points: [[0, 0.7], [16, 0.9], [48, 1], [64, 1.1], [80, 1], [112, 1], [128, 1], [144, 0.8], [160, 0.4]] },
-  { path: 'keys.acid.cut',  points: [[16, 0.6], [32, 0.9], [48, 1.2], [64, 0.8], [80, 1.1], [112, 1.3], [128, 1.4], [144, 1], [160, 0.4]] },
-  { path: 'keys.arp.cut',   points: [[32, 0.6], [48, 1.2], [56, 0.8], [72, 1.3], [96, 1], [112, 1.2], [144, 0.8], [160, 0.3]] },
-  { path: 'keys.pluck.cut', points: [[32, 0.7], [48, 1.3], [64, 0.9], [80, 1.2], [112, 1.4], [144, 0.8], [160, 0.3]] },
-  { path: 'keys.strings.cut', points: [[0, 0.5], [48, 1.2], [64, 0.7], [80, 1.1], [112, 1.3], [144, 0.9], [160, 0.3]] },
+  { path: 'low.bass.cut',   points: [[0, 0.2], [8, 0.7], [24, 0.9], [56, 1], [72, 1.1], [88, 1], [120, 1], [136, 1], [152, 0.8], [168, 0.2]] },
+  // GROOVE starts at ~80 Hz, opens to the middle at bar 32, settles at 40.
+  { path: 'keys.acid.cut',  points: [[24, 0.45], [32, 1.0], [40, 0.9], [56, 0.8], [72, 1.8], [88, 1.1], [120, 1.3], [136, 1.4], [152, 1], [160, 0.3], [168, 0]] },
+  { path: 'keys.arp.cut',   points: [[40, 0.6], [56, 1.2], [64, 1.8], [80, 1.3], [104, 1], [120, 1.2], [152, 0.8], [168, 0.2]] },
+  { path: 'keys.pluck.cut', points: [[40, 0.2], [56, 0.5], [72, 0.9], [88, 1.2], [120, 1.4], [152, 0], [168, 0]] },
+  { path: 'keys.strings.cut', points: [[0, 0.5], [56, 0.5], [72, 0.7], [88, 0.7], [100, 1.1], [104, 0.8], [120, 0.7], [136, 1.7], [154, 0.7], [168, 0.05]] },
 ]
 
 const TL_TOTAL = Math.max(...TIMELINE.map((s) => s.at + s.len))
@@ -315,14 +318,16 @@ const pluckArp = note(m('f#5 ~ a5 ~ c#6 ~ a5 ~ f#5 ~ g#5 ~ a5 ~ g#5 ~'))
 // four 4-bar chunks: base / variation / base / low variation.
 // Chunk 2: first note +1 semitone, third note +2; chunk 4: first/third -2.
 const baseBar = note(m('f#5 ~ a5 ~ c#6 ~ a5 ~ f#5 ~ g#5 ~ a5 ~ g#5 ~'))
-const var2Bar = note(m('g5 ~ a5 ~ d#6 ~ a5 ~ f#5 ~ g#5 ~ a5 ~ g#5 ~'))
+const var2Bar = note(m('g#5 ~ a5 ~ d6 ~ a5 ~ f#5 ~ g#5 ~ a5 ~ g#5 ~'))
 const var4Bar = note(m('e5 ~ a5 ~ b5 ~ a5 ~ f#5 ~ g#5 ~ a5 ~ g#5 ~'))
+
 const pluckBreak = arrange(
-  [4, baseBar],
-  [1, var2Bar], [3, baseBar],
-  [4, baseBar],
-  [1, var4Bar], [3, baseBar],
+  [2, baseBar],
+  [2, var2Bar],// [3, baseBar],
+  [2, baseBar],
+  [2, var4Bar],// [3, baseBar],
 )
+
 
 // LIFT melody: same notes, but sparse groups (1 note, rest, 3 notes, rest)
 // like a Faithless-style phrase. 4 bars, repeated over the 16-bar lift.
@@ -481,10 +486,10 @@ $: note(m('f#6 f#6 f#6 g6'))
   .pan(rand.range(0.2, 0.8))
   .mask(gateOf('bubble')).filter(audible)
 
-// Fat low: A1 from the intro, one note every 4 bars; every second hit is A0
-// (octave down). Cutoff 1800–2400 (4-bar LFO), resonance 14–24 (8-bar LFO,
-// half the step), strong echo, attack slider, pan 8 bars.
-$: note(m('<a1 a1 a1 a1 a1 a1 a1 a0>'))
+// Fat low: A1 from the intro, one note every 4 bars; three hits A1, then
+// the fourth A0 (octave down). Cutoff 1800–2400 (4-bar LFO), resonance
+// 14–24 (8-bar LFO, half the step), strong echo + long reverb, attack slider.
+$: note(m('<a1 a1 a1 a1 a1 a1 a1 a1 a1 a1 a1 a1 a1 a1 a1 a0>'))
   .struct(m('~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ x ~'))
   .mask(m('<0 0 0 1>'))
   .s('sawtooth').unison(3).detune(0.25)
@@ -494,7 +499,7 @@ $: note(m('<a1 a1 a1 a1 a1 a1 a1 a0>'))
   .lpq(inserts.fat.res.add(sine.range(-5, 5).slow(8)))
   .attack(inserts.fat.attack).decay(0.4).sustain(0.6).release(inserts.fat.release)
   .delay(inserts.fat.echo).delaytime(fx.delay.time).delayfeedback(fx.delay.fb.mul(1.2))
-  .room(verb.mul(0.9)).roomsize(fx.reverb.size)
+  .room(verb.mul(2.4)).roomsize(fx.reverb.size)
   .pan(sine.slow(8).range(0.2, 0.8))
   .mask(gateOf('fat')).filter(audible)
 

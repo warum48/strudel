@@ -125,7 +125,7 @@ This is the checklist we wish we had before the first attempts. Each item is
 - **Symptom:** the track is cluttered; the FX compete with the melody.
 - **Why:** no masks, no placement; FX treated as a continuous layer.
 - **Instead:** the fat low is a **layer** and hits every 4 bars (from the
-  intro; every second hit A0); laser/bubble/crunch are 1-in-8/16 in the gaps (intro/groove/build/
+  intro; three hits A1 then A0); laser/bubble/crunch are 1-in-8/16 in the gaps (intro/groove/build/
   outro), not in dense drops/lifts. Use 8/16-bar masks and timeline gates.
 
 ### High, thin "droplets" as the main FX
@@ -133,8 +133,8 @@ This is the checklist we wish we had before the first attempts. Each item is
 - **Why:** high sine/FM clicks with a third/chord; too many notes; too often.
 - **Instead:** bubble = 4 neutral clicks, root + m2 only (F#6/G6), one bar in
   16. For weight use the fat low layer: A1 from the intro, one note every 4 bars,
-  every second hit A0; cutoff 1800–2400 (4-bar LFO), resonance 14–24 (8-bar
-  LFO), attack, strong echo, unison/drive/pan. Do not use m3 in the bubble — it gets poppy.
+  three hits A1 then A0; cutoff 1800–2400 (4-bar LFO), resonance 14–24 (8-bar
+  LFO), attack, strong echo + long reverb, unison/drive/pan. Do not use m3 in the bubble — it gets poppy.
 
 ### One-shot FX with no space
 - **Symptom:** the FX is dry and disconnects.
@@ -249,7 +249,7 @@ This is the checklist we wish we had before the first attempts. Each item is
 - [ ] Acid low base + deep envelope; Q 0–4; dynamic cutoff.
 - [ ] Riff repeats one note; m2/m3; occasional m6; pulse or gallop.
 - [ ] Break melody 4 chunks; lift melody sparse with rests.
-- [ ] Fat low every 4 bars from intro (second hit A0); laser/bubble/crunch
+- [ ] Fat low every 4 bars from intro (3×A1 then A0); laser/bubble/crunch
   rare; bubble m2 only; not in drops.
 - [ ] 16-bar intro; layers; break/build; open hat reset.
 - [ ] One roomsize ≤10; lead not hidden; low end mono.

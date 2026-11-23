@@ -105,7 +105,7 @@ Style notes: `docs/minimal-techno/README.en.md`.
 | File | BPM | Bars | Layers | Sliders | Transport | Description |
 |---|---:|---:|---:|---:|---|---|
 | `01-serpent-engine.js` | 145 | 192 | 19 | 90 | play | Full-on psytrance, one root, rolling 12-note bass, offbeat hats, 303, psy lead. |
-| `02-acid-euphoria.js` | 140 | 160 | 18 | 83 | play | Reference-driven psytrance: pulse acid in BREAK, gallop in LIFT/drops, 4-chunk break melody, sparse LIFT melody, fat A1/A0 every 4 bars from intro, rare laser/bubble/crunch, dynamic cutoff. |
+| `02-acid-euphoria.js` | 140 | 168 | 18 | 83 | play | Reference-driven psytrance: INTRO3 open hat, GROOVE acid 80→mid, pulse acid in BREAK, gallop in LIFT/drops, 4-chunk break melody, sparse LIFT melody, fat 3×A1 then A0 every 4 bars from intro, rare FX, dynamic cutoff. OUTRO = BREAK 2 + cutoff fade (0–0.2). |
 
 Style notes: `docs/psytrance/README.en.md`,
 `docs/psytrance/strudel-recipes.en.md` and `docs/psytrance/pitfalls.en.md`.

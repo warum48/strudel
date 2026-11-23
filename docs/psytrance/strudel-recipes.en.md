@@ -190,15 +190,14 @@ $: note(m('~ ~ f#4 ~ ~ g4 ~ ~ ~ a#4 ~ ~ ~ g4 ~ ~'))
 ## Psy FX inserts (flight elements)
 
 Short, sparse synth inserts for the gaps. The **fat low** is the exception: it
-is a layer, plays from the intro, hits every 4 bars and drops an octave on
-every second hit. Laser/bubble/crunch
+is a layer, plays from the intro, hits every 4 bars: three hits A1, then A0. Laser/bubble/crunch
 are rare (1 bar in 8/16), panned and delayed; do not stack them in drops.
 
 ```js
-// fat low: A1 from the intro, one note every 4 bars; every second hit A0.
+// fat low: A1 from the intro, one note every 4 bars; three hits A1, then A0.
 // cutoff 1800–2400 (4-bar LFO), resonance 14–24 (8-bar LFO = half step),
-// strong echo, attack slider.
-$: note(m('<a1 a1 a1 a1 a1 a1 a1 a0>'))
+// strong echo + long reverb, attack slider.
+$: note(m('<a1 a1 a1 a1 a1 a1 a1 a1 a1 a1 a1 a1 a1 a1 a1 a0>'))
   .struct(m('~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ x ~'))
   .mask(m('<0 0 0 1>'))
   .s('sawtooth').unison(3).detune(0.25)
@@ -207,7 +206,7 @@ $: note(m('<a1 a1 a1 a1 a1 a1 a1 a0>'))
   .lpq(19 .add(sine.range(-5, 5).slow(8)))
   .attack(0.02).decay(0.4).sustain(0.6).release(1.4)
   .delay(0.85).delayfeedback(0.54)
-  .room(0.9).pan(sine.slow(8).range(0.2, 0.8))
+  .room(1.2).pan(sine.slow(8).range(0.2, 0.8))
 
 // laser: 4 low F#3 notes, hard cutoff, 1 bar in 8
 $: note(m('f#3 f#3 f#3 f#3'))
@@ -257,6 +256,12 @@ The reference examples are mostly static. Move the cutoff in two layers:
 For long notes use `lpdepth`/`lpsync`; otherwise the filter is sampled only
 at the note onset. `autoAt` moves the base per section, the LFO moves it
 inside the section.
+
+### Groove acid ramp (start dark, open to the middle)
+
+With `acidCut = 250` and `lpf(acidCut × sine.range(0.7, 1.8) × autoAt(...))`,
+the automation `[24, 0.45], [32, 1.0], [40, 0.9]` starts the groove around
+80 Hz and opens it to the middle by bar 32. The acid cut slider minimum is 80.
 
 ## 6. Riser and reverse
 

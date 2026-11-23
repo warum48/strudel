@@ -159,11 +159,12 @@ noticeable, never in the way.
   in 8; pan/delay.
 - **Bubble / clicks:** 4 neutral high FM/sine clicks, only root + m2 (F#6/G6),
   tiny decay. One bar in 16; random pan. No m3/chord — it gets poppy.
-- **Fat low note (from the intro, every 4 bars):** A1; every second hit is
-  A0 (octave down). `unison(3)`, detune, drive, long release, pan LFO, an
-  attack slider. Cutoff **1800–2400** with a 4-bar LFO; resonance **14–24**
-  with an 8-bar LFO (half the step); strong echo (0.85 send, 1.2× feedback).
-  This is a low **layer**, not a rare FX; the laser/bubble/crunch stay rare.
+- **Fat low note (from the intro, every 4 bars):** A1; three hits in a row,
+  then the fourth is A0 (octave down). `unison(3)`, detune, drive, long
+  release, pan LFO, an attack slider. Cutoff **1800–2400** with a 4-bar LFO;
+  resonance **14–24** with an 8-bar LFO (half the step); strong echo (0.85
+  send, 1.2× feedback) and a long reverb (room 2.4×). This is a low **layer**,
+  not a rare FX; the laser/bubble/crunch stay rare.
 - **Crunch:** two short crushed noise hits (`crush`), one bar in 16.
 - Placement: intro/groove/build/outro gaps, not dense drops/lifts. Use 4/8/16-
   bar masks; one event per phrase; pan, delay, room; low gain.
@@ -184,6 +185,8 @@ noticeable, never in the way.
 - Main changes at 8/16-bar boundaries; big ones at 16/32.
 - Full-on form roughly: INTRO → GROOVE → LIFT → BREAK → BUILD → DROP →
   GROOVE 2 → PEAK → BREAK 2 → OUTRO.
+- Outro trick: copy the last break, then automate every cutoff lane to
+  near-zero (0–0.2) at the end. The track fades dark without a new section.
 - Ideal length is 7–7.5 minutes; in our format it is 5–6 minutes (192 bars
   at 145 BPM ≈ 5:18).
 
@@ -241,7 +244,7 @@ Switches: `mode` (straight/rolling/tribal/stomp), `bassVar` (root/oct),
 
 ### 02 — Acid Euphoria
 
-`tracks/psytrance/02-acid-euphoria.js` — 140 BPM, F# minor, 160 bars,
+`tracks/psytrance/02-acid-euphoria.js` — 140 BPM, F# minor, **168 bars**,
 18 tracks, 83 sliders. This one copies the references instead of inventing:
 
 - **Acid / riff A (pulse):** `switchangel_acid` chain — `distort 2.2:.3`/
@@ -253,7 +256,17 @@ Switches: `mode` (straight/rolling/tribal/stomp), `bassVar` (root/oct),
   is rhythm-led, not arpeggio-led.
 - **Kick/hats:** `sbd` + distort + `duck 2` and TR-909 hats from
   `lausfødselsdagstechno`.
-- **Bass:** honcoops EX3/6 saw rolling bass, `lpf 700`, `res 7`, short release.
+- **Bass:** honcoops EX3/6 saw rolling bass, `lpf` 700–1500, `res 7`, short release.
+- **Form detail:** INTRO 3 is INTRO 2 plus the open hat. The GROOVE starts the
+  acid at ~80 Hz (the acid cut slider minimum is 80) and opens it to the middle
+  of the groove by bar 32 via the `keys.acid.cut` automation.
+  The OUTRO is a copy of **BREAK 2**; at bar 168 the automated cutoffs close
+  (acid/pluck 0, strings 0.05, arp/bass 0.2), so the instruments fade dark.
+
+**Current user preset** (saved in `dumps/02-acid-euphoria.js`): oh 0.31,
+sub 37/0.07, bass 1450, acid 300, arp 2240, bubble 0.39, fat 0.08. The
+reference starting points above remain the general recipe.
+
 - **Leads/pad:** honcoops EX7 wide arp, EX9 triangle pluck, EX12 slow saw
   strings. The BREAK pluck is a 4x-longer melody in four 4-bar chunks: base / first +1,
   third +2 / base / first and third -2. The LIFT pluck uses the same notes but
@@ -261,9 +274,9 @@ Switches: `mode` (straight/rolling/tribal/stomp), `bassVar` (root/oct),
   wide arp lane stays off there. `pluckVar` = arp / lift / break.
 - **Psy FX inserts:** `laser` (4 low F#3 notes with a hard cutoff sweep and
   drive, 1 bar in 8), `bubble` (4 neutral high F#6/G6 FM clicks, m2 only, 1
-  bar in 16), `fat` (A1 every 4 bars from the intro; every second hit A0;
-  cutoff 1800–2400 4-bar LFO, resonance 14–24 8-bar LFO, attack slider, strong
-  echo, unison/drive/pan) and `crunch` (2 crushed noise hits, 1 bar in 16).
+  bar in 16), `fat` (A1 every 4 bars from the intro; three hits A1, then A0; cutoff
+  1800–2400 4-bar LFO, resonance 14–24 8-bar LFO, attack slider, strong echo +
+  long reverb, unison/drive/pan) and `crunch` (2 crushed noise hits, 1 bar in 16).
   The fat low hits every 4 bars; the other three are rare and live in the gaps
   (intro/groove/build/outro), not the dense drops.
 - **Dynamic cutoff:** every synth moves — `lpf(base × sine.range(…).slow(16)
@@ -280,7 +293,7 @@ Strudel recipes — `docs/psytrance/strudel-recipes.en.md`.
   envelope; dynamic cutoff on every synth.
 - Riffs: repeated notes, m2/m3, occasional m6; pulse/gallop; break 4 chunks;
   sparse lift; more notes only if repeated/directional.
-- FX: fat low from intro, every 4 bars, second hit A0; laser/bubble/crunch
+- FX: fat low from intro, every 4 bars, 3×A1 then A0; laser/bubble/crunch
   rare; bubble m2 only; not in dense drops.
 - Arrangement: 16-bar intro, layers, 8/16 boundaries, break/build, open-hat
   reset; subtract, don't stack.
