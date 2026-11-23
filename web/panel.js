@@ -1575,24 +1575,38 @@ function renderAutomation() {
     const nm = document.createElement('span');
     nm.className = 'nm';
     nm.textContent = autoLabel(a.path);
-    nm.title = a.path;
+    nm.title = `${a.path} — click to scroll to code`;
     const cur = document.createElement('span');
     cur.className = 'cur';
     cur.textContent = '×1';
+    cur.title = 'click to scroll to code';
+    cur.addEventListener('click', () => scrollEditorToLine(automationLines[i]));
     const lane = document.createElement('div');
     lane.className = 'lane';
-    for (const [at, v] of a.points) {
+    lane.title = 'click to add a point';
+    a.points.forEach(([at, v], pi) => {
       const dot = document.createElement('span');
       dot.className = 'dot';
       dot.style.left = ((Math.max(0, Math.min(total, at)) / total) * 100) + '%';
-      dot.title = `bar ${at}: ×${fmt(v)}`;
+      dot.title = `bar ${at}: ×${fmt(v)} — click to edit`;
+      dot.addEventListener('click', (e) => {
+        e.stopPropagation();
+        openAutoPointPopover(i, at, v, pi, e);
+      });
       lane.appendChild(dot);
-    }
+    });
     const play = document.createElement('span');
     play.className = 'play';
     lane.appendChild(play);
+    nm.addEventListener('click', () => scrollEditorToLine(automationLines[i]));
+    lane.addEventListener('click', (e) => {
+      if (e.target.closest('.dot')) return;
+      const rect = lane.getBoundingClientRect();
+      const frac = rect.width ? (e.clientX - rect.left) / rect.width : 0;
+      const bar = Math.max(0, Math.min(total, Math.round(frac * total)));
+      openAutoPointPopover(i, bar, autoNearest(a.points, bar, a.path), -1, e);
+    });
     row.append(nm, cur, lane);
-    row.addEventListener('click', () => scrollEditorToLine(automationLines[i]));
     root.appendChild(row);
   });
 }
@@ -1602,6 +1616,204 @@ function updateAutoPlayhead(bar) {
   const left = ((Math.max(0, Math.min(total, bar)) / total) * 100) + '%';
   document.querySelectorAll('.auto-row .play').forEach((p) => { p.style.left = left; });
 }
+
+// ── AUTOMATION point editor: click a lane to add, click a dot to edit ──
+let autoPopEdit = null; // { i, idx }  idx = -1 → new point
+
+function autoCurrentValue(path) {
+  const k = knobs.find((kn) => knobKey(kn) === path);
+  return k ? Number(k.value) : null;
+}
+
+function autoNearest(points, bar, path) {
+  let prev = null;
+  for (const p of points) {
+    if (p[0] <= bar) prev = p;
+    else break;
+  }
+  if (prev) return prev[1];
+  if (points.length) return points[0][1];
+  const cur = autoCurrentValue(path);
+  return cur != null ? cur : 1;
+}
+
+// step follows the value's magnitude:
+// <5 → .1, 5–20 → 1, 20–100 → 10, 100–1000 → 100, 1000+ → 1000
+function autoStep(value) {
+  const a = Math.abs(Number(value));
+  if (!Number.isFinite(a) || a < 5) return 0.1;
+  if (a < 20) return 1;
+  if (a < 100) return 10;
+  if (a < 1000) return 100;
+  return 1000;
+}
+
+function ensureAutoPop() {
+  let el = $('autoPop');
+  if (el) return el;
+  el = document.createElement('div');
+  el.id = 'autoPop';
+  el.innerHTML = `
+    <div class="ttl" id="autoPopTitle"></div>
+    <div class="row"><label for="autoPopBar">bar</label><input id="autoPopBar" type="number" min="0" step="1" /></div>
+    <div class="row"><label for="autoPopVal">value</label><input id="autoPopVal" type="number" step="any" /></div>
+    <div class="btns">
+      <button type="button" class="save" id="autoPopSave">Save</button>
+      <button type="button" class="del" id="autoPopDel">Delete</button>
+    </div>`;
+  document.body.appendChild(el);
+  $('autoPopSave').addEventListener('click', saveAutoPoint);
+  $('autoPopDel').addEventListener('click', deleteAutoPoint);
+  for (const id of ['autoPopBar', 'autoPopVal']) {
+    $(id).addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') { e.preventDefault(); saveAutoPoint(); }
+      else if (e.key === 'Escape') { e.preventDefault(); closeAutoPopover(); }
+    });
+  }
+  $('autoPopVal').addEventListener('input', () => {
+    $('autoPopVal').step = String(autoStep($('autoPopVal').value));
+  });
+  document.addEventListener('pointerdown', (e) => {
+    if (!el.classList.contains('open')) return;
+    if (el.contains(e.target)) return;
+    closeAutoPopover();
+  });
+  return el;
+}
+
+function openAutoPointPopover(i, bar, value, idx, ev) {
+  const a = automation[i];
+  if (!a) return;
+  const el = ensureAutoPop();
+  autoPopEdit = { i, idx };
+  $('autoPopTitle').textContent = autoLabel(a.path);
+  $('autoPopBar').value = String(bar);
+  $('autoPopVal').value = String(Number(value));
+  $('autoPopVal').step = String(autoStep(value));
+  $('autoPopDel').hidden = idx < 0;
+  el.classList.add('open');
+  const w = 196;
+  const h = 156;
+  const x = Math.min(ev.clientX + 10, window.innerWidth - w - 8);
+  const y = Math.min(ev.clientY + 10, window.innerHeight - h - 8);
+  el.style.left = Math.max(8, x) + 'px';
+  el.style.top = Math.max(8, y) + 'px';
+  $('autoPopVal').focus();
+  $('autoPopVal').select();
+}
+
+function closeAutoPopover() {
+  const el = $('autoPop');
+  if (el) el.classList.remove('open');
+  autoPopEdit = null;
+}
+
+async function commitAutomationChange() {
+  if (!mirror?.editor) return;
+  writeAutomation();
+  const src = mirror.editor.state.doc.toString();
+  automationLines = scanAutomationLines(src, automation);
+  renderAutomation();
+  setStatus('applying automation…');
+  try {
+    await mirror.evaluate();
+    buildKnobs();
+    setStatus('automation applied');
+  } catch (e) {
+    setStatus(e.message, true);
+  }
+}
+
+function saveAutoPoint() {
+  if (!autoPopEdit) return;
+  const { i, idx } = autoPopEdit;
+  const a = automation[i];
+  if (!a) return;
+  const bar = Math.round(Number($('autoPopBar').value));
+  const value = Number($('autoPopVal').value);
+  if (!Number.isFinite(bar) || !Number.isFinite(value)) return;
+  const at = Math.max(0, bar);
+  // bar already used by another point → overwrite that one instead of duplicating
+  const dup = a.points.findIndex((p, pi) => pi !== idx && p[0] === at);
+  if (dup >= 0) {
+    a.points[dup] = [at, value];
+    if (idx >= 0) a.points.splice(idx, 1);
+  } else if (idx >= 0) {
+    a.points[idx] = [at, value];
+  } else {
+    a.points.push([at, value]);
+  }
+  a.points.sort((x, y) => x[0] - y[0]);
+  commitAutomationChange();
+  closeAutoPopover();
+}
+
+function deleteAutoPoint() {
+  if (!autoPopEdit) return;
+  const { i, idx } = autoPopEdit;
+  const a = automation[i];
+  if (!a || idx < 0) return;
+  a.points.splice(idx, 1);
+  if (!a.points.length) automation.splice(i, 1);
+  commitAutomationChange();
+  closeAutoPopover();
+}
+
+function automationRange(src) {
+  const m = /const\s+AUTOMATION\s*=\s*/.exec(src);
+  if (!m) return null;
+  const start = m.index + m[0].length;
+  if (src[start] !== '[') return null;
+  let depth = 0;
+  let inStr = false;
+  let quote = '';
+  let esc = false;
+  for (let i = start; i < src.length; i++) {
+    const c = src[i];
+    if (inStr) {
+      if (esc) esc = false;
+      else if (c === '\\') esc = true;
+      else if (c === quote) inStr = false;
+      continue;
+    }
+    if (c === '"' || c === "'" || c === '`') { inStr = true; quote = c; continue; }
+    if (c === '[') depth++;
+    else if (c === ']') {
+      depth--;
+      if (depth === 0) return { start, end: i + 1 };
+    }
+  }
+  return null;
+}
+
+function autoQuote(v) {
+  return "'" + String(v).replace(/\\/g, '\\\\').replace(/'/g, "\\'") + "'";
+}
+
+function formatAutomationLiteral() {
+  const lines = ['['];
+  for (const a of automation) {
+    const pts = a.points.map(([at, v]) => `[${at}, ${fmt(v)}]`).join(', ');
+    lines.push(`  { path: ${autoQuote(a.path)}, points: [${pts}] },`);
+  }
+  lines.push(']');
+  return lines.join('\n');
+}
+
+function writeAutomation() {
+  if (!mirror?.editor) return;
+  const literal = formatAutomationLiteral();
+  const src = mirror.editor.state.doc.toString();
+  const lit = automationRange(src);
+  if (lit) {
+    mirror.editor.dispatch({ changes: { from: lit.start, to: lit.end, insert: literal } });
+    return;
+  }
+  const c = /^.*setcpm\(.*\).*$/m.exec(src);
+  const pos = c ? c.index + c[0].length : 0;
+  mirror.editor.dispatch({ changes: { from: pos, to: pos, insert: `\nconst AUTOMATION = ${literal};\n` } });
+}
+
 
 function lineAtSourcePos(src, pos) {
   let n = 1;
@@ -1882,15 +2094,6 @@ function applyValues(values, label = 'scene') {
   return pairs.length;
 }
 
-function applyScene(name) {
-  const scene = scenes && scenes[name];
-  if (!scene) {
-    setSceneStatus(`no ${name} scene`);
-    return;
-  }
-  applyValues(scene, name);
-}
-
 function exportScene() {
   const values = {};
   for (const k of knobs) values[knobKey(k)] = k.value;
@@ -1929,11 +2132,9 @@ async function importScene(file) {
 }
 
 function bindScenes() {
-  $('sceneIntro').addEventListener('click', () => applyScene('intro'));
-  $('sceneTheme').addEventListener('click', () => applyScene('theme'));
-  $('sceneExport').addEventListener('click', exportScene);
-  $('sceneImport').addEventListener('click', () => $('sceneFile').click());
-  $('sceneFile').addEventListener('change', (e) => {
+  $('sceneExport')?.addEventListener('click', exportScene);
+  $('sceneImport')?.addEventListener('click', () => $('sceneFile')?.click());
+  $('sceneFile')?.addEventListener('change', (e) => {
     const f = e.target.files?.[0];
     if (f) importScene(f);
     e.target.value = '';

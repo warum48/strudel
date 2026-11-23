@@ -95,6 +95,11 @@ use `UI` plus `const TIMELINE` / `const AUTOMATION`.
   and uses the section under `holdBar`.
 - `const AUTOMATION` is a list of `{ path, points }`; the panel shows one lane
   per path and a live value while SONG/HOLD is running.
+- Point editor: click empty space on a lane to add a point (bar is derived from
+  the click, value defaults to the previous point), click an existing dot to
+  edit it. The popup saves back into the `const AUTOMATION` literal, Delete
+  removes that point (an empty lane is dropped), and both re-evaluate the track
+  immediately (same as Ctrl/Cmd+Enter).
 
 The panel only renders the data; the sound is produced by the track code
 (`tlCurve` / `tlOr` / `gateOf` / `autoAt`).

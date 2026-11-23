@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<link rel="icon" href="data:," />
+<link rel="icon" type="image/svg+xml" href="/web/favicon.svg" />
 <title>STRUDEL EXTENSION</title>
 <style>
   :root {
@@ -90,15 +90,66 @@
   #automation[open] .hint { display: none; }
   .auto-body { padding: 2px 12px 8px; display: flex; flex-direction: column; gap: 0; max-height: 160px; overflow: auto; }
   .auto-row { position: relative; height: 22px; min-height: 22px; flex: 0 0 22px; }
-  .auto-row .nm { position: absolute; left: 2px; top: 0; color: var(--dim); font-size: 10px; letter-spacing: .04em; max-width: 45%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .auto-row .cur { position: absolute; right: 2px; top: 0; color: var(--warn); font-size: 10px; }
+  .auto-row .nm { position: absolute; left: 2px; top: 0; z-index: 2; color: var(--dim); font-size: 10px; letter-spacing: .04em; max-width: 45%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; cursor: pointer; }
+  .auto-row .nm:hover { color: var(--warn); }
+  .auto-row .cur { position: absolute; right: 2px; top: 0; z-index: 2; color: var(--warn); font-size: 10px; cursor: pointer; }
   .auto-row.active .cur { color: var(--accent); }
-  .auto-row .lane { position: absolute; left: 0; right: 0; bottom: 3px; height: 12px; }
+  .auto-row .lane { position: absolute; left: 0; right: 0; bottom: 3px; z-index: 1; height: 12px; cursor: crosshair; }
   .auto-row .lane::before { content: ''; position: absolute; left: 0; right: 0; top: 50%; border-top: 1px solid #2a3024; }
-  .auto-row .dot { position: absolute; top: 50%; width: 5px; height: 5px; border-radius: 50%; background: var(--dim); transform: translate(-50%, -50%); cursor: help; }
+  .auto-row .dot { position: absolute; top: 50%; width: 5px; height: 5px; border-radius: 50%; background: var(--dim); transform: translate(-50%, -50%); cursor: pointer; }
+  .auto-row .dot::after { content: ''; position: absolute; inset: -5px; }
   .auto-row .dot:hover { background: var(--warn); }
   .auto-row.active .dot { background: var(--accent); }
   .auto-row .play { position: absolute; top: 0; bottom: 0; width: 1px; left: 0; background: var(--warn); opacity: .55; pointer-events: none; }
+  /* попап правки точки AUTOMATION */
+  #autoPop {
+    position: fixed;
+    z-index: 60;
+    display: none;
+    width: 196px;
+    padding: 10px;
+    background: #151814;
+    border: 1px solid #39402f;
+    border-radius: 5px;
+    box-shadow: 0 12px 34px rgba(0, 0, 0, 0.66);
+    color: var(--text);
+    font-size: 11px;
+  }
+  #autoPop.open { display: block; }
+  #autoPop .ttl {
+    color: var(--dim);
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  #autoPop .row { display: grid; grid-template-columns: 42px 1fr; align-items: center; gap: 6px; margin-bottom: 6px; }
+  #autoPop label { color: var(--dim); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; }
+  #autoPop input {
+    width: 100%;
+    background: #11140f;
+    color: var(--text);
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    padding: 3px 5px;
+    font: inherit;
+    font-size: 11px;
+  }
+  #autoPop input:focus { outline: none; border-color: var(--accent); }
+  #autoPop .btns { display: flex; gap: 6px; margin-top: 9px; }
+  #autoPop button {
+    flex: 1;
+    padding: 5px 8px;
+    font-size: 10px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  #autoPop button.save { background: var(--accent); border-color: var(--accent); color: #0d0f0c; font-weight: 700; }
+  #autoPop button.del { background: transparent; border-color: var(--bad); color: var(--bad); }
+  #autoPop button.del[hidden] { display: none; }
   /* загрузка сэмплов: кнопка в шапке + компактный статус */
   #sampleStatus {
     color: var(--warn);
@@ -268,45 +319,24 @@
     #timeline .tl-body { flex-direction: column; }
     #timeline .tl-inspector { width: auto; max-height: 180px; }
   }
-  /* ── SCENES / JSON — отдельная панелька: Intro+Theme | Export+Import ── */
-  #scenes {
-    flex: none;
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 6px 14px;
-    padding: 7px 12px;
-    border-bottom: 1px solid var(--line);
-    background: #11140f;
-  }
-  #scenes .zone { display: flex; align-items: center; gap: 6px; }
-  #scenes .cap {
+  /* ── header tools: JSON / Track export-import (arrow buttons) ── */
+  #tools { display: flex; align-items: center; gap: 6px; }
+  #tools .tcap {
     color: var(--dim);
     font-size: 10px;
     letter-spacing: 0.12em;
     text-transform: uppercase;
   }
-  #scenes .sep {
-    width: 1px;
-    align-self: stretch;
-    background: var(--line);
-    margin: 0 4px;
-  }
-  #scenes button {
-    padding: 4px 12px;
-    font-size: 11px;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-  }
-  #scenes button:disabled { opacity: 0.38; cursor: not-allowed; }
-  #sceneStatus {
-    margin-left: auto;
-    color: var(--dim);
-    font-size: 11px;
-    white-space: nowrap;
-    max-width: 320px;
-    overflow: hidden;
-    text-overflow: ellipsis;
+  #tools .sep { width: 1px; align-self: stretch; background: var(--line); margin: 0 2px; }
+  #tools button.tool {
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    font-size: 13px;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
   }
   main { flex: 1; display: grid; grid-template-columns: var(--mix-w) var(--tone-w) 1fr; min-height: 0; }
   /* два столбца сайдбара: микшер (громкости) и тонкие настройки */
@@ -523,34 +553,21 @@
   <span class="spacer"></span>
   <span id="status">loading…</span>
   <select id="theme" title="editor color theme"></select>
+  <span id="tools">
+    <span class="tcap">JSON</span>
+    <button id="sceneExport" class="tool" type="button" title="download the current track settings">↓</button>
+    <button id="sceneImport" class="tool" type="button" title="load settings from JSON">↑</button>
+    <input id="sceneFile" type="file" accept=".json,application/json" hidden />
+    <span class="sep"></span>
+    <span class="tcap">Track</span>
+    <button id="trackExport" class="tool" type="button" title="download the Strudel code of this track">↓</button>
+    <button id="trackImport" class="tool" type="button" title="load a Strudel code file">↑</button>
+    <input id="trackFile" type="file" accept=".js,.txt,text/javascript" hidden />
+  </span>
   <button id="samples" class="ghost" title="download and decode every sample used by this track">PRELOAD SAMPLES</button>
   <span id="sampleStatus"></span>
   <a id="help" class="help" href="/web/help.html" target="_blank" rel="noreferrer" title="how to make a track work with this UI">HELP</a>
 </header>
-
-<!-- ── SCENES / JSON: первая зона — пресеты, вторая — обмен JSON ── -->
-<div id="scenes">
-  <div class="zone">
-    <span class="cap">Scenes</span>
-    <button id="sceneIntro" type="button" disabled>INTRO</button>
-    <button id="sceneTheme" type="button" disabled>THEME</button>
-  </div>
-  <span class="sep"></span>
-  <div class="zone">
-    <span class="cap">JSON</span>
-    <button id="sceneExport" type="button" title="download the current track settings">EXPORT</button>
-    <button id="sceneImport" type="button" title="load settings or scenes from JSON">IMPORT</button>
-    <input id="sceneFile" type="file" accept=".json,application/json" hidden />
-  </div>
-  <span class="sep"></span>
-  <div class="zone">
-    <span class="cap">Track</span>
-    <button id="trackExport" type="button" title="download the Strudel code of this track">EXPORT TRACK</button>
-    <button id="trackImport" type="button" title="load a Strudel code file">IMPORT TRACK</button>
-    <input id="trackFile" type="file" accept=".js,.txt,text/javascript" hidden />
-  </div>
-  <span id="sceneStatus"></span>
-</div>
 
 <!-- ── MUTES: обычные 0/1-кнопки, не momentary; глушат группы инструментов ── -->
 <div id="mutes"></div>

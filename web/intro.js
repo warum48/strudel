@@ -67,17 +67,48 @@ function pixelLogo(lines) {
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" shape-rendering="crispEdges" focusable="false" aria-hidden="true">${rects}</svg>`;
 }
 
-const PAGES = [
-  `
-    <p>Скорее всего ты сидишь и думаешь, - "что бы мне еще накодировать?". Вот отличное предложение: музыку! Мы не говорим о банальной генерации трека в бездушном SUNO, нет, мы будем делать музыку яваскриптом! Каждый параметр можно поменять в рилтайме, добавить, убрать, подвинуть, покрутить ручки пока играет композиция, поставить ее на холд в понравившемся моменте и модулировать, модулировать, модулировать. Мало ручек? - добавил и снова модулируешь.</p>
-    <p>Если ты уже знаешь Strudel.cc - этот инструмент расширит твои возможности, только изучаешь - ИИ в помощь, просишь его изменить то что хочется, создать новый трек с нуля под твое настроение и бесконечно его играть и настраивать, делая его своим и просто погружаясь в метаморфозы волн.</p>
-    <p class="se-note">Начини с прослушивания примеров, чтобы оценить возможности и погрузиться в гипноз звука.</p>
-  `,
-  `
-    <p>Экспандер сочетает в себе лучшее из двух миров - визуальный таймлан, быстрое управление слайдерами и тонкие чрезвычайно гибкие настройки деталей кодом.</p>
-    <p>Клик на название интрумента проскроллит код до его опеределения, на слайдер - до его параметров, точка на таймлайне - ее настройки.</p>
-  `,
-];
+const CONTENT = {
+  en: {
+    pages: [
+      `
+        <p>Chances are you're sitting there wondering, "what else could I code?" Here's a great suggestion: music! We're not talking about bland track generation in soulless SUNO - no, we're going to make music with JavaScript! Every parameter can be changed in real time - added, removed, moved, knobs twisted while the composition plays, put on hold at a moment you like and modulated, modulated, modulated. Not enough knobs? Add one and modulate again.</p>
+        <p>If you already know Strudel.cc, this tool will expand what you can do; just learning? AI is here to help - ask it to change whatever you want, create a new track from scratch to match your mood, play and tweak it endlessly, make it yours and simply sink into the metamorphoses of waves.</p>
+        <p class="se-note">Start by listening to the examples to get a feel for what's possible and sink into the hypnosis of sound.</p>
+      `,
+      `
+        <p>The expander combines the best of two worlds - a visual timeline, fast slider control and fine, extremely flexible detail tweaks in code.</p>
+        <p>Clicking an instrument name scrolls the code to its definition, a slider - to its parameters, a dot on the timeline - to its settings.</p>
+      `,
+    ],
+    intro: 'Intro',
+    close: 'Close',
+    next: 'Next',
+    step: 'Step',
+    pick: 'Pick a track',
+    language: 'Language',
+  },
+  ru: {
+    pages: [
+      `
+        <p>Скорее всего ты сидишь и думаешь, - "что бы мне еще накодировать?". Вот отличное предложение: музыку! Мы не говорим о банальной генерации трека в бездушном SUNO, нет, мы будем делать музыку яваскриптом! Каждый параметр можно поменять в рилтайме, добавить, убрать, подвинуть, покрутить ручки пока играет композиция, поставить ее на холд в понравившемся моменте и модулировать, модулировать, модулировать. Мало ручек? - добавил и снова модулируешь.</p>
+        <p>Если ты уже знаешь Strudel.cc - этот инструмент расширит твои возможности, только изучаешь - ИИ в помощь, просишь его изменить то что хочется, создать новый трек с нуля под твое настроение и бесконечно его играть и настраивать, делая его своим и просто погружаясь в метаморфозы волн.</p>
+        <p class="se-note">Начини с прослушивания примеров, чтобы оценить возможности и погрузиться в гипноз звука.</p>
+      `,
+      `
+        <p>Экспандер сочетает в себе лучшее из двух миров - визуальный таймлан, быстрое управление слайдерами и тонкие чрезвычайно гибкие настройки деталей кодом.</p>
+        <p>Клик на название интрумента проскроллит код до его опеределения, на слайдер - до его параметров, точка на таймлайне - ее настройки.</p>
+      `,
+    ],
+    intro: 'Интро',
+    close: 'Закрыть',
+    next: 'Далее',
+    step: 'Шаг',
+    pick: 'Выбери трек',
+    language: 'Язык',
+  },
+};
+
+let lang = 'en';
 
 const FALLBACK_TRACKS = [
   '/tracks/01-dnb-live.js',
@@ -150,6 +181,16 @@ const STYLE = `
     filter: drop-shadow(0 0 10px rgba(179, 216, 13, 0.2));
   }
   .se-intro .se-brand rect { fill: #b3d80d; }
+  .se-intro .se-brand .se-tagline {
+    display: block;
+    margin-top: 10px;
+    color: #b3d80d;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 11px;
+    letter-spacing: 0.32em;
+    text-transform: uppercase;
+    opacity: 0.85;
+  }
   .se-intro .se-brand::after {
     content: '';
     display: block;
@@ -185,7 +226,7 @@ const STYLE = `
     flex: none;
     display: flex;
     align-items: center;
-    gap: 16px;
+    gap: 12px;
     margin-top: 16px;
     padding-top: 14px;
     border-top: 1px solid #262b22;
@@ -205,6 +246,30 @@ const STYLE = `
     border-color: #b3d80d;
     background: #b3d80d;
     box-shadow: 0 0 10px rgba(179, 216, 13, 0.5);
+  }
+  .se-intro .se-lang {
+    display: flex;
+    gap: 4px;
+    padding-left: 14px;
+    border-left: 1px solid #262b22;
+  }
+  .se-intro .se-lang button {
+    padding: 4px 7px;
+    background: transparent;
+    border: 1px solid #2b3226;
+    border-radius: 3px;
+    color: #7d8776;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    line-height: 1;
+    cursor: pointer;
+  }
+  .se-intro .se-lang button:hover { color: #e8e8e8; border-color: #3a4234; }
+  .se-intro .se-lang button.on {
+    background: #b3d80d;
+    border-color: #b3d80d;
+    color: #0d0f0c;
   }
   .se-intro .se-next {
     margin-left: auto;
@@ -265,18 +330,30 @@ const STYLE = `
     border-radius: 3px;
     color: #e8e8e8;
     cursor: pointer;
-    transition: border-color 0.12s ease, background 0.12s ease, transform 0.12s ease;
+    transition: border-color 0.12s ease, background 0.12s ease;
   }
   .se-intro .se-track:hover {
     background: #1c2316;
     border-color: #b3d80d;
-    transform: translateX(2px);
   }
+  .se-intro .se-track.c1 { background: rgba(224, 205, 48, 0.10); border-color: rgba(224, 205, 48, 0.40); }
+  .se-intro .se-track.c1:hover { background: rgba(224, 205, 48, 0.20); border-color: #e0cd30; }
+  .se-intro .se-track.c2 { background: rgba(232, 134, 58, 0.10); border-color: rgba(232, 134, 58, 0.40); }
+  .se-intro .se-track.c2:hover { background: rgba(232, 134, 58, 0.20); border-color: #e8863a; }
+  .se-intro .se-track.c3 { background: rgba(230, 90, 160, 0.10); border-color: rgba(230, 90, 160, 0.40); }
+  .se-intro .se-track.c3:hover { background: rgba(230, 90, 160, 0.20); border-color: #e65aa0; }
+  .se-intro .se-track.c4 { background: rgba(157, 107, 230, 0.10); border-color: rgba(157, 107, 230, 0.40); }
+  .se-intro .se-track.c4:hover { background: rgba(157, 107, 230, 0.20); border-color: #9d6be6; }
   .se-intro .se-track-title {
+    display: -webkit-box;
+    max-width: 100%;
+    overflow: hidden;
     font-size: 17px;
     font-weight: 700;
     line-height: 1.15;
     letter-spacing: 0.02em;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
   }
   .se-intro .se-track-genre {
     color: #7d8776;
@@ -371,19 +448,24 @@ function mount() {
   overlay.className = 'se-intro';
   overlay.innerHTML = `
     <div class="se-modal" role="dialog" aria-modal="true" aria-label="Intro">
-      <button type="button" class="se-x" aria-label="Закрыть">×</button>
+      <button type="button" class="se-x" aria-label="Close">×</button>
       <section class="se-left">
-        <div class="se-brand" role="img" aria-label="STRUDEL EXPANDER">
-          ${pixelLogo(['STRUDEL', 'EXPANDER'])}
+        <div class="se-brand" role="img" aria-label="STRUDEX — Strudel Expander">
+          ${pixelLogo(['STRUDEX'])}
+          <span class="se-tagline">Strudel Expander</span>
         </div>
         <div class="se-copy" id="seCopy" aria-live="polite"></div>
         <div class="se-foot">
           <div class="se-dots" id="seDots"></div>
-          <button type="button" class="se-next" id="seNext" aria-label="Далее">→</button>
+          <div class="se-lang" id="seLang" role="group" aria-label="Language">
+            <button type="button" data-lang="en" class="on" aria-pressed="true">EN</button>
+            <button type="button" data-lang="ru" aria-pressed="false">RU</button>
+          </div>
+          <button type="button" class="se-next" id="seNext" aria-label="Next">→</button>
         </div>
       </section>
       <aside class="se-right">
-        <div class="se-right-cap">Выбери трек</div>
+        <div class="se-right-cap">Pick a track</div>
         <div class="se-tracks" id="seTracks">
           <div class="se-tracks-note">loading…</div>
         </div>
@@ -395,33 +477,57 @@ function mount() {
   const modal = overlay.querySelector('.se-modal');
   const copy = overlay.querySelector('#seCopy');
   const dots = overlay.querySelector('#seDots');
+  const langGroup = overlay.querySelector('#seLang');
   const next = overlay.querySelector('#seNext');
   const trackList = overlay.querySelector('#seTracks');
+  const closeBtn = overlay.querySelector('.se-x');
+  const rightCap = overlay.querySelector('.se-right-cap');
 
   let page = 0;
 
   const renderDots = () => {
-    dots.innerHTML = PAGES.map(
-      (_, i) =>
-        `<button type="button" class="se-dot${i === page ? ' on' : ''}" data-page="${i}" aria-label="Шаг ${i + 1}"${
-          i === page ? ' aria-current="step"' : ''
-        }></button>`,
-    ).join('');
+    const t = CONTENT[lang];
+    dots.innerHTML = t.pages
+      .map(
+        (_, i) =>
+          `<button type="button" class="se-dot${i === page ? ' on' : ''}" data-page="${i}" aria-label="${t.step} ${
+            i + 1
+          }"${i === page ? ' aria-current="step"' : ''}></button>`,
+      )
+      .join('');
   };
 
   const renderPage = () => {
-    copy.innerHTML = PAGES[page];
+    const t = CONTENT[lang];
+    copy.innerHTML = t.pages[page];
     copy.classList.remove('se-page-in');
     void copy.offsetWidth;
     copy.classList.add('se-page-in');
     renderDots();
-    const last = page === PAGES.length - 1;
+    const last = page === t.pages.length - 1;
     next.textContent = last ? '✓' : '→';
-    next.setAttribute('aria-label', last ? 'Закрыть' : 'Далее');
+    next.setAttribute('aria-label', last ? t.close : t.next);
+    closeBtn.setAttribute('aria-label', t.close);
+    modal.setAttribute('aria-label', t.intro);
+    modal.setAttribute('lang', lang);
+    langGroup.setAttribute('aria-label', t.language);
+    rightCap.textContent = t.pick;
+    for (const btn of langGroup.querySelectorAll('[data-lang]')) {
+      const on = btn.dataset.lang === lang;
+      btn.classList.toggle('on', on);
+      btn.setAttribute('aria-pressed', String(on));
+    }
+  };
+
+  const setLanguage = (nextLang) => {
+    if (!CONTENT[nextLang] || nextLang === lang) return;
+    lang = nextLang;
+    renderPage();
+    copy.scrollTop = 0;
   };
 
   const nextPage = () => {
-    if (page < PAGES.length - 1) {
+    if (page < CONTENT[lang].pages.length - 1) {
       page += 1;
       renderPage();
       copy.scrollTop = 0;
@@ -460,8 +566,13 @@ function mount() {
   overlay.addEventListener('pointerdown', (e) => {
     if (e.target === overlay) close();
   });
-  overlay.querySelector('.se-x').addEventListener('click', close);
+  closeBtn.addEventListener('click', close);
   next.addEventListener('click', nextPage);
+  langGroup.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-lang]');
+    if (!btn) return;
+    setLanguage(btn.dataset.lang);
+  });
   dots.addEventListener('click', (e) => {
     const dot = e.target.closest('.se-dot');
     if (!dot) return;
@@ -492,10 +603,10 @@ function mount() {
 
   tracksWithMeta().then((tracks) => {
     trackList.textContent = '';
-    for (const t of tracks) {
+    tracks.forEach((t, i) => {
       const btn = document.createElement('button');
       btn.type = 'button';
-      btn.className = 'se-track';
+      btn.className = i > 0 && i < 5 ? `se-track c${i}` : 'se-track';
       btn.dataset.path = t.path;
 
       const title = document.createElement('span');
@@ -508,7 +619,7 @@ function mount() {
 
       btn.append(title, genre);
       trackList.appendChild(btn);
-    }
+    });
   });
 }
 
