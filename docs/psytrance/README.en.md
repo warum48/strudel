@@ -6,6 +6,14 @@ Harmony barely changes here: hypnosis matters more than chords. If a track
 has a progression and "plays around chords", it is no longer psytrance but
 trance pop.
 
+**In this guide:** [kick & bass](#2-kick-and-rolling-bass--the-foundation) ·
+[rhythm](#3-rhythm-grid-and-percussion) · [harmony](#4-harmony-one-root) ·
+[sound design](#5-acid-lead-squelch) ·
+[riffs & melody](#6-riffs-and-melody) · [psy FX](#7-psy-fx-inserts) ·
+[arrangement](#8-arrangement) · [pitfalls](#10-what-not-to-do) ·
+[case studies](#11-case-studies). Code: [recipes](strudel-recipes.en.md);
+full anti-pattern list: [pitfalls.en.md](pitfalls.en.md).
+
 ## 1. Tempo and subgenres
 
 - **Full-on:** 140–148 BPM, peak-time, melodic, often an "eastern" scale.
@@ -14,7 +22,7 @@ trance pop.
 - **Goa:** 140–145 BPM, more melodic and "more analog", the ancestor of the genre.
 - **Forest / hi-tech:** 148–160+, broken textures and aggressive design.
 
-Our track is **full-on 145 BPM**, F# phrygian dominant.
+Track 01 is full-on **145 BPM, F# phrygian dominant**; track 02 is **140 BPM, F# minor**.
 
 ## 2. Kick and rolling bass — the foundation
 
@@ -114,7 +122,58 @@ envelope**, not a high base + shallow envelope.
 Our acid: base 120 Hz, Q 4, `lpenv` 4.5, `lpd` 0.055, `lps` 0.05, ladder.
 Our bass: 410 Hz, Q 2, `lpenv` 3, `lpd` 0.05, 24db.
 
-## 6. Arrangement
+## 6. Riffs and melody
+
+A psy riff is a **rhythmic cell**, not a chord exercise. Repetition is the
+point; variation is one note, not a new phrase.
+
+- Use a tiny pitch set: root + m2, root + m3, occasionally m6. m2 is the dark
+  phrygian color; m3 opens it slightly; m6 is a darker turn. Do not stack all
+  three in one bar.
+- **Pulse:** straight 16ths on the root, m2/m3 as accents; every 4th bar swap
+  m3 for m6. Let the filter move. Use it for a break or a hypnotic groove.
+- **Gallop:** 3-3-2 / two-notes-and-a-rest rhythm on the same note, m2/m3
+  accents. More rhythmic, less arpeggio; good for a lift/drop.
+- **Arpeggio:** if you want one, make it wide and directional (F#5→F#6) with
+  returns and a jump. Avoid a 1-bar broken chord repeated; more notes is fine
+  only if the phrase has direction.
+- **Break melody:** take a 1-bar motif, repeat it 4× to make a 4-bar chunk.
+  The 16-bar break is four chunks: base / first note +1, third +2 / base /
+  first and third −2. The changes are on the first and third notes of the
+  chunk; everything else repeats. That is motivic development without chords.
+- **Lift melody:** same notes, sparse Faithless-style groups: 1 note, rest,
+  3-note group, rest; 4-bar phrase. A longer release and a small gain lift
+  keep the sparse notes singing. Not an arpeggio; the space is the hook.
+- Write something you can hum. Rests are part of the motif; end on root or
+  fifth; question then answer; repeat with one change.
+- Keep changes on 8/16-bar boundaries; do not mutate every bar.
+
+## 7. Psy FX inserts
+
+The "flight" layer: short synth events that appear in the gaps, not a
+continuous part. The point is a person flying and catching glitches —
+noticeable, never in the way.
+
+- **Laser / zap:** 4 low repeated notes (e.g. F#3) with a hard cutoff sweep
+  (`lpf(cut × saw.range(...))` + `lpenv`), short decay, light drive. One bar
+  in 8; pan/delay.
+- **Bubble / clicks:** 4 neutral high FM/sine clicks, only root + m2 (F#6/G6),
+  tiny decay. One bar in 16; random pan. No m3/chord — it gets poppy.
+- **Fat low note (from the intro, every 4 bars):** A1; every second hit is
+  A0 (octave down). `unison(3)`, detune, drive, long release, pan LFO, an
+  attack slider. Cutoff **1800–2400** with a 4-bar LFO; resonance **14–24**
+  with an 8-bar LFO (half the step); strong echo (0.85 send, 1.2× feedback).
+  This is a low **layer**, not a rare FX; the laser/bubble/crunch stay rare.
+- **Crunch:** two short crushed noise hits (`crush`), one bar in 16.
+- Placement: intro/groove/build/outro gaps, not dense drops/lifts. Use 4/8/16-
+  bar masks; one event per phrase; pan, delay, room; low gain.
+- Do not stack the rare FX; do not make the bubble a melody. The fat low hits
+  every 4 bars (it is a layer); laser/bubble/crunch are 1-in-8/16. One reverb
+  size; keep the CPU budget.
+- Local references: `switchangel_acid` pulse/FM and `DISSOLUTION` bytebeat/
+  noise.
+
+## 8. Arrangement
 
 - 16 bars of **kick + bass only** — the foundation and DJ intro.
 - Layers: hats (16–32), clap/snare (32–48), open hat and percussion
@@ -128,7 +187,7 @@ Our bass: 410 Hz, Q 2, `lpenv` 3, `lpd` 0.05, 24db.
 - Ideal length is 7–7.5 minutes; in our format it is 5–6 minutes (192 bars
   at 145 BPM ≈ 5:18).
 
-## 7. Mix
+## 9. Mix
 
 - Low end mono; kick and bass do not fight over 40–80 Hz.
 - Bass high-pass ~30 Hz; notch at the kick's fundamental if needed.
@@ -137,18 +196,35 @@ Our bass: 410 Hz, Q 2, `lpenv` 3, `lpd` 0.05, 24db.
   processing.
 - Reference: solo kick+bass against the reference, then the whole mix.
 
-## 8. What not to do
+## 10. What not to do
 
-- Chord progressions and "playing around" chords with arpeggios.
-- Long bass notes with sustain — the bass turns into a drone.
-- Bass on the kick (the first 16th is taken by the kick).
-- Melodic pop leads and "pretty" cadences.
-- 10 layers "just in case", static 4-bar loops.
-- One squelch per bar, "polite" 16th hats, a big hall instead of a short
-  room.
-- Glide/portamento in the rolling bass.
+- **Do not copy DAW cutoff/Q values.** In Strudel `lpf` is Hz and `lpq` is a
+  real Q 0–50; Q 12–15 screams. Acid is a low base + deep envelope, not a high
+  base + shallow envelope.
+- **No chord progressions or chord comping.** No pad progression, no
+  arpeggiating chords as accompaniment. One root, intervals, drones.
+- **No long bass notes with sustain.** 50–75 ms, sustain 0, a gap before the
+  next note; no bass on the kick.
+- **No static cutoff.** Every synth should move (LFO + section automation);
+  distortion does not replace filter movement.
+- **No clunky 1-bar broken-chord leads.** Riffs repeat a note; use m2/m3,
+  occasional m6; more notes only if repeated/directional. Leave rests.
+- **No dense FX.** No FX on every bar, no FX in the drops, no 8-click pop
+  bubble, no 4-bar laser loop at full level. Rare, panned, delayed, fat.
+- **No 10-layer pile-up.** Subtract; open hat resets before 64 bars; no
+  static 4-bar loops; changes on 8/16 boundaries.
+- **No big hall / >10 roomsize / multiple reverbs.** One reverb size, short
+  room; `roomsize` 0–10.
+- **No worklet storms.** `ftype('ladder')`, `distort`, `crush`, `shape` are
+  one worklet per event; keep CPU under ~150/s; no supersaw stacks on 16ths.
+- **No node-check cheats.** No `.scale`/`chord()` in the check; mini strings
+  only through `m()`; no mini strings stored in variables without `m()`;
+  no negative slider literals; every layer needs `gateOf`/`audible`.
+- **Do not trust the panel alone.** Check in stock strudel.cc; run verify,
+  gains, cpu, levels.
+- Full checklist and fixes: [pitfalls.en.md](pitfalls.en.md).
 
-## 9. Our track
+## 11. Case studies
 
 `tracks/psytrance/01-serpent-engine.js` — 145 BPM, F# phrygian dominant,
 192 bars, static root (no chord progression). 19 tracks, 90 sliders:
@@ -166,26 +242,61 @@ Switches: `mode` (straight/rolling/tribal/stomp), `bassVar` (root/oct),
 ### 02 — Acid Euphoria
 
 `tracks/psytrance/02-acid-euphoria.js` — 140 BPM, F# minor, 160 bars,
-14 tracks, 58 sliders. This one copies the references instead of inventing:
+18 tracks, 83 sliders. This one copies the references instead of inventing:
 
-- **Acid:** `switchangel_acid` chain — `distort 2.2:.3`/sawtooth/`lpf`/
-  `lpenv 2.256`/`lpq 12` — over a **repetitive 16th ostinato on F#**, with
-  only two color notes: m2 (G) and m3 (A) as accents. No jumps; the moving
-  filter does the variation.
+- **Acid / riff A (pulse):** `switchangel_acid` chain — `distort 2.2:.3`/
+  sawtooth/`lpf`/`lpenv 2.256`/`lpq 12` — over a repetitive 16th ostinato on
+  F# with m2 (G) and m3 (A) accents; every 4th bar the m3 becomes m6 (D).
+  Used **only in BREAK**.
+- **Acid / riff B (gallop):** a syncopated 3-3-2-ish line on the same two/three
+  notes; used in LIFT/drops. In LIFT the wide arp lane is off, so the section
+  is rhythm-led, not arpeggio-led.
 - **Kick/hats:** `sbd` + distort + `duck 2` and TR-909 hats from
   `lausfødselsdagstechno`.
 - **Bass:** honcoops EX3/6 saw rolling bass, `lpf 700`, `res 7`, short release.
 - **Leads/pad:** honcoops EX7 wide arp, EX9 triangle pluck, EX12 slow saw
-  strings.
+  strings. The BREAK pluck is a 4x-longer melody in four 4-bar chunks: base / first +1,
+  third +2 / base / first and third -2. The LIFT pluck uses the same notes but
+  a sparse Faithless-style phrasing (1 note, rest, 3-note group, rest); the
+  wide arp lane stays off there. `pluckVar` = arp / lift / break.
+- **Psy FX inserts:** `laser` (4 low F#3 notes with a hard cutoff sweep and
+  drive, 1 bar in 8), `bubble` (4 neutral high F#6/G6 FM clicks, m2 only, 1
+  bar in 16), `fat` (A1 every 4 bars from the intro; every second hit A0;
+  cutoff 1800–2400 4-bar LFO, resonance 14–24 8-bar LFO, attack slider, strong
+  echo, unison/drive/pan) and `crunch` (2 crushed noise hits, 1 bar in 16).
+  The fat low hits every 4 bars; the other three are rare and live in the gaps
+  (intro/groove/build/outro), not the dense drops.
 - **Dynamic cutoff:** every synth moves — `lpf(base × sine.range(…).slow(16)
   × autoAt(…))`; the strings use `lpdepth`/`lpsync`. No chord progression:
   static F#m strings, one root.
 
 Strudel recipes — `docs/psytrance/strudel-recipes.en.md`.
 
-## 10. Sources
+## 12. Lessons / final checklist
+
+- One root; no chord progression or chord comping.
+- Kick + bass first: 12-note rolling bass, sub + top, gap, mono, sidechain.
+- Strudel-native values: `lpf` Hz, `lpq` Q 0–50; acid low base + deep
+  envelope; dynamic cutoff on every synth.
+- Riffs: repeated notes, m2/m3, occasional m6; pulse/gallop; break 4 chunks;
+  sparse lift; more notes only if repeated/directional.
+- FX: fat low from intro, every 4 bars, second hit A0; laser/bubble/crunch
+  rare; bubble m2 only; not in dense drops.
+- Arrangement: 16-bar intro, layers, 8/16 boundaries, break/build, open-hat
+  reset; subtract, don't stack.
+- Mix: low end mono, sidechain, less reverb, one roomsize, lead not hidden.
+- Test: `verify`, `gains`, `cpu` (<150/s), `levels`, live in stock
+  strudel.cc; commit before experiments.
+- If it sounds clunky: fewer notes, more repetition, more filter movement,
+  more space.
+
+## 13. Sources
 
 Strudel-native:
+- Local reference patterns: `refs/strudel/github/dotcomdudee/strudel-tracks/switchangel_acid.js`
+  (acid and pulse/FM), `refs/strudel/github/frixdk/strudeltechno/lausfødselsdagstechno.js`
+  (kick/hats/acid), `refs/strudel/github/honcoops/strudel_trance/examples/01_driving_bassline.js`
+  (EX3/4/6), `.../02_euphoric_leads.js` (EX7/9/12).
 - https://strudel.cc/learn/effects/ — `lpf` Hz, `lpq` Q 0–50, `lpenv`,
   LFO, duck, delay, reverb, `roomsize` 0–10.
 - https://strudel.cc/learn/synths/ — waveforms, FM, partials.
@@ -194,6 +305,8 @@ Strudel-native:
   (303), `refs/strudel/strudelmarket/Bass/Stranger-schranz-soul-0a13ccdc.js`
   (acid/bass).
 
+- Attack Magazine, Ostinatos and Acid Riffs (passing notes, 2021) — simple
+  root+interval acid ostinatos; use the title to find the current URL.
 - Wikipedia, Psychedelic trance — tempos, subgenres, layers every 4–8 bars,
   6–10 minute length, 30 s–1 min break:
   https://en.wikipedia.org/wiki/Psychedelic_trance

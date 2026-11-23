@@ -18,6 +18,7 @@
 - `docs/psytrance/README.md` — psytrance: один корень, роллинг-бас, оффбит-хэты,
   acid/psy lead/сквелч, аранжировка, микс, источники.
 - `docs/psytrance/strudel-recipes.md` — рабочие Strudel-куски для psytrance.
+- `docs/psytrance/pitfalls.md` — антипаттерны и чеклист перед коммитом.
 
 ## Доки Strudel
 
@@ -51,6 +52,23 @@
 - https://github.com/terryds/awesome-strudel — индекс: если нужен другой
   жанр, отсюда ведут ссылки на исходники треков.
 
+### Психоделик-транс: локальные референсы
+
+- `refs/strudel/github/dotcomdudee/strudel-tracks/switchangel_acid.js` —
+  acid-звук (`distort 2.2:.3`, saw, `lpf 200`, `lpenv 2.256`, `lpq 12`) и
+  pulse/FM-слой.
+- `refs/strudel/github/frixdk/strudeltechno/lausfødselsdagstechno.js` —
+  `sbd`-кик + distort + duck, хэты, динамический срез acid.
+- `refs/strudel/github/honcoops/strudel_trance/examples/01_driving_bassline.js` —
+  EX3/4/6 роллинг/acid-бас.
+- `refs/strudel/github/honcoops/strudel_trance/examples/02_euphoric_leads.js` —
+  EX7 широкое арпеджио, EX9 pluck, EX12 струнные.
+- `refs/strudel/strudelmarket/Ambient/DISSOLUTION-PROTOCOL-7ec2a894.js` —
+  acid с низким base и bytebeat/noise-текстура.
+- `refs/strudel/strudelmarket/Synth/Adventure-Lime2-303d203e.js` — 303-бас.
+- `refs/strudel/strudelmarket/Bass/Stranger-schranz-soul-0a13ccdc.js` —
+  acid/бас-дизайн.
+
 ### Психоделик-транс: бас
 
 - https://psychedelicisland.com/en/articles/how-to-create-the-perfect-bassline-for-psytrance —
@@ -81,6 +99,8 @@
   140–150 BPM, rolling 16th bass, оффбит-хэты, модуляция, микс.
 - https://en.wikipedia.org/wiki/Psychedelic_trance — поджанры/темпы, слои
   каждые 4–8 тактов, длина 6–10 минут.
+- Attack Magazine, Ostinatos and Acid Riffs (passing notes, 2021) — простые
+  acid-остинато из корня + интервала; ищи по названию.
 
 Рецепты, которые реально дают «жир»: 4-on-floor + `distort` + `duck`,
 роллинг-бас 16-ми с `lpenv`/`shape`, `supersaw` с `unison 5-7` и `jux(rev)`,

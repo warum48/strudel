@@ -100,6 +100,59 @@ Myloops: repeat a hook and change a single note; Theory Helper: one/two-note
 patterns with rhythmic filter movement; Attack: acid ostinatos from a root +
 interval. The filter movement is the riff.
 
+### Second riff: syncopated gallop
+
+A more rhythmic, less arpeggio-like answer for a lift/drop:
+
+```js
+$: note(m('f#3 f#3 ~ f#3 g3 ~ f#3 f#3 ~ f#3 a3 ~ f#3 f#3 ~ f#3'))
+  // same switchangel_acid chain; use it in LIFT/drops
+```
+
+The rhythm is the point: two 16ths, a rest, repeat; m2/m3 are only accents.
+In the lift, turn the wide arpeggio lane off so this line leads.
+
+### m6 instead of m3 (occasional colour)
+
+```js
+const pulseA = note(m('f#3 f#3 f#3 g3 f#3 f#3 f#3 f#3 f#3 f#3 f#3 a3 f#3 f#3 f#3 f#3'))
+const pulseD = note(m('f#3 f#3 f#3 g3 f#3 f#3 f#3 f#3 f#3 f#3 f#3 d4 f#3 f#3 f#3 f#3'))
+m('<0 0 0 1>').pick([pulseA, pulseD])  // m3 for 3 bars, m6 on the 4th
+```
+
+### Break melody: 4x longer, four 4-bar chunks
+
+Start with a 1-bar motif; the chunk is that motif x4. The 16-bar break has
+four chunks: base / variation / base / low variation.
+
+```js
+const baseBar = note(m('f#5 ~ a5 ~ c#6 ~ a5 ~ f#5 ~ g#5 ~ a5 ~ g#5 ~'))
+const var2Bar = note(m('g5 ~ a5 ~ d#6 ~ a5 ~ f#5 ~ g#5 ~ a5 ~ g#5 ~'))
+const var4Bar = note(m('e5 ~ a5 ~ b5 ~ a5 ~ f#5 ~ g#5 ~ a5 ~ g#5 ~'))
+const pluckBreak = arrange(
+  [4, baseBar],
+  [1, var2Bar], [3, baseBar],  // chunk 2: first +1, third +2
+  [4, baseBar],                // chunk 3: repeat chunk 1
+  [1, var4Bar], [3, baseBar],  // chunk 4: first/third -2
+)
+```
+
+### Sparse LIFT melody (Faithless-style)
+
+Same notes, but groups of 1 and 3 with rests; the delay/reverb fill the gaps.
+Use a slightly longer release and a small gain compensation for the sparse
+notes.
+
+```js
+const pluckLift = note(m('<[f#5 ~ ~ ~ ~ ~ ~ ~ a5 c#6 a5 ~ ~ ~ ~ ~]
+  [~ ~ ~ ~ f#5 ~ ~ ~ ~ ~ a5 ~ ~ ~ f#5 ~]
+  [c#6 ~ a5 ~ f#5 ~ ~ ~ ~ ~ ~ ~ a5 ~ ~ ~]
+  [~ ~ ~ ~ ~ ~ g#5 ~ a5 ~ c#6 ~ ~ ~ ~ ~]>'))
+```
+
+Bar 1: one note, then a 3-note group. Bar 2: one note, then two. Bar 3:
+three, then one. Bar 4: a three-note group. Sparse and singable, not an arp.
+
 ## 4. Psy lead with a random bandpass
 
 ```js
@@ -133,6 +186,60 @@ $: note(m('~ ~ f#4 ~ ~ g4 ~ ~ ~ a#4 ~ ~ ~ g4 ~ ~'))
 ```
 
 2–4 squelches per bar, not on the downbeat.
+
+## Psy FX inserts (flight elements)
+
+Short, sparse synth inserts for the gaps. The **fat low** is the exception: it
+is a layer, plays from the intro, hits every 4 bars and drops an octave on
+every second hit. Laser/bubble/crunch
+are rare (1 bar in 8/16), panned and delayed; do not stack them in drops.
+
+```js
+// fat low: A1 from the intro, one note every 4 bars; every second hit A0.
+// cutoff 1800–2400 (4-bar LFO), resonance 14–24 (8-bar LFO = half step),
+// strong echo, attack slider.
+$: note(m('<a1 a1 a1 a1 a1 a1 a1 a0>'))
+  .struct(m('~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ x ~'))
+  .mask(m('<0 0 0 1>'))
+  .s('sawtooth').unison(3).detune(0.25)
+  .distort(1.2)
+  .lpf(2100 .add(sine.range(-300, 300).slow(4)))
+  .lpq(19 .add(sine.range(-5, 5).slow(8)))
+  .attack(0.02).decay(0.4).sustain(0.6).release(1.4)
+  .delay(0.85).delayfeedback(0.54)
+  .room(0.9).pan(sine.slow(8).range(0.2, 0.8))
+
+// laser: 4 low F#3 notes, hard cutoff, 1 bar in 8
+$: note(m('f#3 f#3 f#3 f#3'))
+  .struct(m('~ ~ ~ ~ ~ ~ ~ ~ x x x x ~ ~ ~ ~'))
+  .mask(m('<0 0 0 0 0 0 0 1>'))
+  .s('sawtooth').unison(2).detune(0.1)
+  .distort(1.1)
+  .lpf(2500 .mul(saw.range(0.2, 3.2))).lpq(4)
+  .lpenv(3).lpa(0.002).lpd(0.08).lpsustain(0)
+  .decay(0.08).sustain(0).release(0.04)
+  .delay(0.35).room(0.4).pan(sine.slow(8).range(0.2, 0.8))
+
+// bubble: 4 neutral F#6/G6 FM clicks (m2 only), 1 bar in 16
+$: note(m('f#6 f#6 f#6 g6'))
+  .struct(m('~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ x x x x'))
+  .mask(m('<0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0>'))
+  .s('sine').fmi(2).fmh(2.01)
+  .attack(0.001).decay(0.03).sustain(0)
+  .delay(0.3).pan(rand.range(0.2, 0.8))
+
+// crunch: 2 crushed noise hits, 1 bar in 16
+$: s('white')
+  .struct(m('~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ x ~ x ~'))
+  .mask(m('<0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0>'))
+  .crush(6).hpf(400).lpf(4000)
+  .decay(0.08).sustain(0).room(0.4).pan(rand.range(0.2, 0.8))
+```
+
+The local `switchangel_acid` pulse/FM and `DISSOLUTION-PROTOCOL` bytebeat/
+noise are good references for this kind of texture. Keep the rare inserts
+unobtrusive: strong pan/delay, low gain; let the fat low carry the weight.
+
 
 ## Dynamic cutoff (the missing ingredient)
 

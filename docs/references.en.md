@@ -22,6 +22,7 @@ Verified 2026-11-12 (HTTP 200). If something breaks, fix it freely.
 - `docs/psytrance/README.en.md` — psytrance: one root, rolling bass, offbeat hats,
   acid/psy lead/squelch, arrangement, mix, sources.
 - `docs/psytrance/strudel-recipes.en.md` — working Strudel chunks for psytrance.
+- `docs/psytrance/pitfalls.en.md` — anti-patterns and the before-commit checklist.
 
 ## Strudel docs
 
@@ -56,6 +57,23 @@ tracks/recipes in Strudel, not articles:
 - https://github.com/terryds/awesome-strudel — index: if you need another
   genre, links to track sources lead from here.
 
+### Psytrance: local reference patterns
+
+- `refs/strudel/github/dotcomdudee/strudel-tracks/switchangel_acid.js` —
+  acid sound (`distort 2.2:.3`, saw, `lpf 200`, `lpenv 2.256`, `lpq 12`) and
+  the pulse/FM layer.
+- `refs/strudel/github/frixdk/strudeltechno/lausfødselsdagstechno.js` —
+  `sbd` kick + distort + duck, hats, dynamic acid cutoff.
+- `refs/strudel/github/honcoops/strudel_trance/examples/01_driving_bassline.js` —
+  EX3/4/6 rolling/acid bass.
+- `refs/strudel/github/honcoops/strudel_trance/examples/02_euphoric_leads.js` —
+  EX7 wide arp, EX9 pluck, EX12 strings.
+- `refs/strudel/strudelmarket/Ambient/DISSOLUTION-PROTOCOL-7ec2a894.js` —
+  low-base acid envelope and bytebeat/noise texture.
+- `refs/strudel/strudelmarket/Synth/Adventure-Lime2-303d203e.js` — 303 bass.
+- `refs/strudel/strudelmarket/Bass/Stranger-schranz-soul-0a13ccdc.js` —
+  acid/bass design.
+
 ### Psytrance: bass
 
 - https://psychedelicisland.com/en/articles/how-to-create-the-perfect-bassline-for-psytrance —
@@ -86,6 +104,8 @@ tracks/recipes in Strudel, not articles:
   140–150 BPM, rolling 16th bass, offbeat hats, modulation, mix.
 - https://en.wikipedia.org/wiki/Psychedelic_trance — subgenres/tempos, layers
   every 4–8 bars, length 6–10 minutes.
+- Attack Magazine, Ostinatos and Acid Riffs (passing notes, 2021) — simple
+  root + interval acid ostinatos; search the title for the current URL.
 
 Recipes that actually deliver “fat”: 4-on-floor + `distort` + `duck`,
 rolling 16th bass with `lpenv`/`shape`, `supersaw` with `unison 5-7` and
