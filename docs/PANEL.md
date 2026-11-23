@@ -182,3 +182,15 @@ that is engine behavior, not a broken track.
 - `Ctrl+Enter` / `Ctrl+.` — eval / stop (from `@strudel/codemirror`).
 - On macOS `Cmd+Enter` / `Cmd+.` also work via a capture listener on `#root`;
   Ctrl stays with the editor, so there is no double eval.
+
+## Mobile (`max-width: 900px`)
+
+- The header keeps only the track title; the picker, theme, JSON/Track exchange,
+  preload and help move under a hamburger menu.
+- Timeline and automation cells get horizontal scroll (min 900px) instead of
+  shrinking.
+- Mixer, tone and code editor stack vertically; `main` is the page scroller.
+  The sound visualizer (`#scope`) becomes a full-width block at the very bottom.
+  The Master EQ stays hidden.
+- The copy button at the editor bar's right end copies the track code.
+

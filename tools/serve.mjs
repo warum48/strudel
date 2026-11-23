@@ -7,7 +7,10 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const port = Number(process.argv[2] ?? 8080);
+// HOST/PORT для контейнера на VPS: там панель должна слушать 0.0.0.0.
+// Локально по умолчанию всё как раньше — 127.0.0.1:8080.
+const port = Number(process.argv[2] ?? process.env.PORT ?? 8080);
+const host = process.argv[3] ?? process.env.HOST ?? '127.0.0.1';
 
 const MIME = {
   '.html': 'text/html; charset=utf-8',
@@ -22,7 +25,25 @@ const MIME = {
 };
 
 const server = http.createServer((req, res) => {
-  const url = decodeURIComponent((req.url ?? '/').split('?')[0]);
+  // new URL(...).pathname, а не split: за прокси браузер вправе прислать
+  // absolute-form ("GET http://host/web/x.js HTTP/1.1", RFC 7230 §5.3.2), и
+  // path.join(root, 'http://host/web/x.js') давал ENOENT → 404 на живых файлах.
+  const url = decodeURIComponent(new URL(req.url ?? '/', 'http://localhost').pathname);
+  if (process.env.LOG_REQ) console.log(req.method, req.url, req.headers['user-agent']?.slice(0, 30));
+
+  // Localhost gets the full local library; any other host is the public
+  // deployment and only exposes the curated `_selected/` set.
+  const hostName = String(req.headers.host ?? '')
+    .toLowerCase()
+    .replace(/:\d+$/, '')
+    .replace(/^\[|\]$/g, '');
+  const isLocal =
+    hostName === '' ||
+    hostName === 'localhost' ||
+    hostName === '127.0.0.1' ||
+    hostName === '0.0.0.0' ||
+    hostName === '::1' ||
+    hostName.endsWith('.local');
 
   // Список треков для выпадающего меню в шапке панели. Панель не хранит
   // имён файлов: положил новый .js в tracks/ — он появился в меню.
@@ -36,7 +57,8 @@ const server = http.createServer((req, res) => {
         else if (e.name.endsWith('.js')) out.push(`/tracks/${prefix}${e.name}`);
       }
     };
-    walk(path.join(root, 'tracks'), '');
+    if (isLocal) walk(path.join(root, 'tracks'), '');
+    else walk(path.join(root, 'tracks', '_selected'), '_selected/');
     out.sort();
     res.writeHead(200, {
       'content-type': 'application/json; charset=utf-8',
@@ -83,15 +105,29 @@ const server = http.createServer((req, res) => {
   }
 
   let rel = url === '/' ? '/web/index.html' : url;
+  // Public hosts can only read the curated `_selected/` tracks; the rest of the
+  // library exists on the box but is not fetchable from the internet.
+  if (!isLocal && rel.startsWith('/tracks/') && !rel.startsWith('/tracks/_selected/')) {
+    res.writeHead(404, { 'content-type': 'text/plain; charset=utf-8', 'cache-control': 'no-store' }).end('нет файла: ' + rel);
+    return;
+  }
   const full = path.join(root, rel);
   // никакого выхода за пределы репозитория
   if (!full.startsWith(root)) {
-    res.writeHead(403).end('forbidden');
+    res.writeHead(403, { 'cache-control': 'no-store' }).end('forbidden');
     return;
   }
   fs.readFile(full, (err, buf) => {
     if (err) {
-      res.writeHead(404, { 'content-type': 'text/plain; charset=utf-8' }).end('нет файла: ' + rel);
+      if (process.env.LOG_REQ) console.log('404', rel, err.code);
+      // no-store обязателен и здесь: без него браузер кеширует 404 по эвристике
+      // и файл, появившийся после редеплоя, остаётся «отсутствующим» до сброса кеша.
+      res
+        .writeHead(404, {
+          'content-type': 'text/plain; charset=utf-8',
+          'cache-control': 'no-store',
+        })
+        .end('нет файла: ' + rel);
       return;
     }
     res.writeHead(200, {
@@ -102,6 +138,6 @@ const server = http.createServer((req, res) => {
   });
 });
 
-server.listen(port, '127.0.0.1', () => {
-  console.log(`панель: http://127.0.0.1:${port}/`);
+server.listen(port, host, () => {
+  console.log(`панель: http://${host}:${port}/`);
 });

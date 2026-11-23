@@ -1,0 +1,30 @@
+# Strudel panel on the Contabo VPS, next to /opt/e2e-agent.
+#
+#   cd /opt/strudel/deploy && docker compose up -d --build
+#
+# Content dirs are bind-mounted read-only: adding a track or editing the panel
+# needs a rsync (tools/deploy-vps.sh), not a rebuild.
+#
+# Port 8093 is published on all interfaces on purpose — this is the temporary
+# "through a port" access. 8080/8047 are firewalled on eth0 by
+# /root/lock-public-ports.sh; 8093 is not in that list.
+name: strudel
+
+services:
+  app:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    container_name: strudel-app
+    restart: unless-stopped
+    ports:
+      - "8093:8093"
+    environment:
+      HOST: "0.0.0.0"
+      PORT: "8093"
+      LOG_REQ: "${LOG_REQ:-}"
+    volumes:
+      - ../web:/app/web:ro
+      - ../tracks:/app/tracks:ro
+      - ../docs:/app/docs:ro
+      - ../samples:/app/samples:ro

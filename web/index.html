@@ -41,8 +41,20 @@
     background: var(--panel);
     flex: none;
   }
-  header h1 { margin: 0; font-size: 13px; letter-spacing: 0.14em; text-transform: uppercase; font-weight: 600; white-space: nowrap; }
+  header h1 { margin: 0; font-size: 13px; letter-spacing: 0.14em; text-transform: uppercase; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
   header .sub { color: var(--dim); font-size: 11px; white-space: nowrap; }
+  /* desktop: the menu container melts into the header row; mobile turns it
+     into a dropdown under the hamburger */
+  #hdrMenu { display: contents; }
+  #track { order: -1; }
+  .menu-btn {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 10px;
+    font-size: 16px;
+    line-height: 1;
+  }
   .spacer { flex: 1; }
   button {
     font: inherit;
@@ -236,7 +248,7 @@
   #timeline[open] > summary::before { content: '▾'; }
   #timeline .tl-cap { color: var(--text); }
   #timeline .sp { flex: 1; }
-  #timeline #tlLoop { padding: 3px 8px; font-size: 10px; }
+  #timeline #tlLoop { width: 26px; height: 22px; padding: 0; display: inline-flex; align-items: center; justify-content: center; }
   #timeline #tlLoop.on { background: var(--accent); border-color: var(--accent); color: #0d0f0c; font-weight: 700; }
   #timeline .tl-transport { width: 26px; height: 22px; padding: 0; font-size: 12px; line-height: 1; display: inline-flex; align-items: center; justify-content: center; }
   /* две визуально объединённые группы в таймлайне: mode + транспорт */
@@ -427,7 +439,33 @@
   details.inst > .rows { padding: 2px 0 4px 2px; }
   /* в узком столбце подпись короче, ползунок длиннее: 172px против 110px */
   details.inst > .rows .row { grid-template-columns: 68px 1fr 38px; gap: 5px; }
-  #right { min-width: 0; min-height: 0; display: flex; flex-direction: column; }
+  #right { min-width: 0; min-height: 0; display: flex; flex-direction: column; position: relative; }
+  /* copy-code button: sits at the right end of the editor bar */
+  #copyCode {
+    flex: none;
+    width: 26px;
+    height: 26px;
+    margin-left: 4px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #1d211a;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    color: var(--dim);
+    cursor: pointer;
+  }
+  #copyCode:hover { color: var(--text); border-color: #3a4234; }
+  #copyCode.copied { color: #0d0f0c; background: var(--accent); border-color: var(--accent); }
+  /* Master EQ: desktop-hidden, shown at the bottom of the mobile stack */
+  #masterEq { display: none; flex: none; padding: 10px 12px; border-top: 1px solid var(--line); background: #11140f; }
+  #masterEq .gl { font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--dim); margin-bottom: 8px; }
+  #masterEq .eq { display: flex; flex-direction: column; gap: 8px; }
+  #masterEq .band { display: grid; grid-template-columns: minmax(0, 1fr) 56px 56px; align-items: center; gap: 8px; }
+  #masterEq .band input[type=range] { width: 100%; accent-color: var(--accent); }
+  #masterEq .band .val { color: var(--warn); font-size: 11px; text-align: right; }
+  #masterEq .band .hz { color: var(--dim); font-size: 10px; text-align: right; }
   /* код красится темой редактора (activateTheme пишет --background в :root),
      панель остаётся на своих цветах — так тема видна, но лайм никуда не делся */
   #right { background: var(--background, var(--bg)); }
@@ -530,6 +568,51 @@
   #status { display: none; color: var(--dim); font-size: 11px; white-space: nowrap; }
   #status.err { display: inline; color: #ff8a7a; }
   .kbd { color: var(--text); }
+  /* ── mobile: single column, hamburger menu, scrollable timeline ── */
+  @media (max-width: 900px) {
+    header { position: relative; gap: 8px; }
+    #title { flex: 1; }
+    header .sub { display: none; }
+    .menu-btn { display: inline-flex; }
+    #hdrMenu {
+      display: none;
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      z-index: 50;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 8px;
+      padding: 12px 14px;
+      background: var(--panel);
+      border-bottom: 1px solid var(--line);
+      box-shadow: 0 16px 38px rgba(0, 0, 0, 0.6);
+    }
+    header.menu-open #hdrMenu { display: flex; }
+    #hdrMenu .spacer { display: none; }
+    #hdrMenu #track { order: 0; max-width: none; width: 100%; }
+    #hdrMenu #theme { width: 100%; }
+    #hdrMenu #tools { flex-wrap: wrap; }
+    #hdrMenu #samples, #hdrMenu #help { width: 100%; text-align: center; }
+    #hdrMenu #sampleStatus { max-width: none; white-space: normal; }
+
+    /* timeline + automation scroll horizontally instead of shrinking */
+    #timeline .tl-body { flex-direction: column; overflow-x: auto; }
+    #timeline .tl-track { flex: 0 0 74px; min-width: 900px; }
+    #automation .auto-body { overflow: auto; }
+    .auto-row { min-width: 900px; }
+
+    /* mixer / tone / code stacked; main is the page scroller */
+    main { display: flex; flex-direction: column; overflow-y: auto; }
+    #mixer, #tone { flex: none; max-height: 50vh; border-right: 0; border-bottom: 1px solid var(--line); }
+    #mixlist, #tonelist { overflow-y: auto; min-height: 0; flex: 1; padding: 8px 12px 8px; }
+    #right { flex: none; border-top: 1px solid var(--line); }
+    #root { height: 62vh; flex: none; }
+    #right .bar > span:last-of-type { display: none; }
+    /* visualizer becomes a short full-width strip at the very bottom */
+    #scope { position: static; right: auto; bottom: auto; z-index: auto; width: 100%; height: 26px; flex: none; border-left: 0; border-right: 0; border-radius: 0; }
+  }
 </style>
 
 <script type="importmap">
@@ -547,26 +630,29 @@
 </head>
 <body>
 <header>
-  <select id="track" title="track (any file from tracks/)"></select>
   <h1 id="title">…</h1>
   <span class="sub" id="sub"></span>
-  <span class="spacer"></span>
-  <span id="status">loading…</span>
-  <select id="theme" title="editor color theme"></select>
-  <span id="tools">
-    <span class="tcap">JSON</span>
-    <button id="sceneExport" class="tool" type="button" title="download the current track settings">↓</button>
-    <button id="sceneImport" class="tool" type="button" title="load settings from JSON">↑</button>
-    <input id="sceneFile" type="file" accept=".json,application/json" hidden />
-    <span class="sep"></span>
-    <span class="tcap">Track</span>
-    <button id="trackExport" class="tool" type="button" title="download the Strudel code of this track">↓</button>
-    <button id="trackImport" class="tool" type="button" title="load a Strudel code file">↑</button>
-    <input id="trackFile" type="file" accept=".js,.txt,text/javascript" hidden />
-  </span>
-  <button id="samples" class="ghost" title="download and decode every sample used by this track">PRELOAD SAMPLES</button>
-  <span id="sampleStatus"></span>
-  <a id="help" class="help" href="/web/help.html" target="_blank" rel="noreferrer" title="how to make a track work with this UI">HELP</a>
+  <button id="menuBtn" type="button" class="menu-btn" aria-label="menu" aria-expanded="false">☰</button>
+  <div id="hdrMenu">
+    <select id="track" title="track (any file from tracks/)"></select>
+    <span class="spacer"></span>
+    <span id="status">loading…</span>
+    <select id="theme" title="editor color theme"></select>
+    <span id="tools">
+      <span class="tcap">JSON</span>
+      <button id="sceneExport" class="tool" type="button" title="download the current track settings">↓</button>
+      <button id="sceneImport" class="tool" type="button" title="load settings from JSON">↑</button>
+      <input id="sceneFile" type="file" accept=".json,application/json" hidden />
+      <span class="sep"></span>
+      <span class="tcap">Track</span>
+      <button id="trackExport" class="tool" type="button" title="download the Strudel code of this track">↓</button>
+      <button id="trackImport" class="tool" type="button" title="load a Strudel code file">↑</button>
+      <input id="trackFile" type="file" accept=".js,.txt,text/javascript" hidden />
+    </span>
+    <button id="samples" class="ghost" title="download and decode every sample used by this track">PRELOAD SAMPLES</button>
+    <span id="sampleStatus"></span>
+    <a id="help" class="help" href="/web/help.html" target="_blank" rel="noreferrer" title="how to make a track work with this UI">HELP</a>
+  </div>
 </header>
 
 <!-- ── MUTES: обычные 0/1-кнопки, не momentary; глушат группы инструментов ── -->
@@ -583,7 +669,14 @@
     <span class="sp"></span>
     <button id="play" class="tl-transport" title="play (Ctrl+Enter)">▶</button>
     <button id="stop" class="tl-transport" title="stop">■</button>
-    <button id="tlLoop" type="button" class="on" title="loop timeline / stop at the end">LOOP</button>
+    <button id="tlLoop" type="button" class="on" title="loop timeline / stop at the end" aria-label="loop timeline">
+      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M17 2l4 4-4 4"></path>
+        <path d="M3 11V9a4 4 0 0 1 4-4h14"></path>
+        <path d="M7 22l-4-4 4-4"></path>
+        <path d="M21 13v2a4 4 0 0 1-4 4H3"></path>
+      </svg>
+    </button>
   </summary>
   <div class="tl-body">
     <div class="tl-track" id="tlTrack" title="click to seek">
@@ -637,24 +730,21 @@
       <span>track: <span class="kbd" id="trackPath">…</span></span>
       <span class="spacer"></span>
       <span>Ctrl+Enter — run · Ctrl+. — stop · Cmd also works</span>
+      <button id="copyCode" type="button" class="copy-code" aria-label="copy track code" title="copy track code">
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect x="9" y="9" width="11" height="11" rx="2"></rect>
+          <path d="M5 15V5a2 2 0 0 1 2-2h10"></path>
+        </svg>
+      </button>
     </div>
     <canvas id="test-canvas" width="640" height="240"></canvas>
     <div id="root"></div>
   </section>
-</main>
 
-<!-- спектр живёт фиксом в правом нижнем углу, вне потока -->
-<canvas id="scope" width="440" height="132"></canvas>
+  <canvas id="scope" width="440" height="132"></canvas>
 
-<!--
-  ── MASTER EQ — СКРЫТ, НЕ УДАЛЁН ────────────────────────────────────
-  Ручки убраны из интерфейса по просьбе («эквалайзер (ручки) просто
-  скрываем, если что — вернём»). Цепочка фильтров в panel.js осталась и
-  работает на 0 dB, поэтому вернуть = раскомментировать этот блок и
-  вызвать bindEq() в panel.js (там тоже закомментировано, рядом метка).
-
-  <div class="block">
-    <h2>Master EQ</h2>
+  <section id="masterEq">
+    <div class="gl">Master EQ</div>
     <div class="eq">
       <div class="band">
         <input id="eqLow" type="range" min="-18" max="18" step="0.5" value="0" />
@@ -672,8 +762,8 @@
         <span class="hz">high 5k</span>
       </div>
     </div>
-  </div>
--->
+  </section>
+</main>
 
 <script type="module" src="/web/intro.js"></script>
 <script type="module" src="/web/panel.js"></script>

@@ -39,7 +39,7 @@
 // 5. MASTER CHAIN is real BiquadFilters on the master: the engine output
 //    (`output.destinationGain`) is disconnected from the speakers and routed into
 //    our chain low → mid → high → master gain → analyser → speakers. The EQ knobs
-//    are hidden for now (see `bindEq`), the filters stay at 0 dB.
+//    are hidden on desktop and shown at the bottom of the mobile stack.
 
 // Локальный бандл (см. tools/build-vendor.mjs): один инстанс core для паттернов,
 // codemirror и draw; никаких esm.sh в рантайме.
@@ -239,14 +239,11 @@ function buildMasterChain() {
   eq = { low, mid, high };
   globalThis.__panel = { ctx, eq, masterGain, analyser, get knobs() { return knobs; } };
   bindMaster();
-  // bindEq();  ← вернуть вместе с блоком MASTER EQ в index.html
+  bindEq();
 }
 
-// ── EQ СКРЫТ, НЕ УДАЛЁН ───────────────────────────────────────────
-// Ручки убраны из разметки (см. комментарий в index.html), поэтому вызов
-// bindEq() в buildMasterChain() закомментирован. Сама функция и фильтры
-// на месте: раскомментировать блок в HTML + одну строку выше — и EQ вернётся.
-// eslint-disable-next-line no-unused-vars
+// ── MASTER EQ ─────────────────────────────────────────────────────
+// Hidden on desktop, shown at the bottom of the mobile stack (index.html).
 function bindEq() {
   const bands = [
     ['eqLow', 'eqLowV', 'low'],
@@ -2854,8 +2851,53 @@ $('root').addEventListener(
   true,
 );
 
+// ── mobile header menu + copy-code button ────────────────────────
+function bindHeaderMenu() {
+  const btn = $('menuBtn');
+  const headerEl = document.querySelector('header');
+  if (!btn || !headerEl) return;
+  const setOpen = (open) => {
+    headerEl.classList.toggle('menu-open', open);
+    btn.setAttribute('aria-expanded', String(open));
+  };
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    setOpen(!headerEl.classList.contains('menu-open'));
+  });
+  document.addEventListener('pointerdown', (e) => {
+    if (!headerEl.classList.contains('menu-open')) return;
+    if ($('hdrMenu')?.contains(e.target) || btn.contains(e.target)) return;
+    setOpen(false);
+  });
+}
+
+function bindCopyCode() {
+  const btn = $('copyCode');
+  if (!btn) return;
+  btn.addEventListener('click', async () => {
+    if (!mirror?.editor) return;
+    const code = mirror.editor.state.doc.toString();
+    try {
+      await navigator.clipboard.writeText(code);
+    } catch {
+      const ta = document.createElement('textarea');
+      ta.value = code;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand('copy'); } catch {}
+      ta.remove();
+    }
+    btn.classList.add('copied');
+    setTimeout(() => btn.classList.remove('copied'), 900);
+  });
+}
+
 bindScenes();
 bindPadKeys();
+bindHeaderMenu();
+bindCopyCode();
 audioReady = boot().catch((e) => {
   console.error(e);
   setStatus(e.message, true);

@@ -30,6 +30,9 @@ The panel loads any file under `tracks/`, renders a mixer from the track's
 `instruments` tree, shows `TIMELINE` / `AUTOMATION`, and lets you audition
 tracks without copying them into strudel.cc. See `docs/PANEL.md`.
 
+It also runs on the VPS as a Docker container behind port `8093` — deploy and
+URL instructions in `docs/DEPLOY.md`.
+
 ## Repository layout
 
 ```text

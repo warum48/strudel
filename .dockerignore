@@ -1,0 +1,12 @@
+# Build context is the repo root, but the image only needs package.json and
+# tools/serve.mjs — the content dirs are bind-mounted at run time.
+web
+tracks
+docs
+samples
+backup
+refs
+dumps
+node_modules
+.git
+.workbuddy-ai
