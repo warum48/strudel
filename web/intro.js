@@ -336,6 +336,8 @@ const STYLE = `
     background: #1c2316;
     border-color: #b3d80d;
   }
+  .se-intro .se-track.c0 { background: rgba(125, 135, 118, 0.10); border-color: rgba(125, 135, 118, 0.40); }
+  .se-intro .se-track.c0:hover { background: rgba(125, 135, 118, 0.20); border-color: #b3d80d; }
   .se-intro .se-track.c1 { background: rgba(224, 205, 48, 0.10); border-color: rgba(224, 205, 48, 0.40); }
   .se-intro .se-track.c1:hover { background: rgba(224, 205, 48, 0.20); border-color: #e0cd30; }
   .se-intro .se-track.c2 { background: rgba(232, 134, 58, 0.10); border-color: rgba(232, 134, 58, 0.40); }
@@ -606,7 +608,7 @@ function mount() {
     tracks.forEach((t, i) => {
       const btn = document.createElement('button');
       btn.type = 'button';
-      btn.className = i > 0 && i < 5 ? `se-track c${i}` : 'se-track';
+      btn.className = i < 5 ? `se-track c${i}` : 'se-track';
       btn.dataset.path = t.path;
 
       const title = document.createElement('span');
