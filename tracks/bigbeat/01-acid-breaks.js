@@ -1,15 +1,14 @@
 // BIG BEAT 01 · acid breaks · 125 BPM · C minor
-// VARIANT: heavy jungle break (Amen-led).
 // DNA: looped break as the hook + 909 backbeat + TB-303 acid + fuzz bass +
 // power-chord stabs, with build / stop / drop events. Instrumental only:
 // no vocals and no imitation of acoustic instruments.
 // Sources: docs/bigbeat/README.en.md, 06-practice.en.md, 07-variants.en.md.
 // Mini-notation only through m(...) (docs/pitfalls.en.md, Rule #1).
 //
-// Break policy: the main hook is the Amen break (instrumental). It is 6.96 s =
-// four bars at 125, so one loopAt(4) keeps the drummer's timing and pitch.
-// The Think break has a vocal shout baked in, so it appears only in the BREAK
-// section as a deliberate texture; it is not the main groove.
+// Why the break loops instead of slicing: the Think break is 2.10 s, almost
+// exactly one bar at 125 BPM, so loopAt(1) keeps the original groove and pitch.
+// The old 8-slice version cut every chunk at the bar line and lost the swing.
+// A low-passed Amen sits underneath as weight, not as a second hook.
 
 const BPM = 125
 setcpm(BPM / 4) // one cycle = one 4/4 bar = 1920 ms
@@ -26,7 +25,7 @@ const UI = {
   switches: { mode: ['straight', 'broken', 'roll'] },
 }
 const play = slider(1, 0, 2, 1)
-const mode = slider(0, 0, 2, 1)
+const mode = slider(1, 0, 2, 1)
 const holdBar = slider(0, 0, 71, 1)
 
 // ── global mix ───────────────────────────────────────────────────
@@ -43,10 +42,10 @@ const instruments = {
       grit: slider(0.28, 0, 0.9, 0.01),
       crush: slider(13, 8, 16, 0.5),
     },
-    vox: {
-      name: 'Think (vox)',
-      vol: slider(0.55, 0, 0.8, 0.01),
-      cut: slider(5200, 800, 12000, 100),
+    amen: {
+      name: 'Amen weight',
+      vol: slider(0.26, 0, 0.8, 0.01),
+      cut: slider(320, 80, 1200, 10),
     },
     chop: {
       name: 'Chop',
@@ -144,15 +143,15 @@ const { drums, low, keys, atmos, fx } = instruments
 
 // ── form: 72 bars ────────────────────────────────────────────────
 const TIMELINE = [
-  { at: 0, len: 4, name: 'INTRO', values: { break: 0.55, vox: 0, chop: 0, kick: 0, snare: 0, clap: 0, hat: 0.25, oh: 0, rim: 0, sub: 0, fuzz: 0, acid: 0.3, hook: 0, stab: 0, pad: 0.4, siren: 0.1, riser: 0, vinyl: 1 } },
-  { at: 4, len: 4, name: 'INTRO 2', values: { break: 0.8, vox: 0, chop: 0, kick: 0.5, snare: 0.3, clap: 0, hat: 0.5, oh: 0, rim: 0, sub: 0.6, fuzz: 0, acid: 0.5, hook: 0, stab: 0.3, pad: 0.3, siren: 0.1, riser: 0, vinyl: 0.8 } },
-  { at: 8, len: 16, name: 'GROOVE', values: { break: 1, vox: 0, chop: 0, kick: 1, snare: 1, clap: 0.7, hat: 1, oh: 0.6, rim: 0, sub: 1, fuzz: 1, acid: 1, hook: 0.8, stab: 0.7, pad: 0.2, siren: 0, riser: 0, vinyl: 0.5 } },
-  { at: 24, len: 8, name: 'BUILD', values: { break: 1, vox: 0, chop: 0.3, kick: 1, snare: 0.6, clap: 0.5, hat: 1, oh: 0.4, rim: 0, sub: 1, fuzz: 1, acid: 1, hook: 0.5, stab: 0.4, pad: 0.5, siren: 0.5, riser: 1, vinyl: 0.4 } },
-  { at: 32, len: 1, name: 'CUT', values: { break: 0.3, vox: 0, chop: 0, kick: 0, snare: 0, clap: 0, hat: 0, oh: 0, rim: 0, sub: 0, fuzz: 0, acid: 0, hook: 0, stab: 1, pad: 0.2, siren: 0, riser: 0, vinyl: 0.2 } },
-  { at: 33, len: 16, name: 'DROP', values: { break: 1, vox: 0, chop: 0.5, kick: 1, snare: 1, clap: 0.9, hat: 1, oh: 0.7, rim: 0.4, sub: 1, fuzz: 1, acid: 1, hook: 1, stab: 1, pad: 0.3, siren: 0.6, riser: 0, vinyl: 0.3 } },
-  { at: 49, len: 8, name: 'BREAK', values: { break: 0.12, vox: 0.9, chop: 0, kick: 0, snare: 0, clap: 0, hat: 0.3, oh: 0, rim: 0.7, sub: 0, fuzz: 0, acid: 0.55, hook: 0.4, stab: 0.6, pad: 0.7, siren: 0.7, riser: 0, vinyl: 1 } },
-  { at: 57, len: 8, name: 'RETURN', values: { break: 1, vox: 0, chop: 0.6, kick: 1, snare: 1, clap: 0.8, hat: 1, oh: 0.7, rim: 0.5, sub: 1, fuzz: 1, acid: 1, hook: 0.9, stab: 0.8, pad: 0.3, siren: 0, riser: 0, vinyl: 0.4 } },
-  { at: 65, len: 7, name: 'OUTRO', values: { break: 0.6, vox: 0, chop: 0, kick: 0, snare: 0, clap: 0, hat: 0.25, oh: 0, rim: 0, sub: 0, fuzz: 0, acid: 0.5, hook: 0, stab: 0.4, pad: 0.6, siren: 0.2, riser: 0, vinyl: 1 } },
+  { at: 0, len: 4, name: 'INTRO', values: { break: 0.55, amen: 0, chop: 0, kick: 0, snare: 0, clap: 0, hat: 0.25, oh: 0, rim: 0, sub: 0, fuzz: 0, acid: 0.3, hook: 0, stab: 0, pad: 0.4, siren: 0.1, riser: 0, vinyl: 1 } },
+  { at: 4, len: 4, name: 'INTRO 2', values: { break: 0.8, amen: 0, chop: 0, kick: 0.5, snare: 0.3, clap: 0, hat: 0.5, oh: 0, rim: 0, sub: 0.6, fuzz: 0, acid: 0.5, hook: 0, stab: 0.3, pad: 0.3, siren: 0.1, riser: 0, vinyl: 0.8 } },
+  { at: 8, len: 16, name: 'GROOVE', values: { break: 1, amen: 0, chop: 0, kick: 1, snare: 1, clap: 0.7, hat: 1, oh: 0.6, rim: 0, sub: 1, fuzz: 1, acid: 1, hook: 0.8, stab: 0.7, pad: 0.2, siren: 0, riser: 0, vinyl: 0.5 } },
+  { at: 24, len: 8, name: 'BUILD', values: { break: 1, amen: 0, chop: 0.3, kick: 1, snare: 0.6, clap: 0.5, hat: 1, oh: 0.4, rim: 0, sub: 1, fuzz: 1, acid: 1, hook: 0.5, stab: 0.4, pad: 0.5, siren: 0.5, riser: 1, vinyl: 0.4 } },
+  { at: 32, len: 1, name: 'STOP', values: { break: 0, amen: 0, chop: 0, kick: 0, snare: 0, clap: 0, hat: 0, oh: 0, rim: 0, sub: 0, fuzz: 0, acid: 0, hook: 0, stab: 1, pad: 0.2, siren: 0, riser: 0, vinyl: 0.2 } },
+  { at: 33, len: 16, name: 'DROP', values: { break: 1, amen: 0.8, chop: 0.5, kick: 1, snare: 1, clap: 0.9, hat: 1, oh: 0.7, rim: 0.4, sub: 1, fuzz: 1, acid: 1, hook: 1, stab: 1, pad: 0.3, siren: 0.6, riser: 0, vinyl: 0.3 } },
+  { at: 49, len: 8, name: 'BREAK', values: { break: 0.55, amen: 0.3, chop: 0, kick: 0, snare: 0, clap: 0, hat: 0.3, oh: 0, rim: 0.7, sub: 0, fuzz: 0, acid: 0.8, hook: 0.4, stab: 0.6, pad: 1, siren: 0.7, riser: 0, vinyl: 1 } },
+  { at: 57, len: 8, name: 'RETURN', values: { break: 1, amen: 0.6, chop: 0.6, kick: 1, snare: 1, clap: 0.8, hat: 1, oh: 0.7, rim: 0.5, sub: 1, fuzz: 1, acid: 1, hook: 0.9, stab: 0.8, pad: 0.3, siren: 0, riser: 0, vinyl: 0.4 } },
+  { at: 65, len: 7, name: 'OUTRO', values: { break: 0.7, amen: 0, chop: 0, kick: 0, snare: 0, clap: 0, hat: 0.25, oh: 0, rim: 0, sub: 0, fuzz: 0, acid: 0.5, hook: 0, stab: 0.4, pad: 0.6, siren: 0.2, riser: 0, vinyl: 1 } },
 ]
 
 const AUTOMATION = [
@@ -288,10 +287,10 @@ const audible = (hap) => {
 
 // ── lanes ────────────────────────────────────────────────────────
 
-// BREAK — the hook. Amen is 6.96 s = four bars at 125, so one continuous
-// loopAt(4) keeps the drummer's timing and pitch. Slicing it per beat left
-// audible seams; a full loop is smoother.
-$: s('amen').loopAt(4).late(1)
+// BREAK — the hook. Think is 2.10 s ≈ one bar at 125, so a full loop keeps
+// the drummer's feel and pitch. The vocal shout is part of the loop and is
+// wanted here; it carries the track.
+$: s('think').loopAt(1)
   .gain(drums.break.vol.mul(tlOr('break')))
   .hpf(70).lpf(drums.break.cut.mul(autoAt('drums.break.cut')))
   .distort(drums.break.grit)
@@ -300,12 +299,11 @@ $: s('amen').loopAt(4).late(1)
   .room(verb.mul(0.08)).roomsize(fx.reverb.size)
   .mask(gateOf('break'))
 
-// THINK VOX — the same break as before, but only in BREAK. Its baked-in
-// vocal is the point here; the rest of the track stays instrumental.
-$: s('think').loopAt(1)
-  .gain(drums.vox.vol.mul(tlOr('vox')))
-  .hpf(150).lpf(drums.vox.cut)
-  .mask(gateOf('vox'))
+// AMEN WEIGHT — a low-passed 4-bar Amen under the drop. Body, not a second hook.
+$: s('amen').loopAt(4).late(1)
+  .gain(drums.amen.vol.mul(tlOr('amen')))
+  .hpf(40).lpf(drums.amen.cut)
+  .mask(gateOf('amen'))
 
 // CHOP — short amencutup stutters for DROP / RETURN only.
 $: s('amencutup').n(m('0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15'))
@@ -365,7 +363,7 @@ $: note(m('c1')).s('sine').struct(mode.pick(grooves.kick))
 $: FUZZ.s('sawtooth')
   .gain(low.fuzz.vol.mul(tlOr('fuzz')))
   .lpf(low.fuzz.cut.mul(autoAt('low.fuzz.cut'))).lpq(5)
-  .distort(0.35)
+  .distort(0.45)
   .hpf(45)
   .orbit(2)
   .mask(gateOf('fuzz'))
@@ -373,10 +371,10 @@ $: FUZZ.s('sawtooth')
 // ACID 303 — resonant saw line, high-passed so it sits above the fuzz.
 $: ACID.s('sawtooth')
   .gain(keys.acid.vol.mul(tlOr('acid')))
-  .lpf(keys.acid.cut.mul(autoAt('keys.acid.cut'))).lpq(9).lpenv(2.5)
+  .lpf(keys.acid.cut.mul(autoAt('keys.acid.cut'))).lpq(13).lpenv(4)
   .fanchor(0)
   .attack(0.002).decay(0.13).sustain(0.12).release(0.04)
-  .distort(0.32)
+  .distort(0.5)
   .hpf(140)
   .orbit(2)
   .mask(gateOf('acid'))
