@@ -31,8 +31,8 @@ Use it as:
 - a descent: `g f eb | f eb d | eb d c`;
 - an arpeggio version: `c eb g | eb g bb | g bb c5`.
 
-In `SOLO_C` (DROP 2 / DROP 3) this replaces the earlier continuous scale runs:
-fewer notes, more rests, clearer shape.
+In `SOLO_D` (DROP 3) this replaces the earlier continuous scale runs: fewer
+notes, more rests, clearer shape.
 
 ## 3. Target chord tones
 
@@ -65,11 +65,8 @@ In this vamp:
 
 - `SOLO_A` — normal solo (GROOVE/BUILD are muted; first DROP and RETURN).
 - `SOLO_B` — high and fast for BREAK.
-- `SOLO_C` — DROP 2: the 3-up / 1-back cells taken higher, with an octave-higher
-  peak.
-- `SOLO_D` — DROP 3: closer to the earlier continuous scale-run version, with
-  a few rests and cells so it is not a full copy.
-- The first, more moderate `SOLO_C` is kept commented as `SOLO_C_BACKUP`.
+- `SOLO_C` — DROP 2: the earlier continuous scale-run version.
+- `SOLO_D` — DROP 3: the moderate 3-up / 1-back line with rests.
 - DROP 2B and DROP 3B add shaker/cowbell and more open hats; the solo stays
   the same, the drums push it forward.
 

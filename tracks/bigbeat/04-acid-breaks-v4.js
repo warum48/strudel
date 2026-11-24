@@ -2,8 +2,8 @@
 // V4 arrangement (v3 kept as reference):
 //   - STOP is 4 bars, no drums, only the existing stab/pad/vinyl bed.
 //   - DROP 2 is split into 2A/2B: second half adds percussion and more hats
-//     to push forward; DROP 2 uses the high 3-up / 1-back solo, DROP 3
-//     returns to a more scale-like line (old SOLO_C kept as a comment).
+//     to push forward; DROP 2 uses the earlier scale-run solo, DROP 3 the
+//     moderate 3-up / 1-back line.
 //   - the whole DROP 2 (both halves) is copied again after OUTRO as DROP 3.
 //   - OUTRO 2 closes the track; the intro still has no sampled breaks.
 // Jazz phrasing notes: docs/jazz-solo.en.md.
@@ -340,41 +340,30 @@ const SOLO_B = solos([
   'f4 bb4 d5 f5 ~ bb5 f5 d5 ~ c5 ~ bb4 ~ f4 ~',
   'eb5 f5 g5 bb5 ~ c6 ~ d6 ~ c6 bb5 g5 f5 eb5 d5',
 ])
-// Backup: first moderate 3-up / 1-back solo (kept for reference).
-// const SOLO_C_BACKUP = solos([
-//   'c4 d4 eb4 ~ d4 eb4 f4 ~ eb4 f4 g4 ~ f4 eb4 d4 c4',
-//   '~ g4 f4 eb4 ~ f4 eb4 d4 ~ eb4 d4 c4 ~ bb3 g3 ~',
-//   'c4 eb4 g4 ~ eb4 g4 bb4 ~ g4 bb4 c5 ~ bb4 g4 eb4 c4',
-//   '~ c5 bb4 ab4 ~ bb4 ab4 g4 ~ ab4 g4 eb4 ~ c4 eb4 g4 ~',
-//   'g3 c4 eb4 ~ c4 eb4 g4 ~ eb4 g4 bb4 ~ g4 eb4 c4 g3',
-//   '~ d4 f4 g4 ~ f4 g4 bb4 ~ g4 bb4 c5 ~ bb4 g4 f4 d4',
-//   'f4 g4 bb4 ~ g4 bb4 d5 ~ bb4 d5 f5 ~ d5 bb4 g4 f4',
-//   '~ eb5 d5 c5 ~ d5 c5 bb4 ~ c5 bb4 f4 ~ d4 f4 bb4 ~',
-// ])
-
-// SOLO_C — DROP 2: same 3-up / 1-back cells, but an octave-higher peak.
+// SOLO_C — DROP 2: the earlier continuous scale-run version.
 const SOLO_C = solos([
-  'g4 bb4 c5 ~ bb4 c5 eb5 ~ c5 eb5 g5 ~ eb5 c5 bb4 g4',
-  '~ g5 f5 eb5 ~ f5 eb5 d5 ~ eb5 d5 c5 ~ bb4 g4 ~',
-  'c5 eb5 g5 ~ eb5 g5 bb5 ~ g5 bb5 c6 ~ bb5 g5 eb5 c5',
-  '~ c6 bb5 ab5 ~ bb5 ab5 g5 ~ ab5 g5 eb5 ~ c5 eb5 g5 ~',
-  'g4 c5 eb5 ~ c5 eb5 g5 ~ eb5 g5 bb5 ~ g5 eb5 c5 g4',
-  '~ d5 f5 g5 ~ f5 g5 bb5 ~ g5 bb5 c6 ~ bb5 g5 f5 d5',
-  'f5 g5 bb5 ~ g5 bb5 d6 ~ bb5 d6 f6 ~ d6 bb5 g5 f5',
-  '~ eb6 d6 c6 ~ d6 c6 bb5 ~ c6 bb5 f5 ~ d5 f5 bb5 ~',
-])
-
-// SOLO_D — DROP 3: closer to the earlier scale-run version, but with rests.
-const SOLO_D = solos([
   'c4 d4 eb4 f4 g4 ab4 bb4 c5 ~ bb4 ab4 g4 f4 eb4 d4 c4',
   'c5 d5 eb5 f5 g5 ab5 bb5 c6 ~ bb5 ab5 g5 f5 eb5 d5 c5',
-  'c4 eb4 g4 ~ eb4 g4 ab4 ~ g4 ab4 c5 ~ ab4 g4 eb4 c4',
-  'c4 d4 eb4 g4 ~ ab4 c5 d5 ~ eb5 d5 c5 ab4 ~ g4 eb4 c4',
+  'c4 eb4 g4 ab4 c5 eb5 g5 ab5 ~ g5 eb5 c5 ab4 g4 eb4 c4',
+  'c4 d4 eb4 g4 ab4 c5 d5 eb5 ~ d5 c5 ab4 g4 eb4 d4 c4',
   'c4 d4 eb4 f4 g4 ab4 bb4 c5 ~ bb4 ab4 g4 f4 eb4 d4 c4',
   'eb5 f5 g5 ab5 bb5 c6 ~ bb5 ab5 g5 f5 eb5 d5 c5 ~',
-  'bb3 c4 d4 ~ f4 g4 bb4 ~ c5 d5 c5 ~ bb4 g4 f4 d4',
+  'bb3 c4 d4 f4 g4 bb4 c5 d5 ~ c5 bb4 g4 f4 d4 c4 bb3',
   'bb4 c5 d5 f5 g5 bb5 c6 d6 ~ c6 bb5 g5 f5 d5 c5 bb4',
 ])
+
+// SOLO_D — DROP 3: the moderate 3-up / 1-back line.
+const SOLO_D = solos([
+  'c4 d4 eb4 ~ d4 eb4 f4 ~ eb4 f4 g4 ~ f4 eb4 d4 c4',
+  '~ g4 f4 eb4 ~ f4 eb4 d4 ~ eb4 d4 c4 ~ bb3 g3 ~',
+  'c4 eb4 g4 ~ eb4 g4 bb4 ~ g4 bb4 c5 ~ bb4 g4 eb4 c4',
+  '~ c5 bb4 ab4 ~ bb4 ab4 g4 ~ ab4 g4 eb4 ~ c4 eb4 g4 ~',
+  'g3 c4 eb4 ~ c4 eb4 g4 ~ eb4 g4 bb4 ~ g4 eb4 c4 g3',
+  '~ d4 f4 g4 ~ f4 g4 bb4 ~ g4 bb4 c5 ~ bb4 g4 f4 d4',
+  'f4 g4 bb4 ~ g4 bb4 d5 ~ bb4 d5 f5 ~ d5 bb4 g4 f4',
+  '~ eb5 d5 c5 ~ d5 c5 bb4 ~ c5 bb4 f4 ~ d4 f4 bb4 ~',
+])
+
 const SUB = note(BASS_A).ctranspose(-12)
 const BASS = note(BASS_A)
 const STAB = note(STAB_A)
