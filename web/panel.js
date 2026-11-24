@@ -146,6 +146,13 @@ async function downloadAllSamples() {
         if (maps.has(token)) used.add(token);
       }
     }
+    // Dynamic break names are passed through `breakLane('name', ...)`, so the
+    // s("...") scan above does not see them.
+    for (const m of src.matchAll(/\bbreakLane\(\s*['"]([^'"]+)['"]/g)) {
+      for (const token of m[1].match(/[a-zA-Z][a-zA-Z0-9_]*/g) ?? []) {
+        if (maps.has(token)) used.add(token);
+      }
+    }
     if (!used.size) {
       out.textContent = 'no matching sample keys';
       btn.textContent = 'SAMPLES';
@@ -2684,6 +2691,9 @@ async function loadTrack(p) {
   // обновляет его же слушатель изменений
   await new Promise((r) => setTimeout(r, 0));
   await play(); // выбор в меню — это жест пользователя, звук уже разрешён
+  // Warm the used sample buffers in the background. Without this the first
+  // trigger of a sample can wait for the network even when its map is ready.
+  downloadAllSamples();
 }
 
 async function boot() {

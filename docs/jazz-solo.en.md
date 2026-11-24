@@ -31,8 +31,13 @@ Use it as:
 - a descent: `g f eb | f eb d | eb d c`;
 - an arpeggio version: `c eb g | eb g bb | g bb c5`.
 
+Quarter-note triplets (3 notes over 2 beats) in mini-notation: put two
+three-note groups in one bar, `[c4 d4 eb4] [f4 g4 ab4]`. Each group takes half
+a bar, so each group is three equal notes across two beats.
+
 In `SOLO_D` (DROP 3) this replaces the earlier continuous scale runs: fewer
-notes, more rests, clearer shape.
+notes, more rests, clearer shape. In `SOLO_E` (DROP 2A) some runs become
+quarter-note triplets instead.
 
 ## 3. Target chord tones
 
@@ -65,8 +70,10 @@ In this vamp:
 
 - `SOLO_A` — normal solo (GROOVE/BUILD are muted; first DROP and RETURN).
 - `SOLO_B` — high and fast for BREAK.
-- `SOLO_C` — DROP 2: the earlier continuous scale-run version.
+- `SOLO_C` — DROP 2B: the earlier continuous scale-run version.
 - `SOLO_D` — DROP 3: the moderate 3-up / 1-back line with rests.
+- `SOLO_E` — DROP 2A: scale runs thinned with quarter-note triplets
+  (`[c4 d4 eb4] [f4 g4 ab4]`). DROP 2B keeps the full `SOLO_C` runs.
 - DROP 2B and DROP 3B add shaker/cowbell and more open hats; the solo stays
   the same, the drums push it forward.
 

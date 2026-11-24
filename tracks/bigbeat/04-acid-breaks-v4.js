@@ -1,11 +1,11 @@
 // BIG BEAT 04 · acid breaks v4 · 125 BPM · C minor
 // V4 arrangement (v3 kept as reference):
 //   - STOP is 4 bars, no drums, only the existing stab/pad/vinyl bed.
-//   - DROP 2 is split into 2A/2B: second half adds percussion and more hats
-//     to push forward; DROP 2 uses the earlier scale-run solo, DROP 3 the
-//     moderate 3-up / 1-back line.
+//   - DROP 2 is split into 2A/2B: 2A thins the scale runs with quarter-note
+//     triplets, 2B keeps the full runs and adds percussion/hats.
+//     DROP 3 uses the moderate 3-up / 1-back line.
 //   - the whole DROP 2 (both halves) is copied again after OUTRO as DROP 3.
-//   - OUTRO 2 closes the track; the intro still has no sampled breaks.
+//   - final OUTRO 2 is doubled (14 bars); OUTRO 3 mirrors INTRO.
 // Jazz phrasing notes: docs/jazz-solo.en.md.
 // Mini-notation only through m(...) (docs/pitfalls.en.md, Rule #1).
 const BPM = 125
@@ -32,7 +32,7 @@ const mode = slider(1, 0, 2, 1)
 const breakSel = slider(0, 0, 8, 1)
 const wave = slider(0, 0, 2, 1)
 const octave = slider(0, 0, 3, 1)
-const holdBar = slider(0, 0, 113, 1)
+const holdBar = slider(0, 0, 127, 1)
 const pickBreak = (i) => breakSel.fmap((v) => (v === i ? 1 : 0))
 const WAVE = wave.fmap((v) => ['sine', 'triangle', 'square'][v] || 'sine')
 const OCT = octave.fmap((v) => [0, 12, -12, -24][v] ?? 0)
@@ -168,7 +168,7 @@ const instruments = {
 }
 const { drums, low, keys, atmos, fx } = instruments
 
-// ── form: 114 bars ───────────────────────────────────────────────
+// ── form: 128 bars ───────────────────────────────────────────────
 const TIMELINE = [
   { at: 0, len: 8, name: 'INTRO', values: { break: 0, amen: 0, chop: 0, kick: 0, snare: 0, clap: 0, hat: 0.25, oh: 0, rim: 0, perc: 0, sub: 0, bass: 0, acid: 0.2, ghost: 0.5, stab: 0, pad: 0.6, solo: 0, soloPart: 0, siren: 0.1, riser: 0, vinyl: 1 } },
   { at: 8, len: 8, name: 'INTRO 2', values: { break: 0, amen: 0, chop: 0, kick: 0.5, snare: 0.3, clap: 0, hat: 0.5, oh: 0, rim: 0, perc: 0, sub: 0.6, bass: 0.4, acid: 0.4, ghost: 0.5, stab: 0.3, pad: 0.5, solo: 0.15, soloPart: 0, siren: 0.1, riser: 0, vinyl: 0.8 } },
@@ -178,21 +178,22 @@ const TIMELINE = [
   { at: 36, len: 16, name: 'DROP', values: { break: 1, amen: 0.8, chop: 0.5, kick: 1, snare: 1, clap: 0.9, hat: 1, oh: 0.7, rim: 0.4, perc: 0, sub: 1, bass: 1, acid: 1, ghost: 1, stab: 1, pad: 0.4, solo: 1.0, soloPart: 0, siren: 0.6, riser: 0, vinyl: 0.3 } },
   { at: 52, len: 8, name: 'BREAK', values: { break: 0.55, amen: 0.3, chop: 0, kick: 0, snare: 0, clap: 0, hat: 0.3, oh: 0, rim: 0.7, perc: 0, sub: 0, bass: 0, acid: 0.45, ghost: 0.9, stab: 0.5, pad: 1.0, solo: 1.0, soloPart: 1, siren: 0.7, riser: 0, vinyl: 1 } },
   { at: 60, len: 8, name: 'RETURN', values: { break: 1, amen: 0.6, chop: 0.6, kick: 1, snare: 1, clap: 0.8, hat: 1, oh: 0.7, rim: 0.5, perc: 0, sub: 1, bass: 1, acid: 1, ghost: 0.8, stab: 0.8, pad: 0.4, solo: 0.85, soloPart: 0, siren: 0, riser: 0, vinyl: 0.4 } },
-  { at: 68, len: 8, name: 'DROP 2A', values: { break: 1, amen: 0.8, chop: 0.5, kick: 1, snare: 1, clap: 0.9, hat: 1, oh: 0.7, rim: 0.4, perc: 0, sub: 1, bass: 1, acid: 1, ghost: 1, stab: 1, pad: 0.4, solo: 1.0, soloPart: 2, siren: 0.6, riser: 0, vinyl: 0.3 } },
+  { at: 68, len: 8, name: 'DROP 2A', values: { break: 1, amen: 0.8, chop: 0.5, kick: 1, snare: 1, clap: 0.9, hat: 1, oh: 0.7, rim: 0.4, perc: 0, sub: 1, bass: 1, acid: 1, ghost: 1, stab: 1, pad: 0.4, solo: 1.0, soloPart: 4, siren: 0.6, riser: 0, vinyl: 0.3 } },
   { at: 76, len: 8, name: 'DROP 2B', values: { break: 1, amen: 0.8, chop: 0.5, kick: 1, snare: 1, clap: 1.0, hat: 1.2, oh: 1.0, rim: 0.6, perc: 1, sub: 1, bass: 1, acid: 1, ghost: 1, stab: 1, pad: 0.4, solo: 1.0, soloPart: 2, siren: 0.6, riser: 0, vinyl: 0.3 } },
   { at: 84, len: 7, name: 'OUTRO', values: { break: 0.7, amen: 0, chop: 0, kick: 0, snare: 0, clap: 0, hat: 0.25, oh: 0, rim: 0, perc: 0, sub: 0, bass: 0, acid: 0.4, ghost: 0.5, stab: 0.4, pad: 0.8, solo: 0.3, soloPart: 0, siren: 0.2, riser: 0, vinyl: 1 } },
   { at: 91, len: 8, name: 'DROP 3A', values: { break: 1, amen: 0.8, chop: 0.5, kick: 1, snare: 1, clap: 0.9, hat: 1, oh: 0.7, rim: 0.4, perc: 0, sub: 1, bass: 1, acid: 1, ghost: 1, stab: 1, pad: 0.4, solo: 1.0, soloPart: 3, siren: 0.6, riser: 0, vinyl: 0.3 } },
   { at: 99, len: 8, name: 'DROP 3B', values: { break: 1, amen: 0.8, chop: 0.5, kick: 1, snare: 1, clap: 1.0, hat: 1.2, oh: 1.0, rim: 0.6, perc: 1, sub: 1, bass: 1, acid: 1, ghost: 1, stab: 1, pad: 0.4, solo: 1.0, soloPart: 3, siren: 0.6, riser: 0, vinyl: 0.3 } },
-  { at: 107, len: 7, name: 'OUTRO 2', values: { break: 0.7, amen: 0, chop: 0, kick: 0, snare: 0, clap: 0, hat: 0.25, oh: 0, rim: 0, perc: 0, sub: 0, bass: 0, acid: 0.4, ghost: 0.5, stab: 0.4, pad: 0.8, solo: 0.3, soloPart: 0, siren: 0.2, riser: 0, vinyl: 1 } },
+  { at: 107, len: 14, name: 'OUTRO 2', values: { break: 0.7, amen: 0, chop: 0, kick: 0, snare: 0, clap: 0, hat: 0.25, oh: 0, rim: 0, perc: 0, sub: 0, bass: 0, acid: 0.4, ghost: 0.5, stab: 0.4, pad: 0.8, solo: 0.3, soloPart: 0, siren: 0.2, riser: 0, vinyl: 1 } },
+  { at: 121, len: 7, name: 'OUTRO 3', values: { break: 0, amen: 0, chop: 0, kick: 0, snare: 0, clap: 0, hat: 0.25, oh: 0, rim: 0, perc: 0, sub: 0, bass: 0, acid: 0.2, ghost: 0.5, stab: 0, pad: 0.6, solo: 0, soloPart: 0, siren: 0.1, riser: 0, vinyl: 1 } },
 ]
 
 const AUTOMATION = [
-  { path: 'drums.break.cut', points: [[0, 0.5], [8, 0.7], [16, 1], [24, 1], [31, 1.7], [32, 0.35], [36, 1.5], [52, 0.55], [60, 1.2], [68, 1.5], [76, 1.6], [84, 0.45], [91, 1.5], [99, 1.6], [107, 0.45]] },
-  { path: 'low.bass.cut', points: [[0, 0.85], [16, 1], [52, 0.7], [60, 1], [68, 1], [84, 0.8], [91, 1], [107, 0.8]] },
-  { path: 'keys.acid.cut', points: [[0, 0.6], [16, 0.9], [24, 1.1], [31, 1.8], [36, 2], [52, 0.6], [60, 1.4], [68, 2], [84, 0.5], [91, 2], [107, 0.4]] },
-  { path: 'keys.ghost.cut', points: [[0, 0.7], [16, 0.9], [31, 1.3], [36, 1.5], [52, 0.7], [60, 1.3], [68, 1.5], [84, 0.6], [91, 1.5], [107, 0.5]] },
-  { path: 'keys.stab.cut', points: [[0, 0.7], [16, 1], [31, 1.4], [36, 1.6], [52, 0.6], [60, 1.3], [68, 1.6], [84, 0.5], [91, 1.6], [107, 0.4]] },
-  { path: 'atmos.siren.vol', points: [[0, 0.5], [16, 0], [24, 0.8], [31, 1.4], [36, 0.6], [52, 1.2], [60, 0], [68, 0.6], [84, 0.2], [91, 0.6], [107, 0.2]] },
+  { path: 'drums.break.cut', points: [[0, 0.5], [8, 0.7], [16, 1], [24, 1], [31, 1.7], [32, 0.35], [36, 1.5], [52, 0.55], [60, 1.2], [68, 1.5], [76, 1.6], [84, 0.45], [91, 1.5], [99, 1.6], [107, 0.45], [121, 0.5], [128, 0.5]] },
+  { path: 'low.bass.cut', points: [[0, 0.85], [16, 1], [52, 0.7], [60, 1], [68, 1], [84, 0.8], [91, 1], [107, 0.8], [121, 0.85], [128, 0.85]] },
+  { path: 'keys.acid.cut', points: [[0, 0.6], [16, 0.9], [24, 1.1], [31, 1.8], [36, 2], [52, 0.6], [60, 1.4], [68, 2], [84, 0.5], [91, 2], [107, 0.4], [121, 0.6], [128, 0.6]] },
+  { path: 'keys.ghost.cut', points: [[0, 0.7], [16, 0.9], [31, 1.3], [36, 1.5], [52, 0.7], [60, 1.3], [68, 1.5], [84, 0.6], [91, 1.5], [107, 0.5], [121, 0.7], [128, 0.7]] },
+  { path: 'keys.stab.cut', points: [[0, 0.7], [16, 1], [31, 1.4], [36, 1.6], [52, 0.6], [60, 1.3], [68, 1.6], [84, 0.5], [91, 1.6], [107, 0.4], [121, 0.7], [128, 0.7]] },
+  { path: 'atmos.siren.vol', points: [[0, 0.5], [16, 0], [24, 0.8], [31, 1.4], [36, 0.6], [52, 1.2], [60, 0], [68, 0.6], [84, 0.2], [91, 0.6], [107, 0.2], [121, 0.5], [128, 0.5]] },
 ]
 
 const TL_TOTAL = Math.max(...TIMELINE.map((s) => s.at + s.len))
@@ -364,6 +365,18 @@ const SOLO_D = solos([
   '~ eb5 d5 c5 ~ d5 c5 bb4 ~ c5 bb4 f4 ~ d4 f4 bb4 ~',
 ])
 
+// SOLO_E — DROP 2A: thinned scale runs; two groups of three per half-bar
+// are quarter-note triplets (3 notes across 2 beats).
+const SOLO_E = solos([
+  '[c4 d4 eb4] [f4 g4 ab4]',
+  'c5 d5 eb5 f5 g5 ab5 bb5 c6 ~ bb5 ab5 g5 f5 eb5 d5 c5',
+  '[c4 eb4 g4] [bb4 g4 eb4]',
+  'c4 d4 eb4 g4 ab4 c5 d5 eb5 ~ d5 c5 ab4 g4 eb4 d4 c4',
+  '[g4 c5 eb5] [g5 eb5 c5]',
+  'eb5 f5 g5 ab5 bb5 c6 ~ bb5 ab5 g5 f5 eb5 d5 c5 ~',
+  '[bb3 c4 d4] [f4 g4 bb4]',
+  'bb4 c5 d5 f5 g5 bb5 c6 d6 ~ c6 bb5 g5 f5 d5 c5 bb4',
+])
 const SUB = note(BASS_A).ctranspose(-12)
 const BASS = note(BASS_A)
 const STAB = note(STAB_A)
@@ -373,7 +386,7 @@ const PAD = note(PAD_A)
 const soloPart = tlCurve('soloPart').mul(songGate)
   .add(pure(0).mul(loopGate))
   .add(sectionValue('soloPart').mul(holdGate))
-const SOLO = soloPart.pick([SOLO_A, SOLO_B, SOLO_C, SOLO_D])
+const SOLO = soloPart.pick([SOLO_A, SOLO_B, SOLO_C, SOLO_D, SOLO_E])
 
 const grooves = {
   kick: [
