@@ -24,12 +24,12 @@ const UI = {
   holdBar: 'holdBar',
   switches: {
     mode: ['straight', 'broken', 'roll'],
-    breakSel: ['apache', 'amen', 'think', 'movement', 'breaks125'],
+    breakSel: ['apache', 'amen', 'think', 'movement', 'b125:1', 'eeloil', 'n.orl', 'squib', 'b125:0'],
   },
 }
 const play = slider(1, 0, 2, 1)
 const mode = slider(1, 0, 2, 1)
-const breakSel = slider(0, 0, 4, 1)
+const breakSel = slider(0, 0, 8, 1)
 const holdBar = slider(0, 0, 63, 1)
 const pickBreak = (i) => breakSel.fmap((v) => (v === i ? 1 : 0))
 
@@ -306,6 +306,10 @@ $: stack(
   breakLane('think', 1, 2),
   breakLane('movement', 2, 3),
   breakLane('breaks125:1', 1, 4),
+  breakLane('eeloil', 2, 5),
+  breakLane('neworleans', 2, 6),
+  breakLane('squib', 2, 7),
+  breakLane('breaks125:0', 1, 8),
   )
   .hpf(70).lpf(drums.break.cut.mul(autoAt('drums.break.cut')))
   .distort(drums.break.grit)

@@ -64,6 +64,38 @@ kick/snare + sub + textures.
 
 ---
 
+## 3a. Verified break shortlist (DnB / big beat)
+
+These are the breaks wired into `tracks/bigbeat/01-acid-breaks.js` through the
+`breakSel` switch, so they can be auditioned live. Lengths are measured from the
+WAV headers; `loopAt` is the value that keeps the original pitch at 125 BPM.
+Picks were checked by duration, loop fit and transient shape (spectrogram),
+not by ear — except `think`, which is approved as a main hook.
+
+| Key | Break | Length | `loopAt` @125 | Character | Audition |
+|---|---|---|---|---|---|
+| `think` | Lyn Collins — Think | 2.10 s | 1 | funk, **vocal shout** — approved main hook | [raw wav](https://raw.githubusercontent.com/yaxu/clean-breaks/main/sounds/Lyn_Collins_-_Think_%284%29%20%5B2019-03-04%20124551%5D.wav) |
+| `amen` | The Winstons — Amen Brother | 6.96 s | 4 | dry classic, instrumental | [raw wav](https://raw.githubusercontent.com/yaxu/clean-breaks/main/sounds/The_Winstons_-_Amen_Brother%20%5B2019-03-04%20124550%5D.wav) |
+| `apache` | Incredible Bongo Band — Apache | 4.16 s | 2 | bongo funk, instrumental | [raw wav](https://raw.githubusercontent.com/yaxu/clean-breaks/main/sounds/Michael_Viner%27s_Incredible_Bongo_Band_-_Apache_%281%29%28Fixed-End%29%20%5B2019-03-04%20124550%5D.wav) |
+| `movement` | SL Troopers — Movement | 3.90 s | 2 | dense hats, instrumental | [raw wav](https://raw.githubusercontent.com/yaxu/clean-breaks/main/sounds/SL_Troopers_-_Movement_%282%29%20%5B2019-03-04%20124549%5D.wav) |
+| `eeloil` | The Bamboos — Eel Oil | 4.11 s | 2 | mid-tempo funk, instrumental | [raw wav](https://raw.githubusercontent.com/yaxu/clean-breaks/main/sounds/The_Bamboos_-_Eel_Oil%20%5B2019-03-04%20124549%5D.wav) |
+| `neworleans` | Nat Adderley — New Orleans | 4.12 s | 2 | busy hats, instrumental | [raw wav](https://raw.githubusercontent.com/yaxu/clean-breaks/main/sounds/Nat_Adderley_-_New_Orleans%20%5B2019-03-04%20124550%5D.wav) |
+| `squib` | Tower Of Power — Squib Cakes | 4.30 s | 2 | tight funk, instrumental | [raw wav](https://raw.githubusercontent.com/yaxu/clean-breaks/main/sounds/Tower_Of_Power_-_Squib_Cakes%20%5B2019-03-04%20124552%5D.wav) |
+| `breaks125:0` | Dirt-Samples — 015_sdstckbr | 1.87 s | 1 | clean 125 loop | [raw wav](https://raw.githubusercontent.com/tidalcycles/Dirt-Samples/master/breaks125/015_sdstckbr.wav) |
+| `breaks125:1` | Dirt-Samples — 016_bllstmp | 1.94 s | 1 | clean 125 loop | [raw wav](https://raw.githubusercontent.com/tidalcycles/Dirt-Samples/master/breaks125/016_bllstmp.wav) |
+
+Local copies (same files, no network): `backup/samples/clean-breaks/sounds/` and
+`backup/samples/Dirt-Samples/breaks125/` — open the WAV in any player.
+
+Source folders:
+
+- clean-breaks: <https://github.com/yaxu/clean-breaks/tree/main/sounds>
+- Dirt-Samples breaks: <https://github.com/tidalcycles/Dirt-Samples/tree/master/breaks125>
+- map index: <https://raw.githubusercontent.com/yaxu/clean-breaks/main/strudel.json>
+
+More packs: <https://rhythm-lab.com/breakbeats>, archive.org
+`amen-breaks-compilation`, and the packs in §2.
+
 ## 4. Sample preparation
 
 ### Metadata in the filename

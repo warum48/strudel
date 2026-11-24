@@ -97,7 +97,8 @@
   .sw { display: grid; grid-template-columns: 52px minmax(0, 1fr); align-items: center; gap: 8px; }
   .sw .cap { color: var(--dim); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; margin: 0;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .sw .btns { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(48px, 1fr); gap: 3px; }
+  .sw .btns { display: flex; flex-wrap: wrap; gap: 3px; }
+  .sw .btns button { flex: 0 0 auto; min-width: 72px; }
   .sw .btns button {
     height: 22px; padding: 0 6px; font-size: 10px; letter-spacing: 0.04em;
     background: transparent; border: 1px solid var(--line); border-radius: 3px;
