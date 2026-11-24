@@ -113,8 +113,14 @@ individual hits or `sometimesBy` to nudge.
 - Groove: `swingBy(0.06, 8)`, `.late(1/64)` nudges, `sometimesBy` variations.
 - Bass: `note(m('...'))` + `.s('sine')`/`sawtooth`, `.lpf`, `.distort`,
   sidechain via `duckorbit`.
+- Scratch without vocals: take a short percussive sample and splice it
+  back-and-forth, e.g.
+  `s('cb').splice(16, m('0 1 0 1 3 1 0 1')).hpf(300).lpf(6000)`.
+  `splice(n, idx)` re-plays slices, so the same slice alternating sounds like a
+  turntable scratch. No rapper/vocal samples needed.
 - Starter shape: `tracks/_selected/new-track.js`; full reference:
-  `tracks/coldwave/03-cold-rooms-v3.js`.
+  `tracks/coldwave/03-cold-rooms-v3.js`; dark mix example:
+  `tracks/hip-hop/03-black-ice-v3.js`.
 
 ## 9. Checks
 
@@ -244,8 +250,9 @@ Darkness is **harmonic + spatial**, not just slow:
   held against the root does more than any "dark" preset.
 - **Motif:** 3–5 notes, mostly stepwise with one semitone crunch (e.g. D–E♭–F–A–B♭–A–C♯–E♭).
   Repeat it; let the filter open it across sections.
-- **Drone:** low root+fifth (D+A) with a ♭2 or ♭6 note creeping in; detune a
-  saw, low-pass hard, long attack/release.
+- **Low end:** short root notes / 808 hits and short chord stabs, not a long
+  humming drone. A sustained ♭2 drone reads outside hip-hop — avoid it. If you
+  want a bed, a quiet filtered root+fifth pad and only in some sections.
 - **Drums:** either half-time (snare on 3) or punchy boom-bap with a heavy kick.
   Sliding 808 under the kick, ghost snares, sparse rim/clap; hats can be
   triplet-ish but leave holes.
@@ -254,9 +261,10 @@ Darkness is **harmonic + spatial**, not just slow:
 - **Arrangement:** drone + motif can carry the intro; drop drums for a bar
   before the hook. Silence is menace.
 
-Reference implementation: `tracks/hip-hop/01-black-ice.js` — 88 BPM boom-bap in
-D Phrygian with a C♯ accent, sliding 808 ducked under the kick, ghost snares,
-swung hats, low drone; AUTOMATION opens the motif filter into the hook.
+Reference implementation: `tracks/hip-hop/01-black-ice.js` — 88 BPM, D Phrygian
+motif with a C♯ accent, punchy boom-bap verses, half-time hooks with clap and
+triplet hats, a noise-riser break, short Dm7/Bb/Gm/A7 stabs (no long drone), and
+a sliding 808 ducked under the kick.
 
 Dark-specific tutorials (links checked):
 

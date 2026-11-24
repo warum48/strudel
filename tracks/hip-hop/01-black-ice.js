@@ -173,8 +173,8 @@ $: note(m('d1 ~ d1 ~ f1 ~ a1 ~ d1 ~ f1 ~ a1 ~ c2 ~'))
   .orbit(2)
   .mask(gateOf('bass'))
 
-// ── DARK DRONE: D + A, Eb tension, slow movement ─────────────────
-$: note(m('<[d2,a2] [d2,eb2,a2] [d2,a2] [d2,bb2,a2]>')).slow(4)
+// ── DARK DRONE: D+A and D+Eb+A (no Bb), bass D fixed ─────────────
+$: note(m('<[d2,a2] [d2,eb2,a2] [d2,a2] [d2,eb2,a2]>')).slow(4)
   .s('sawtooth').unison(2).detune(0.10)
   .gain(keys.pad.vol.mul(tlOr('pad')))
   .lpf(keys.pad.cut).lpq(3)

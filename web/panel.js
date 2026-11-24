@@ -1943,6 +1943,14 @@ function activityTick() {
     // акценты (хэты) — gain = vol × accent, поэтому сверка по громкости мимо;
     // если по сэмплу+индексу дорожка одна, зажигаем её.
     if (!chosen.length && bySample.length === 1) chosen = bySample;
+    // Несколько дорожек с тем же сэмплом, но все ведут к одному инструменту
+    // (например, motif в разных секциях с разным множителем громкости):
+    // лампа должна гореть, даже если эффективный gain тише ручки.
+    if (!chosen.length && bySample.length) {
+      const key = (l) => [...l.insts].sort().join(',');
+      const only = key(bySample[0]);
+      if (only && bySample.every((l) => key(l) === only)) chosen = bySample;
+    }
     for (const lane of chosen) for (const inst of lane.insts) actSeen.set(inst, t);
   }
   paintActivity(t);

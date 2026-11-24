@@ -170,6 +170,30 @@ note("c5 e5 g5").s("sawtooth").lpf(slider(3000, 300, 9000, 20))</code></pre>
   A slow LFO on the cutoff — <code>lpdepth</code>/<code>lpsync</code>.
 </p>
 
+<h3>Cutoff is per event — a sustained note does not follow the knob</h3>
+<p>
+  <code>.lpf(...)</code>, <code>gain</code>, <code>lpenv</code> and friends are
+  <strong>baked into the event</strong> when it is scheduled. A <code>slider</code>
+  is read at that moment; it is not a live wire into an already-running voice.
+  If a pad or drone is holding (long <code>attack</code>/<code>sustain</code>) and
+  you move the cutoff, that voice keeps the filter it was born with — only the
+  next event uses the new value.
+</p>
+<pre><code>// one long event: frozen until it retriggers
+$: note(m('[d2,a2]')).s('sawtooth').lpf(cut).attack(2).release(3)
+
+// retriggers often: the knob is sampled again on every hit
+$: note(m('[d2,a2]')).s('sawtooth').lpf(cut)
+  .struct(m('x*8')).decay(0.2).sustain(0.8)</code></pre>
+<p>
+  That is why a "moving cutoff" on a drone is usually an envelope/LFO
+  (<code>lpenv</code>, <code>lpdepth</code>, <code>lpsync</code>) or
+  <code>AUTOMATION</code> points: they change what the <em>next</em> event
+  carries. A drone that never retriggers will not move even under automation.
+  Truly continuous control of a running voice would need an audio-node update,
+  which the event model does not expose through a slider.
+</p>
+
 <h3>Trance synths: actual Strudel values</h3>
 <p>
   <code>lpf</code> is Hz, <code>lpq</code> is a real Q factor (0–50),

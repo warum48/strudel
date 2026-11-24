@@ -29,7 +29,9 @@ source of truth for exact parameter values.
 
 | File | BPM | Bars | Layers | Sliders | Transport | Description |
 |---|---:|---:|---:|---:|---|---|
-| `01-black-ice.js` | 88 | 32 | 10 | 21 | play | Dark boom-bap: D Phrygian + C♯ accent, sliding 808 ducked under a punchy kick, ghost-note snares, swung hats, low drone. |
+| `01-black-ice.js` | 88 | 32 | 10 | 21 | play | Dark boom-bap: D Phrygian + C♯ accent, sliding 808 under a punchy kick, ghost-note snares, swung hats, D+A / D+E♭+A drone (no B♭). |
+| `02-black-ice-v2.js` | 88 | 48 | 18 | 24 | play | Verse/hook form: boom-bap verses, half-time hooks (clap, triplet hats, lead answer), noise-riser break, short Dm7/Bb/Gm/A7 stabs, no drone; sliding 808 under a punchy kick. |
+| `03-black-ice-v3.js` | 88 | 36 | 14 | 22 | play | V2 break (riff + riser + roll + a dedicated Scratch instrument splicing a perc sample over all 4 bars) → intro 8 → verse 8 → intro copy 8 → verse 8; D+A drone with a 4-bar filter sweep. |
 
 Style notes: `docs/hip-hop/README.en.md`.
 
