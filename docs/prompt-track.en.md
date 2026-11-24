@@ -50,6 +50,12 @@ instruments, mix and “what is not done in the genre”, and only then write.
   quotes do not parse in real strudel.cc (the panel masks this) — see
   the red block above and `docs/pitfalls.en.md`.
 - No negative literals in `slider(...)` (the value becomes `NaN`).
+- **Not a text-to-audio toy.** We generate code for browser synthesizers, not
+  sampled “performers”. Never fake a saxophone, flute, violin, trumpet or any
+  acoustic instrument (winds especially). If the user explicitly asks for one,
+  say it plainly: this is a synth/electronic studio — we write code for browser
+  synths, it is not SUNO. Offer the closest electronic timbre (Moog-like voice,
+  Rhodes, synth brass). No vocals and no “songs”. Details: `docs/rules.en.md`.
 - One timbre — **its own sliders**, not a shared `vol` with another instrument.
 - One shared `roomsize` (`fx.reverb.size`) for all layers.
 - Do not put `distort`/`shape`/`crush`/`ftype('ladder')` on dense parts
@@ -129,7 +135,8 @@ Before the code, write down (and follow) for {{STYLE}}:
 - synths/guitars: timbres, envelopes, effects;
 - arrangement: 4–7 sections, what enters/exits, where the emptiness is;
 - mix: dark/bright top end, reverb/delay, what does not clog;
-- **what to avoid** in this genre (from docs/sources).
+- **what to avoid** in this genre (from docs/sources), including any temptation
+  to imitate acoustic soloists or add vocals.
 
 Key rule: **do not fill**. Emptiness and pauses are part of the music; removing
 a layer between sections is stronger than adding a new one.

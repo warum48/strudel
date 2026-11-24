@@ -288,3 +288,39 @@ Key external sources:
 - https://www2.umbc.edu/eol/cambodia/scale.htm
 - https://unesdoc.unesco.org/ark:/48223/pf0000135257
 - https://iftawm.org/journal/oldsite/articles/2015b/Garzoli_AAWM_Vol_4_2.pdf
+
+## Hip-hop
+
+Playbook: `docs/hip-hop/README.en.md` (tempo/feel, swing ratios, fat drums,
+punchy bass, why the groove makes you nod).
+
+Key external sources:
+
+- https://en.wikipedia.org/wiki/Swing_time — swing ratio 1:1–3:1, triplet 2:1,
+  wider at slow tempos
+- https://en.wikipedia.org/wiki/Groove_(music) — entrainment, sensorimotor
+  coupling, "participatory discrepancies" (Prögler 1995)
+- https://en.wikipedia.org/wiki/Hip-hop_production — TR-808/SP-1200/MPC,
+  sampling, kick+808 mixing
+- https://en.wikipedia.org/wiki/Akai_MPC — MPC workflow; J Dilla unquantized
+- https://en.wikipedia.org/wiki/Half-time_(music) — half-time feel and shuffle
+- https://en.wikipedia.org/wiki/Ghost_note — ghost 16ths around the backbeat
+
+Tutorials (authoritative, checked):
+
+- Attack Magazine — Beat Dissected (full grids per beat):
+  https://www.attackmagazine.com/technique/beat-dissected/
+- Attack — Drunk Drummer-Style Grooves (J Dilla/Flying Lotus/Kaytranada,
+  quintuplet/sextuplet/septuplet grids):
+  https://www.attackmagazine.com/technique/beat-dissected/drunk-drummer-style-grooves/
+- Attack — Low-End Theory (LA beat scene, low-end focus):
+  https://www.attackmagazine.com/technique/beat-dissected/low-end-theory/
+- Attack — Chillout: Raw strip-hop (downtempo strip-hop):
+  https://www.attackmagazine.com/technique/beat-dissected/chillout-beat-raw-strip-hop/
+- Attack — The Secrets of Dance Music Production (book):
+  https://store.attackmagazine.com/collections/books/products/the-secrets-of-dance-music-production-book
+- Sound On Sound — Techniques (engineer-level long-form):
+  https://www.soundonsound.com/techniques
+  (subsections: /mixing-production, /drum-machines, /samplers-sampling)
+- Ableton — Learning Music (official interactive basics):
+  https://learningmusic.ableton.com/
