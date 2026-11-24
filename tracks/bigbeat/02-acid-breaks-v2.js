@@ -106,17 +106,24 @@ const instruments = {
     name: 'Keys',
     acid: {
       name: 'Rhodes lead',
-      vol: slider(0.88, 0, 1.2, 0.01),
+      vol: slider(1.1, 0, 1.6, 0.01),
       cut: slider(2450, 50, 4000, 20),
       att: slider(0.001, 0.001, 0.2, 0.001),
       dec: slider(0.7, 0.05, 1.5, 0.01),
     },
     ghost: {
       name: 'Rhodes ghost',
-      vol: slider(0.65, 0, 1.0, 0.01),
+      vol: slider(0.85, 0, 1.4, 0.01),
       cut: slider(2270, 50, 4000, 20),
       att: slider(0.005, 0.005, 0.5, 0.005),
       dec: slider(1.0, 0.1, 2.5, 0.01),
+    },
+    solo: {
+      name: 'Jazz Rhodes',
+      vol: slider(0.6, 0, 1.8, 0.01),
+      cut: slider(2600, 50, 6000, 20),
+      att: slider(0.003, 0.001, 0.2, 0.001),
+      dec: slider(0.8, 0.05, 2, 0.01),
     },
     stab: {
       name: 'Chord stab',
@@ -126,9 +133,9 @@ const instruments = {
     pad: {
       name: 'Pad',
       vol: slider(1.0, 0, 2.0, 0.01),
-      cut: slider(1250, 50, 4000, 20),
-      att: slider(0.35, 0.01, 2, 0.01),
-      dec: slider(0.4, 0.05, 3, 0.01),
+      cut: slider(1370, 50, 4000, 20),
+      att: slider(0.95, 0.01, 2.5, 0.01),
+      dec: slider(2.83, 0.05, 4, 0.01),
     },
   },
   atmos: {
@@ -157,15 +164,15 @@ const { drums, low, keys, atmos, fx } = instruments
 
 // ── form: 64 bars ────────────────────────────────────────────────
 const TIMELINE = [
-  { at: 0, len: 4, name: 'INTRO', values: { break: 0.55, amen: 0, chop: 0, kick: 0, snare: 0, clap: 0, hat: 0.25, oh: 0, rim: 0, sub: 0, bass: 0, acid: 0.2, ghost: 0.5, stab: 0, pad: 0.6, siren: 0.1, riser: 0, vinyl: 1 } },
-  { at: 4, len: 4, name: 'INTRO 2', values: { break: 0.8, amen: 0, chop: 0, kick: 0.5, snare: 0.3, clap: 0, hat: 0.5, oh: 0, rim: 0, sub: 0.6, bass: 0.4, acid: 0.4, ghost: 0.5, stab: 0.3, pad: 0.5, siren: 0.1, riser: 0, vinyl: 0.8 } },
-  { at: 8, len: 8, name: 'GROOVE', values: { break: 1, amen: 0, chop: 0, kick: 1, snare: 1, clap: 0.7, hat: 1, oh: 0.6, rim: 0, sub: 1, bass: 1, acid: 0.9, ghost: 0.7, stab: 0.6, pad: 0.35, siren: 0, riser: 0, vinyl: 0.5 } },
-  { at: 16, len: 8, name: 'BUILD', values: { break: 1, amen: 0, chop: 0.3, kick: 1, snare: 0.6, clap: 0.5, hat: 1, oh: 0.4, rim: 0, sub: 1, bass: 1, acid: 0.8, ghost: 0.5, stab: 0.4, pad: 0.5, siren: 0.5, riser: 1, vinyl: 0.4 } },
-  { at: 24, len: 1, name: 'STOP', values: { break: 0, amen: 0, chop: 0, kick: 0, snare: 0, clap: 0, hat: 0, oh: 0, rim: 0, sub: 0, bass: 0, acid: 0, ghost: 0, stab: 1, pad: 0.3, siren: 0, riser: 0, vinyl: 0.2 } },
-  { at: 25, len: 16, name: 'DROP', values: { break: 1, amen: 0.8, chop: 0.5, kick: 1, snare: 1, clap: 0.9, hat: 1, oh: 0.7, rim: 0.4, sub: 1, bass: 1, acid: 1, ghost: 1, stab: 1, pad: 0.4, siren: 0.6, riser: 0, vinyl: 0.3 } },
-  { at: 41, len: 8, name: 'BREAK', values: { break: 0.55, amen: 0.3, chop: 0, kick: 0, snare: 0, clap: 0, hat: 0.3, oh: 0, rim: 0.7, sub: 0, bass: 0, acid: 0.45, ghost: 0.9, stab: 0.5, pad: 1.0, siren: 0.7, riser: 0, vinyl: 1 } },
-  { at: 49, len: 8, name: 'RETURN', values: { break: 1, amen: 0.6, chop: 0.6, kick: 1, snare: 1, clap: 0.8, hat: 1, oh: 0.7, rim: 0.5, sub: 1, bass: 1, acid: 1, ghost: 0.8, stab: 0.8, pad: 0.4, siren: 0, riser: 0, vinyl: 0.4 } },
-  { at: 57, len: 7, name: 'OUTRO', values: { break: 0.7, amen: 0, chop: 0, kick: 0, snare: 0, clap: 0, hat: 0.25, oh: 0, rim: 0, sub: 0, bass: 0, acid: 0.4, ghost: 0.5, stab: 0.4, pad: 0.8, siren: 0.2, riser: 0, vinyl: 1 } },
+  { at: 0, len: 4, name: 'INTRO', values: { break: 0.55, amen: 0, chop: 0, kick: 0, snare: 0, clap: 0, hat: 0.25, oh: 0, rim: 0, sub: 0, bass: 0, acid: 0.2, ghost: 0.5, stab: 0, pad: 0.6, solo: 0, soloPart: 0, siren: 0.1, riser: 0, vinyl: 1 } },
+  { at: 4, len: 4, name: 'INTRO 2', values: { break: 0.8, amen: 0, chop: 0, kick: 0.5, snare: 0.3, clap: 0, hat: 0.5, oh: 0, rim: 0, sub: 0.6, bass: 0.4, acid: 0.4, ghost: 0.5, stab: 0.3, pad: 0.5, solo: 0.15, soloPart: 0, siren: 0.1, riser: 0, vinyl: 0.8 } },
+  { at: 8, len: 8, name: 'GROOVE', values: { break: 1, amen: 0, chop: 0, kick: 1, snare: 1, clap: 0.7, hat: 1, oh: 0.6, rim: 0, sub: 1, bass: 1, acid: 0.9, ghost: 0.7, stab: 0.6, pad: 0.35, solo: 0.45, soloPart: 0, siren: 0, riser: 0, vinyl: 0.5 } },
+  { at: 16, len: 8, name: 'BUILD', values: { break: 1, amen: 0, chop: 0.3, kick: 1, snare: 0.6, clap: 0.5, hat: 1, oh: 0.4, rim: 0, sub: 1, bass: 1, acid: 0.8, ghost: 0.5, stab: 0.4, pad: 0.5, solo: 0.55, soloPart: 0, siren: 0.5, riser: 1, vinyl: 0.4 } },
+  { at: 24, len: 1, name: 'STOP', values: { break: 0, amen: 0, chop: 0, kick: 0, snare: 0, clap: 0, hat: 0, oh: 0, rim: 0, sub: 0, bass: 0, acid: 0, ghost: 0, stab: 1, pad: 0.3, solo: 0, soloPart: 0, siren: 0, riser: 0, vinyl: 0.2 } },
+  { at: 25, len: 16, name: 'DROP', values: { break: 1, amen: 0.8, chop: 0.5, kick: 1, snare: 1, clap: 0.9, hat: 1, oh: 0.7, rim: 0.4, sub: 1, bass: 1, acid: 1, ghost: 1, stab: 1, pad: 0.4, solo: 1.0, soloPart: 2, siren: 0.6, riser: 0, vinyl: 0.3 } },
+  { at: 41, len: 8, name: 'BREAK', values: { break: 0.55, amen: 0.3, chop: 0, kick: 0, snare: 0, clap: 0, hat: 0.3, oh: 0, rim: 0.7, sub: 0, bass: 0, acid: 0.45, ghost: 0.9, stab: 0.5, pad: 1.0, solo: 1.0, soloPart: 1, siren: 0.7, riser: 0, vinyl: 1 } },
+  { at: 49, len: 8, name: 'RETURN', values: { break: 1, amen: 0.6, chop: 0.6, kick: 1, snare: 1, clap: 0.8, hat: 1, oh: 0.7, rim: 0.5, sub: 1, bass: 1, acid: 1, ghost: 0.8, stab: 0.8, pad: 0.4, solo: 0.85, soloPart: 0, siren: 0, riser: 0, vinyl: 0.4 } },
+  { at: 57, len: 7, name: 'OUTRO', values: { break: 0.7, amen: 0, chop: 0, kick: 0, snare: 0, clap: 0, hat: 0.25, oh: 0, rim: 0, sub: 0, bass: 0, acid: 0.4, ghost: 0.5, stab: 0.4, pad: 0.8, solo: 0.3, soloPart: 0, siren: 0.2, riser: 0, vinyl: 1 } },
 ]
 
 const AUTOMATION = [
@@ -301,12 +308,47 @@ const STAB_A = phrase([
   '~ ~ ~ ~ ~ ~ [bb3,f4,ab4] ~ ~ ~ ~ ~ ~ ~ ~ ~',
   '~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ [f4,bb4,c5] ~ ~ ~',
 ])
+const solos = (bars) => note(m('<' + bars.map((bar) => '[' + bar + ']').join(' ') + '>'))
+const SOLO_A = solos([
+  'g3 ~ bb3 c4 ~ eb4 ~ g4 ~ eb4 c4 ~ bb3 ~ g3 ~',
+  '~ f4 ~ eb4 d4 ~ c4 ~ bb3 ~ g3 ~ eb3 ~ f3 g3',
+  'c4 ~ eb4 ~ g4 ~ bb4 ~ ab4 ~ g4 ~ eb4 ~ c4 ~',
+  '~ bb4 ~ ab4 g4 ~ f4 ~ eb4 ~ c4 ~ bb3 ~ ab3 ~',
+  'g3 ~ c4 ~ eb4 ~ g4 ~ bb4 ~ g4 ~ eb4 ~ c4 ~',
+  '~ d4 ~ f4 ~ g4 ~ bb4 ~ g4 ~ f4 ~ eb4 ~ c4',
+  'f4 ~ g4 ~ bb4 ~ d5 ~ c5 ~ bb4 ~ g4 ~ f4 ~',
+  '~ eb5 ~ d5 ~ c5 ~ bb4 ~ f4 ~ d4 ~ bb3 ~',
+])
+const SOLO_B = solos([
+  'g4 bb4 c5 eb5 g5 ~ eb5 c5 bb4 g4 ~ eb5 ~ c5 bb4',
+  'c5 d5 eb5 f5 g5 ~ f5 eb5 d5 c5 ~ bb4 ~ g4 eb4',
+  'c5 eb5 g5 bb5 ~ ab5 g5 eb5 c5 ~ bb4 ~ g4 eb4',
+  '~ c5 eb5 g5 bb5 ~ c6 ~ bb5 g5 eb5 c5 ~ bb4 ~',
+  'g4 c5 eb5 g5 ~ bb5 g5 eb5 c5 ~ g4 ~ eb4 c4',
+  'd5 f5 g5 bb5 ~ c6 bb5 g5 f5 ~ d5 ~ c5 bb4',
+  'f4 bb4 d5 f5 ~ bb5 f5 d5 ~ c5 ~ bb4 ~ f4 ~',
+  'eb5 f5 g5 bb5 ~ c6 ~ d6 ~ c6 bb5 g5 f5 eb5 d5',
+])
+const SOLO_C = solos([
+  'c4 d4 eb4 f4 g4 ab4 bb4 c5 ~ bb4 ab4 g4 f4 eb4 d4 c4',
+  'c5 d5 eb5 f5 g5 ab5 bb5 c6 ~ bb5 ab5 g5 f5 eb5 d5 c5',
+  'c4 eb4 g4 ab4 c5 eb5 g5 ab5 ~ g5 eb5 c5 ab4 g4 eb4 c4',
+  'c4 d4 eb4 g4 ab4 c5 d5 eb5 ~ d5 c5 ab4 g4 eb4 d4 c4',
+  'c4 d4 eb4 f4 g4 ab4 bb4 c5 ~ bb4 ab4 g4 f4 eb4 d4 c4',
+  'eb5 f5 g5 ab5 bb5 c6 ~ bb5 ab5 g5 f5 eb5 d5 c5 ~',
+  'bb3 c4 d4 f4 g4 bb4 c5 d5 ~ c5 bb4 g4 f4 d4 c4 bb3',
+  'bb4 c5 d5 f5 g5 bb5 c6 d6 ~ c6 bb5 g5 f5 d5 c5 bb4',
+])
 const SUB = note(BASS_A).ctranspose(-12)
 const BASS = note(BASS_A)
 const STAB = note(STAB_A)
 const ACID = note(ACID_A)
 const MEL = note(MEL_A)
 const PAD = note(PAD_A)
+const soloPart = tlCurve('soloPart').mul(songGate)
+  .add(pure(0).mul(loopGate))
+  .add(sectionValue('soloPart').mul(holdGate))
+const SOLO = soloPart.pick([SOLO_A, SOLO_B, SOLO_C])
 
 const grooves = {
   kick: [
@@ -472,11 +514,31 @@ $: STAB.s('sawtooth').clip(0.4)
 // PAD — low sustained chord bed, only where the arrangement asks for air.
 $: PAD.s('sawtooth').clip(1)
   .gain(keys.pad.vol.mul(tlOr('pad')))
-  .lpf(keys.pad.cut).lpq(1)
-  .attack(keys.pad.att).decay(keys.pad.dec).sustain(0.8).release(1.2)
-  .room(verb.mul(1.0)).roomsize(fx.reverb.size)
-  .orbit(2)
+  .hpf(180).lpf(keys.pad.cut).lpq(1)
+  .attack(keys.pad.att).decay(keys.pad.dec).sustain(0.8).release(2.4)
+  .chorus(0.35)
+  .room(verb.mul(1.0)).roomsize(8).roomlp(9000).roomdim(0.2)
+  .pan(sine.slow(16).range(0.3, 0.7))
+  .orbit(3)
   .mask(gateOf('pad'))
+
+// JAZZ SOLO — a brighter, louder Rhodes; phrase changes by section.
+const soloRhodes = (pat, g, cut, att, dec, hold) => stack(
+  pat.s(WAVE).gain(g).attack(att).decay(dec).sustain(0.12).release(0.7),
+  pat.ctranspose(12).s('sine').gain(g.mul(0.16)).attack(0.001).decay(0.14).sustain(0).release(0.06),
+  )
+  .clip(hold)
+  .lpf(cut).lpq(1)
+  .chorus(0.35)
+  .tremolo(5.5).tremolodepth(0.22)
+  .delay(0.2).delaytime(0.375).delayfeedback(0.3)
+
+// JAZZ SOLO — phrase switches by section: normal / high+fast / scales.
+$: soloRhodes(SOLO.ctranspose(OCT), keys.solo.vol.mul(tlOr('solo')), keys.solo.cut, keys.solo.att, keys.solo.dec, 1.4)
+  .room(verb.mul(0.75)).roomsize(fx.reverb.size)
+  .pan(sine.slow(6).range(0.4, 0.6))
+  .orbit(4)
+  .mask(gateOf('solo'))
 
 // SIREN — band-passed noise with a slow envelope; the "shout" replacement.
 $: s('white').slow(8).bpf(660).bpq(11).bpenv(3)
