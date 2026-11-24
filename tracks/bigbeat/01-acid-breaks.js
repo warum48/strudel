@@ -1,4 +1,5 @@
 // BIG BEAT 01 · acid breaks · 125 BPM · C minor
+// VARIANT: heavy jungle break (Amen-led).
 // DNA: looped break as the hook + 909 backbeat + TB-303 acid + fuzz bass +
 // power-chord stabs, with build / stop / drop events. Instrumental only:
 // no vocals and no imitation of acoustic instruments.
