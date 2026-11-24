@@ -113,11 +113,12 @@ individual hits or `sometimesBy` to nudge.
 - Groove: `swingBy(0.06, 8)`, `.late(1/64)` nudges, `sometimesBy` variations.
 - Bass: `note(m('...'))` + `.s('sine')`/`sawtooth`, `.lpf`, `.distort`,
   sidechain via `duckorbit`.
-- Scratch without vocals: take a short percussive sample and splice it
-  back-and-forth, e.g.
-  `s('cb').splice(16, m('0 1 0 1 3 1 0 1')).hpf(300).lpf(6000)`.
-  `splice(n, idx)` re-plays slices, so the same slice alternating sounds like a
-  turntable scratch. No rapper/vocal samples needed.
+- Scratch: use a **long vocal one-shot**, not a short drum hit. Trim a phrase
+  (2–3 s), then slice it back-and-forth, e.g.
+  `s('mlk').slice(8, m('0 7 0 7 2 5 2 5')).hpf(350).lpf(6500)`.
+  The index jumps between the start and end of the phrase; longer grains read as
+  a turntable scratch, short grains just click. Keep it on its own `Scratch`
+  instrument so it can be muted/soloed.
 - Starter shape: `tracks/_selected/new-track.js`; full reference:
   `tracks/coldwave/03-cold-rooms-v3.js`; dark mix example:
   `tracks/hip-hop/03-black-ice-v3.js`.

@@ -1,7 +1,7 @@
 // dark hip-hop · BLACK ICE V3 · 88 BPM
-// v2 BREAK (riff + riser + roll, scratch overlay) → intro 8 → verse 8 →
-// intro copy 8 → verse 8. D+A drone with a 4-bar filter sweep, no Eb.
-// No vocal/rapper samples. Native Strudel.
+// v2 BREAK (riff + riser + roll + MLK-speech scratch) → intro 8 → verse 8 →
+// intro copy 8 → verse 8 → outro 4 (drone + applause). D+A drone with a 4-bar
+// filter sweep. Two short MLK excerpts for scratch/applause (personal use).
 setcpm(88 / 4)
 
 if (typeof samples === 'function') {
@@ -14,6 +14,9 @@ if (typeof samples === 'function') {
     rim: ['rim/10_rim_switchangel.wav'],
     cb: ['cb/10_perc_switchangel.wav'],
   }, CDN)
+  // two short excerpts of an MLK speech (archive.org), personal use:
+  // mlk = applause tail, mlk2 = a spoken phrase for the scratch
+  samples({ mlk: ['mlk/mlk.wav'], mlk2: ['mlk/mlk2.wav'] }, '/samples/')
 }
 
 const UI = {
@@ -48,23 +51,25 @@ const instruments = {
     reverb: { name: 'Reverb', size: slider(4, 1, 9, 0.5) },
     noise: { name: 'Noise', vol: slider(0.03, 0, 0.2, 0.005) },
     scratch: { name: 'Scratch', vol: slider(0.55, 0, 1, 0.01) },
+    applause: { name: 'Applause', vol: slider(0.35, 0, 1, 0.01) },
   },
 }
 const { drums, bass, keys, fx } = instruments
 
-// V2 BREAK (4) → INTRO (8) → VERSE (8) → INTRO copy (8) → VERSE (8)
+// V2 BREAK (4) → INTRO (8) → VERSE (8) → INTRO copy (8) → VERSE (8) → OUTRO (4)
 const TIMELINE = [
-  { at: 0, len: 4, name: 'V2 BREAK', values: { kick: 0, snare: 0, ghost: 0, hat: 0, bass: 0, motif: 0, pad: 0, perc: 0, motif2: 1, riser: 1, scratch: 1 } },
-  { at: 4, len: 8, name: 'INTRO', values: { kick: 1, hat: 1, snare: 0.7, ghost: 0.35, bass: 0.5, motif: 0, pad: 1, perc: 0.4, motif2: 1, riser: 0, scratch: 0 } },
-  { at: 12, len: 8, name: 'VERSE', values: { kick: 1, hat: 1, snare: 1, ghost: 1, bass: 1, motif: 1, pad: 0.8, perc: 1, motif2: 0, riser: 0, scratch: 0 } },
-  { at: 20, len: 8, name: 'INTRO 2', values: { kick: 1, hat: 1, snare: 0.7, ghost: 0.35, bass: 0.5, motif: 0, pad: 1, perc: 0.4, motif2: 1, riser: 0, scratch: 0 } },
-  { at: 28, len: 8, name: 'VERSE 2', values: { kick: 1, hat: 1, snare: 1, ghost: 1, bass: 1, motif: 1, pad: 0.8, perc: 1, motif2: 0, riser: 0, scratch: 0 } },
+  { at: 0, len: 4, name: 'V2 BREAK', values: { kick: 0, snare: 0, ghost: 0, hat: 0, bass: 0, motif: 0, pad: 0, perc: 0, motif2: 1, riser: 1, scratch: 1, applause: 0 } },
+  { at: 4, len: 8, name: 'INTRO', values: { kick: 1, hat: 1, snare: 0.7, ghost: 0.35, bass: 0.5, motif: 0, pad: 1, perc: 0.4, motif2: 1, riser: 0, scratch: 0, applause: 0 } },
+  { at: 12, len: 8, name: 'VERSE', values: { kick: 1, hat: 1, snare: 1, ghost: 1, bass: 1, motif: 1, pad: 0.8, perc: 1, motif2: 0, riser: 0, scratch: 0, applause: 0 } },
+  { at: 20, len: 8, name: 'INTRO 2', values: { kick: 1, hat: 1, snare: 0.7, ghost: 0.35, bass: 0.5, motif: 0, pad: 1, perc: 0.4, motif2: 1, riser: 0, scratch: 0, applause: 0 } },
+  { at: 28, len: 8, name: 'VERSE 2', values: { kick: 1, hat: 1, snare: 1, ghost: 1, bass: 1, motif: 1, pad: 0.8, perc: 1, motif2: 0, riser: 0, scratch: 0, applause: 0 } },
+  { at: 36, len: 4, name: 'OUTRO', values: { kick: 0, snare: 0, ghost: 0, hat: 0, bass: 0, motif: 0, pad: 1, perc: 0, motif2: 0, riser: 0, scratch: 0, applause: 1 } },
 ]
 
 // v1 automation shifted +4; break uses v2's motif filter 0.6 → 0.9.
 const AUTOMATION = [
-  { path: 'keys.motif.cut', points: [[0, 0.6], [4, 0.9], [12, 1], [36, 1.5]] },
-  { path: 'bass.sub.cut', points: [[4, 0.7], [12, 1], [20, 1.3], [28, 1.5], [36, 1.8]] },
+  { path: 'keys.motif.cut', points: [[0, 0.6], [4, 0.9], [12, 1], [16, 2.4], [20, 1], [28, 1], [32, 2.4], [36, 1], [40, 1.2]] },
+  { path: 'bass.sub.cut', points: [[4, 0.7], [12, 1], [20, 1.3], [28, 1.5], [36, 1.8], [40, 1.2]] },
 ]
 
 const TL_TOTAL = Math.max(...TIMELINE.map((s) => s.at + s.len))
@@ -148,13 +153,21 @@ $: s('sd').struct(m('~ ~ ~ ~ ~ ~ ~ ~ x x x x x x x x'))
   .hpf(300).decay(0.06).sustain(0)
   .mask(gateOf('riser'))
 
-// ── SCRATCH: dedicated instrument, whole break, sample spliced back/forth ──
-$: s('cb').splice(16, m('0 15 4 11'))
+// ── SCRATCH: MLK spoken phrase sliced back-and-forth (second variant) ──
+$: s('mlk2').slice(8, m('0 7 0 7 3 4 3 4'))
   .gain(fx.scratch.vol.mul(tlOr('scratch')))
-  .hpf(300).lpf(7000)
+  .hpf(350).lpf(6500)
   .pan(m('<-0.5 0.5 -0.5 0.5>'))
-  .room(space.mul(0.15)).roomsize(3)
+  .room(space.mul(0.12)).roomsize(3)
   .mask(gateOf('scratch'))
+
+// ── APPLAUSE: the first excerpt, moved to the very end ──
+$: s('mlk').slice(8, m('0 7 0 7 2 5 2 5'))
+  .gain(fx.applause.vol.mul(tlOr('applause')))
+  .hpf(200).lpf(8000)
+  .pan(m('<-0.3 0.3 -0.3 0.3>'))
+  .room(space.mul(0.5)).roomsize(7)
+  .mask(gateOf('applause'))
 
 // ══ V1 (copied from 01-black-ice.js) ═════════════════════════════
 $: s('bd').struct(m('x ~ ~ ~ ~ x ~ ~ x ~ ~ ~ ~ x ~ ~'))
