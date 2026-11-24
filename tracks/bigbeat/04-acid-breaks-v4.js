@@ -46,14 +46,14 @@ const instruments = {
     name: 'Drums',
     break: {
       name: 'Break',
-      vol: slider(0.1, 0, 1.2, 0.01),
+      vol: slider(0.59, 0, 1.2, 0.01),
       cut: slider(7000, 50, 14000, 100),
       grit: slider(0.28, 0, 0.9, 0.01),
       crush: slider(13, 8, 16, 0.5),
     },
     amen: {
       name: 'Amen weight',
-      vol: slider(0.19, 0, 0.8, 0.01),
+      vol: slider(0.58, 0, 0.8, 0.01),
       cut: slider(600, 50, 1200, 10),
     },
     chop: {
@@ -359,22 +359,22 @@ const SOLO_D = solos([
   '~ g4 f4 eb4 ~ f4 eb4 d4 ~ eb4 d4 c4 ~ bb3 g3 ~',
   'c4 eb4 g4 ~ eb4 g4 bb4 ~ g4 bb4 c5 ~ bb4 g4 eb4 c4',
   '~ c5 bb4 ab4 ~ bb4 ab4 g4 ~ ab4 g4 eb4 ~ c4 eb4 g4 ~',
-  'g3 c4 eb4 ~ c4 eb4 g4 ~ eb4 g4 bb4 ~ g4 eb4 c4 g3',
-  '~ d4 f4 g4 ~ f4 g4 bb4 ~ g4 bb4 c5 ~ bb4 g4 f4 d4',
-  'f4 g4 bb4 ~ g4 bb4 d5 ~ bb4 d5 f5 ~ d5 bb4 g4 f4',
+  'g4 c5 eb5 ~ c5 eb5 g5 ~ eb5 g5 bb5 ~ g5 eb5 c5 g4',
+  '~ d5 f5 g5 ~ f5 g5 bb5 ~ g5 bb5 c6 ~ bb5 g5 f5 d5',
+  'f5 g5 bb5 ~ g5 bb5 d6 ~ bb5 d6 f6 ~ d6 bb5 g5 f5',
   '~ eb5 d5 c5 ~ d5 c5 bb4 ~ c5 bb4 f4 ~ d4 f4 bb4 ~',
 ])
 
 // SOLO_E — DROP 2A: thinned scale runs; two groups of three per half-bar
 // are quarter-note triplets (3 notes across 2 beats).
 const SOLO_E = solos([
-  '[c4 d4 eb4] [f4 g4 ab4]',
+  '[g4 a4 bb4] [c5 d5 eb5]',
   'c5 d5 eb5 f5 g5 ab5 bb5 c6 ~ bb5 ab5 g5 f5 eb5 d5 c5',
-  '[c4 eb4 g4] [bb4 g4 eb4]',
+  '[f4 ab4 c5] [eb5 c5 ab4]',
   'c4 d4 eb4 g4 ab4 c5 d5 eb5 ~ d5 c5 ab4 g4 eb4 d4 c4',
   '[g4 c5 eb5] [g5 eb5 c5]',
   'eb5 f5 g5 ab5 bb5 c6 ~ bb5 ab5 g5 f5 eb5 d5 c5 ~',
-  '[bb3 c4 d4] [f4 g4 bb4]',
+  '[eb4 f4 g4] [bb4 c5 eb5]',
   'bb4 c5 d5 f5 g5 bb5 c6 d6 ~ c6 bb5 g5 f5 d5 c5 bb4',
 ])
 const SUB = note(BASS_A).ctranspose(-12)
