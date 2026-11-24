@@ -324,3 +324,16 @@ Tutorials (authoritative, checked):
   (subsections: /mixing-production, /drum-machines, /samplers-sampling)
 - Ableton — Learning Music (official interactive basics):
   https://learningmusic.ableton.com/
+
+Dark hip-hop:
+
+- Attack — UK Drill (half-time, sliding 808, syncopated kicks):
+  https://www.attackmagazine.com/technique/beat-dissected/uk-drill/
+- Attack — Make UK Drill (Dutchavelli / M24):
+  https://www.attackmagazine.com/technique/beat-dissected/make-uk-drill-in-the-style-of-dutchavelli-or-m24/
+- Attack — Creating 808-Style Basslines:
+  https://www.attackmagazine.com/technique/tutorials/creating-808-style-basslines-for-jungle-trap-and-footwork/
+- Attack — Choosing The Right Key For Bass Weight:
+  https://www.attackmagazine.com/technique/passing-notes/choosing-keys-for-bass-weight/
+- Real World Music Theory — Phrygian for dark/eerie moods:
+  https://realworldmusictheory.com/how-to-create-dark-eerie-and-foreboding-moods-with-the-phrygian-mode/

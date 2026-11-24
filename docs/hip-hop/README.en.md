@@ -235,6 +235,42 @@ $: CHORDS.slow(2).s('triangle').unison(2).detune(0.08)
 Voicings: Dm9 = D F A C E; Gm9 = G B♭ D F A; A7♭9 = A C♯ E G B♭ (spelled `db`).
 Keep this in the mid-range; leave 1–4 kHz for a (future) vocal.
 
+## 13. Dark hip-hop
+
+Darkness is **harmonic + spatial**, not just slow:
+
+- **Scales:** Phrygian (♭2 — the "menace" note), harmonic minor (♯7 adds a
+  leading-tone bite), and the ♭II "Neapolitan" move. A tritone or a minor 2nd
+  held against the root does more than any "dark" preset.
+- **Motif:** 3–5 notes, mostly stepwise with one semitone crunch (e.g. D–E♭–F–A–B♭–A–C♯–E♭).
+  Repeat it; let the filter open it across sections.
+- **Drone:** low root+fifth (D+A) with a ♭2 or ♭6 note creeping in; detune a
+  saw, low-pass hard, long attack/release.
+- **Drums:** either half-time (snare on 3) or punchy boom-bap with a heavy kick.
+  Sliding 808 under the kick, ghost snares, sparse rim/clap; hats can be
+  triplet-ish but leave holes.
+- **Space:** short dark room on snare/rim, a low pink-noise bed, tape/vinyl
+  grit on the bus; keep the sub dry. Saturation on kick/808 for phone speakers.
+- **Arrangement:** drone + motif can carry the intro; drop drums for a bar
+  before the hook. Silence is menace.
+
+Reference implementation: `tracks/hip-hop/01-black-ice.js` — 88 BPM boom-bap in
+D Phrygian with a C♯ accent, sliding 808 ducked under the kick, ghost snares,
+swung hats, low drone; AUTOMATION opens the motif filter into the hook.
+
+Dark-specific tutorials (links checked):
+
+- Attack — **UK Drill** (half-time, sliding 808, syncopated kicks):
+  https://www.attackmagazine.com/technique/beat-dissected/uk-drill/
+- Attack — **Make UK Drill (Dutchavelli / M24)**:
+  https://www.attackmagazine.com/technique/beat-dissected/make-uk-drill-in-the-style-of-dutchavelli-or-m24/
+- Attack — **Creating 808-Style Basslines** (glides, layers, distortion):
+  https://www.attackmagazine.com/technique/tutorials/creating-808-style-basslines-for-jungle-trap-and-footwork/
+- Attack — **Choosing The Right Key For Bass Weight**:
+  https://www.attackmagazine.com/technique/passing-notes/choosing-keys-for-bass-weight/
+- Real World Music Theory — **Phrygian for dark/eerie moods**:
+  https://realworldmusictheory.com/how-to-create-dark-eerie-and-foreboding-moods-with-the-phrygian-mode/
+
 ## Sources (checked)
 
 - Swing time — ratio 1:1–3:1, triplet 2:1, wider at slow tempos:

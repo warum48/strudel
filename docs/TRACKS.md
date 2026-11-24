@@ -25,6 +25,14 @@ source of truth for exact parameter values.
 | `03-dnb-live-v3.js` | 174 | — | 12 | 39 | loop | Adds a per-bar drone with a moving filter. |
 | `04-dnb-live-v4.js` | 174 | — | 12 | 46 | loop | Adds a Bb→C→F bassline with a pressure-sensitive filter. |
 
+## Dark hip-hop — `tracks/hip-hop/`
+
+| File | BPM | Bars | Layers | Sliders | Transport | Description |
+|---|---:|---:|---:|---:|---|---|
+| `01-black-ice.js` | 88 | 32 | 10 | 21 | play | Dark boom-bap: D Phrygian + C♯ accent, sliding 808 ducked under a punchy kick, ghost-note snares, swung hats, low drone. |
+
+Style notes: `docs/hip-hop/README.en.md`.
+
 ## Breakcore — `tracks/breakcore/`
 
 | File | BPM | Bars | Layers | Sliders | Transport | Description |
