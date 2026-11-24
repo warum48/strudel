@@ -183,6 +183,15 @@ that is engine behavior, not a broken track.
 - On macOS `Cmd+Enter` / `Cmd+.` also work via a capture listener on `#root`;
   Ctrl stays with the editor, so there is no double eval.
 
+## Agent API and NEW TRACK
+
+- `window.strudex` exposes a stable browser API: `ready`, `closeIntro`,
+  `listTracks`, `loadTrack`, `newTrack`, `getCode`, `setCode` (set + play),
+  `play`, `stop`, `getTrack`, `getStatus`. The intro's **AI** tab shows a
+  copyable prompt; `/llms.txt` is the machine-readable entry point.
+- `NEW TRACK` loads `/tracks/_selected/new-track.js`: a two-section starter
+  (kick + hat, D-minor eighths arp, pad from section 2, cutoff automation ×2).
+
 ## Mobile (`max-width: 900px`)
 
 - The header keeps only the track title; the picker, theme, JSON/Track exchange,

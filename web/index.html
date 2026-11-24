@@ -4,6 +4,23 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link rel="icon" type="image/svg+xml" href="/web/favicon.svg" />
+<link rel="llms" href="/llms.txt" />
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "STRUDEX — Strudel Expander",
+  "applicationCategory": "MultimediaApplication",
+  "operatingSystem": "Web browser",
+  "isAccessibleForFree": true,
+  "description": "Browser studio for live-coding Strudel tracks: a mixer built from sliders, TIMELINE/AUTOMATION form, and a stable agent API (window.strudex).",
+  "url": "https://strudex.runyourbiz.dpdns.org/",
+  "sameAs": [
+    "https://strudex.runyourbiz.dpdns.org/llms.txt",
+    "https://strudex.runyourbiz.dpdns.org/docs/prompt-track.en.md"
+  ]
+}
+</script>
 <title>STRUDEL EXTENSION</title>
 <style>
   :root {
@@ -47,6 +64,7 @@
      into a dropdown under the hamburger */
   #hdrMenu { display: contents; }
   #track { order: -1; }
+  #newTrack { order: -1; }
   .menu-btn {
     display: none;
     align-items: center;
@@ -592,6 +610,7 @@
     header.menu-open #hdrMenu { display: flex; }
     #hdrMenu .spacer { display: none; }
     #hdrMenu #track { order: 0; max-width: none; width: 100%; }
+    #hdrMenu #newTrack { order: 0; width: 100%; }
     #hdrMenu #theme { width: 100%; }
     #hdrMenu #tools { flex-wrap: wrap; }
     #hdrMenu #samples, #hdrMenu #help { width: 100%; text-align: center; }
@@ -635,6 +654,7 @@
   <button id="menuBtn" type="button" class="menu-btn" aria-label="menu" aria-expanded="false">☰</button>
   <div id="hdrMenu">
     <select id="track" title="track (any file from tracks/)"></select>
+    <button id="newTrack" type="button" class="ghost" title="load a blank starter track">NEW TRACK</button>
     <span class="spacer"></span>
     <span id="status">loading…</span>
     <select id="theme" title="editor color theme"></select>

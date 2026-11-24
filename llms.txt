@@ -1,0 +1,64 @@
+# STRUDEX — Strudel Expander
+
+A browser studio for live-coding music with Strudel (JavaScript). Each track is
+one readable `.js` file; the panel is a live view over that code (mixer, timeline,
+automation). It is designed to be driven by an AI agent as well as a human.
+
+## Quickstart for an agent
+
+1. Open the site. Close the intro with `window.strudex.closeIntro()`.
+2. Read, in order:
+   - `/docs/prompt-track.en.md` — the track-generation brief and file standard
+   - `/docs/rules.en.md` — style frames and anti-patterns
+   - `/docs/pitfalls.en.md` — Strudel gotchas (mandatory)
+   - `/docs/references.en.md` — external sources index
+3. Study examples under `/tracks/_selected/` (public set) and
+   `/tracks/coldwave/03-cold-rooms-v3.js` (full reference: TIMELINE, AUTOMATION,
+   `autoCurve`, `tlCurve`, `UI` manifest).
+4. Write the track, then apply and start it in one call:
+   `window.strudex.setCode(code)`.
+5. When the user asks for changes: `const cur = window.strudex.getCode()`,
+   edit it, `window.strudex.setCode(edited)` again.
+
+Hard rules: sound must work in stock strudel.cc; mini-notation only through
+`m(...)`; automation only via native `autoCurve`/`arrange`; no negative literals
+in `slider(...)`.
+
+This is **not SUNO**: you generate code for browser synthesizers, not audio.
+Never imitate acoustic instruments (saxophone, flute, violin, trumpet, winds) and
+never add vocals or "songs". If the user explicitly asks for those, say plainly
+that this is a synth/electronic studio and offer the closest electronic timbre
+(Moog-like voice, Rhodes, synth brass). With no explicit request, silently pick
+the electronic equivalent — do not announce it. See `/docs/rules.en.md`.
+
+## Stable browser API — `window.strudex`
+
+| Method | Meaning |
+|---|---|
+| `ready()` | Promise; resolves when the engine has booted |
+| `closeIntro()` | Close the intro overlay if open |
+| `listTracks()` | Promise<string[]> of track paths from `/api/tracks` |
+| `loadTrack(path)` | Load and play a track file |
+| `newTrack()` | Load the blank starter (`/tracks/_selected/new-track.js`) |
+| `getCode()` | Current editor code as a string |
+| `setCode(code)` | Replace the editor code, evaluate and play |
+| `play()` / `stop()` | Transport |
+| `getTrack()` | Currently loaded track path |
+| `getStatus()` | Status-line text (errors show up here) |
+
+UI ids if a real click is needed: `#track` (picker), `#newTrack`, `#play`,
+`#stop`, `#root` (editor), `#status`, `#help`.
+
+## Track shape
+
+`setcpm(BPM/4)` → optional `samples({...})` → `const UI` (transport/switches) →
+`const instruments` (mixer tree of `slider(...)`) → `const TIMELINE` →
+`const AUTOMATION` → helper functions (`tlCurve`, `tlOr`, `gateOf`, `autoCurve`,
+`autoAt`) → `$:` lanes. See `/docs/prompt-track.en.md` for the full standard and
+`/tracks/_selected/new-track.js` for a tiny two-section starter.
+
+## Hosts
+
+- Localhost sees the full library.
+- Any other host (the public deployment) lists and serves only
+  `/tracks/_selected/`; other track files answer 404.

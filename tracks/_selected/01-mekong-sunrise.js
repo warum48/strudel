@@ -1,4 +1,6 @@
 //  LOUNGE · MEKONG SUNRISE · 122 BPM
+// @mutes muteSkor,muteSampho,muteChhing
+// @roots f f ab ab db db gb gb
 
 const BPM = 122
 setcpm(BPM / 4)

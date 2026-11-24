@@ -106,6 +106,26 @@ const CONTENT = {
     pick: 'Выбери трек',
     language: 'Язык',
   },
+  ai: {
+    pages: [
+      `
+        <p><b>This studio is agent-ready.</b> Every track is one readable JS file; the panel is a live view over that code. There is a small stable API and plain-text docs, so an AI agent can drive it without clicking through the UI.</p>
+        <p>Open the site for your agent and say what you want in one line — for example “make me a hip-hop track”. The agent can close this intro, read the template and examples, write the track, and set it live.</p>
+        <p>Agent entry point: <code>/llms.txt</code>. Template: <code>/docs/prompt-track.en.md</code>. Rules: <code>/docs/rules.en.md</code>, <code>/docs/pitfalls.en.md</code>. Examples: <code>/tracks/_selected/</code>.</p>
+      `,
+      `
+        <p>Give your agent this prompt:</p>
+        <pre class="se-prompt">{PROMPT}</pre>
+        <button type="button" class="se-copy-prompt" id="seCopyPrompt">COPY PROMPT</button>
+      `,
+    ],
+    intro: 'STRUDEX — for AI agents',
+    close: 'Close',
+    next: 'Next',
+    step: 'Step',
+    pick: 'Pick a track',
+    language: 'Language',
+  },
 };
 
 let lang = 'en';
@@ -247,13 +267,13 @@ const STYLE = `
     background: #b3d80d;
     box-shadow: 0 0 10px rgba(179, 216, 13, 0.5);
   }
-  .se-intro .se-lang {
+  .se-intro .se-lang, .se-intro .se-mode {
     display: flex;
     gap: 4px;
     padding-left: 14px;
     border-left: 1px solid #262b22;
   }
-  .se-intro .se-lang button {
+  .se-intro .se-lang button, .se-intro .se-mode button {
     padding: 4px 7px;
     background: transparent;
     border: 1px solid #2b3226;
@@ -265,11 +285,34 @@ const STYLE = `
     line-height: 1;
     cursor: pointer;
   }
-  .se-intro .se-lang button:hover { color: #e8e8e8; border-color: #3a4234; }
-  .se-intro .se-lang button.on {
+  .se-intro .se-lang button:hover, .se-intro .se-mode button:hover { color: #e8e8e8; border-color: #3a4234; }
+  .se-intro .se-lang button.on, .se-intro .se-mode button.on {
     background: #b3d80d;
     border-color: #b3d80d;
     color: #0d0f0c;
+  }
+  .se-intro .se-prompt {
+    margin: 10px 0 12px;
+    padding: 10px 12px;
+    max-height: 200px;
+    overflow: auto;
+    background: #0d0f0c;
+    border: 1px solid #2b3226;
+    border-radius: 4px;
+    color: #cbd2c2;
+    font: 11px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace;
+    white-space: pre-wrap;
+  }
+  .se-intro .se-copy-prompt {
+    padding: 7px 12px;
+    background: #b3d80d;
+    border: 1px solid #b3d80d;
+    border-radius: 3px;
+    color: #0d0f0c;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    cursor: pointer;
   }
   .se-intro .se-next {
     margin-left: auto;
@@ -461,6 +504,10 @@ function mount() {
         <div class="se-copy" id="seCopy" aria-live="polite"></div>
         <div class="se-foot">
           <div class="se-dots" id="seDots"></div>
+          <div class="se-mode" id="seMode" role="group" aria-label="Audience">
+            <button type="button" data-mode="human" class="on" aria-pressed="true">HUMAN</button>
+            <button type="button" data-mode="ai" aria-pressed="false">AI</button>
+          </div>
           <div class="se-lang" id="seLang" role="group" aria-label="Language">
             <button type="button" data-lang="en" class="on" aria-pressed="true">EN</button>
             <button type="button" data-lang="ru" aria-pressed="false">RU</button>
@@ -482,15 +529,25 @@ function mount() {
   const copy = overlay.querySelector('#seCopy');
   const dots = overlay.querySelector('#seDots');
   const langGroup = overlay.querySelector('#seLang');
+  const modeGroup = overlay.querySelector('#seMode');
   const next = overlay.querySelector('#seNext');
   const trackList = overlay.querySelector('#seTracks');
   const closeBtn = overlay.querySelector('.se-x');
   const rightCap = overlay.querySelector('.se-right-cap');
 
   let page = 0;
+  let mode = 'human'; // human | ai
+
+  const activeContent = () => (mode === 'ai' ? CONTENT.ai : CONTENT[lang]);
+  const promptForAgent = () =>
+    `Open ${location.origin} . Read /llms.txt and /docs/prompt-track.en.md. ` +
+    `Close the intro with window.strudex.closeIntro(). Study /tracks/_selected/ examples. ` +
+    `Make me a hip-hop track: write the Strudel code, then apply and start it with window.strudex.setCode(code). ` +
+    `Keep it native Strudel (mini-notation only through m(...)). ` +
+    `When I ask for changes, read the current code with window.strudex.getCode(), edit it, and call setCode again.`;
 
   const renderDots = () => {
-    const t = CONTENT[lang];
+    const t = activeContent();
     dots.innerHTML = t.pages
       .map(
         (_, i) =>
@@ -502,8 +559,8 @@ function mount() {
   };
 
   const renderPage = () => {
-    const t = CONTENT[lang];
-    copy.innerHTML = t.pages[page];
+    const t = activeContent();
+    copy.innerHTML = t.pages[page].replaceAll('{PROMPT}', promptForAgent());
     copy.classList.remove('se-page-in');
     void copy.offsetWidth;
     copy.classList.add('se-page-in');
@@ -513,9 +570,15 @@ function mount() {
     next.setAttribute('aria-label', last ? t.close : t.next);
     closeBtn.setAttribute('aria-label', t.close);
     modal.setAttribute('aria-label', t.intro);
-    modal.setAttribute('lang', lang);
+    modal.setAttribute('lang', mode === 'ai' ? 'en' : lang);
     langGroup.setAttribute('aria-label', t.language);
+    langGroup.style.display = mode === 'ai' ? 'none' : '';
     rightCap.textContent = t.pick;
+    for (const btn of modeGroup.querySelectorAll('[data-mode]')) {
+      const on = btn.dataset.mode === mode;
+      btn.classList.toggle('on', on);
+      btn.setAttribute('aria-pressed', String(on));
+    }
     for (const btn of langGroup.querySelectorAll('[data-lang]')) {
       const on = btn.dataset.lang === lang;
       btn.classList.toggle('on', on);
@@ -530,8 +593,16 @@ function mount() {
     copy.scrollTop = 0;
   };
 
+  const setMode = (nextMode) => {
+    if (nextMode === mode || (nextMode !== 'human' && nextMode !== 'ai')) return;
+    mode = nextMode;
+    page = 0;
+    renderPage();
+    copy.scrollTop = 0;
+  };
+
   const nextPage = () => {
-    if (page < CONTENT[lang].pages.length - 1) {
+    if (page < activeContent().pages.length - 1) {
       page += 1;
       renderPage();
       copy.scrollTop = 0;
@@ -543,6 +614,11 @@ function mount() {
   const close = () => {
     document.removeEventListener('keydown', onKey, true);
     overlay.remove();
+  };
+  // agent API hook: window.strudex.closeIntro()
+  window.__strudelCloseIntro = () => {
+    if (overlay.isConnected) close();
+    return true;
   };
 
   function onKey(e) {
@@ -576,6 +652,29 @@ function mount() {
     const btn = e.target.closest('[data-lang]');
     if (!btn) return;
     setLanguage(btn.dataset.lang);
+  });
+  modeGroup.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-mode]');
+    if (!btn) return;
+    setMode(btn.dataset.mode);
+  });
+  copy.addEventListener('click', async (e) => {
+    const btn = e.target.closest('#seCopyPrompt');
+    if (!btn) return;
+    const text = promptForAgent();
+    try {
+      await navigator.clipboard.writeText(text);
+    } catch {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand('copy'); } catch {}
+      ta.remove();
+    }
+    const old = btn.textContent;
+    btn.textContent = 'COPIED';
+    setTimeout(() => { btn.textContent = old; }, 1200);
   });
   dots.addEventListener('click', (e) => {
     const dot = e.target.closest('.se-dot');

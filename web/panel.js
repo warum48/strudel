@@ -2928,11 +2928,42 @@ function bindCopyCode() {
   });
 }
 
+function bindNewTrack() {
+  $('newTrack')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    window.__strudelPickTrack?.('/tracks/_selected/new-track.js')
+      .catch((err) => setStatus(err.message, true));
+  });
+}
+
 bindScenes();
 bindPadKeys();
 bindHeaderMenu();
 bindCopyCode();
+bindNewTrack();
 audioReady = boot().catch((e) => {
   console.error(e);
   setStatus(e.message, true);
 });
+
+// ── agent API: window.strudex ────────────────────────────────────
+// Stable entry points for a browser-driving AI. Documented in /llms.txt.
+window.strudex = {
+  ready: () => audioReady,
+  closeIntro: () => (window.__strudelCloseIntro ? window.__strudelCloseIntro() : true),
+  listTracks: async () => (await (await fetch('/api/tracks')).json()),
+  getCode: () => mirror?.editor?.state?.doc?.toString() ?? '',
+  setCode: async (code) => {
+    if (!mirror) { try { await audioReady; } catch {} }
+    if (!mirror) throw new Error('engine not ready');
+    mirror.setCode(String(code));
+    await play();
+    return true;
+  },
+  loadTrack: (p) => window.__strudelPickTrack(p),
+  newTrack: () => window.__strudelPickTrack('/tracks/_selected/new-track.js'),
+  play: () => play(),
+  stop: () => stop(),
+  getTrack: () => track,
+  getStatus: () => $('status')?.textContent ?? '',
+};
