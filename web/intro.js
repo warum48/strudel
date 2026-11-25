@@ -76,9 +76,9 @@ const CONTENT = {
         <p class="se-note">Start by listening to the examples to get a feel for what's possible and sink into the hypnosis of sound.</p>
       `,
       `
-        <p>The expander combines the best of two worlds - a visual timeline, fast slider control and fine, extremely flexible detail tweaks in code.</p>
-        <p>Clicking an instrument name scrolls the code to its definition, a slider - to its parameters, a dot on the timeline - to its settings.</p>
+        <p>The expander combines the best of two worlds - a visual timeline, fast slider control and fine, extremely flexible detail tweaks in code. Clicking an instrument name scrolls the code to its definition, a slider - to its parameters, a dot on the timeline - to its settings.</p>
         <p>Code can be generated with AI (but don't expect a finished track from the first prompt: AI cannot listen to JavaScript, it will wire up the instruments and set the timeline, but you will be the one steering the sound and the final notes). Give a browser-capable AI agent a prompt like “Open <a href="https://strudex.runyourbiz.dpdns.org/" target="_blank" rel="noopener">https://strudex.runyourbiz.dpdns.org/</a>, write Dark Jazz in F# minor, actively use Rhodes piano” and edit the result until you're satisfied (or delighted).</p>
+        <p class="se-green">! This app does not generate vocals and does not imitate live instruments: JavaScript uses the browser's classic oscillators. But you can ask an AI to find and use openly available samples on the internet.</p>
       `,
     ],
     intro: 'Intro',
@@ -96,9 +96,9 @@ const CONTENT = {
         <p class="se-note">Начни с прослушивания примеров, чтобы оценить возможности и погрузиться в гипноз звука.</p>
       `,
       `
-        <p>Экспандер сочетает в себе лучшее из двух миров - визуальный таймлан, быстрое управление слайдерами и тонкие чрезвычайно гибкие настройки деталей кодом.</p>
-        <p>Клик на название интрумента проскроллит код до его опеределения, на слайдер - до его параметров, точка на таймлайне - ее настройки.</p>
+        <p>Экспандер сочетает в себе лучшее из двух миров - визуальный таймлайн, быстрое управление слайдерами и тонкие чрезвычайно гибкие настройки деталей кодом. Клик на название инструмента проскроллит код до его определения, на слайдер - до его параметров, точка на таймлайне - до её настроек.</p>
         <p>Код можно генерировать с помощью ИИ (но не надейся на законченный трек с первого промпта, ИИ не умеет слушать Ява-скрипт, он подключит тебе инструменты, настроит таймлайн, но рулевым звука и конечных нот ты будешь сам). Дай ИИ-агенту с доступом к браузеру подобный промпт: «Зайди на <a href="https://strudex.runyourbiz.dpdns.org/" target="_blank" rel="noopener">https://strudex.runyourbiz.dpdns.org/</a>, напиши Dark Jazz в F# minor, активно используй Rhodes piano» и редактируй результат до удовлетворения (ну или восторга).</p>
+        <p class="se-green">! Это приложение не генерирует вокал и не имитирует живые инструменты: JavaScript использует классические осцилляторы браузера. Но можно попросить ИИ найти и использовать открытые сэмплы в интернете.</p>
       `,
     ],
     intro: 'Интро',
@@ -141,6 +141,7 @@ const FALLBACK_TRACKS = [
 ];
 
 const STYLE = `
+  body.intro-open #sampleProg { display: none !important; }
   .se-intro {
     position: fixed;
     inset: 0;
@@ -244,6 +245,10 @@ const STYLE = `
     border-bottom: 1px solid currentColor;
   }
   .se-intro a:hover { color: #fff; }
+  .se-intro .se-green {
+    color: var(--accent, #b3d80d);
+    font-weight: 600;
+  }
   .se-intro .se-note {
     padding-left: 12px;
     color: #e3f07a;
@@ -397,6 +402,8 @@ const STYLE = `
   .se-intro .se-track.c3:hover { background: rgba(230, 90, 160, 0.20); border-color: #e65aa0; }
   .se-intro .se-track.c4 { background: rgba(157, 107, 230, 0.10); border-color: rgba(157, 107, 230, 0.40); }
   .se-intro .se-track.c4:hover { background: rgba(157, 107, 230, 0.20); border-color: #9d6be6; }
+  .se-intro .se-track.c5 { background: rgba(82, 104, 255, 0.12); border-color: rgba(82, 104, 255, 0.48); }
+  .se-intro .se-track.c5:hover { background: rgba(82, 104, 255, 0.24); border-color: #5268ff; }
   .se-intro .se-track-title {
     display: -webkit-box;
     max-width: 100%;
@@ -470,7 +477,11 @@ async function tracksWithMeta() {
     const res = await fetch('/api/tracks');
     if (res.ok) {
       const all = await res.json();
-      if (Array.isArray(all) && all.length) list = all.slice(0, 5);
+      if (Array.isArray(all) && all.length) {
+        const featured = '/tracks/bigbeat/04-acid-breaks-v4.js';
+        const rest = all.filter((p) => p !== featured);
+        list = all.includes(featured) ? [...rest.slice(0, 5), featured] : rest.slice(0, 6);
+      }
     }
   } catch {}
 
@@ -531,6 +542,7 @@ function mount() {
       </aside>
     </div>`;
 
+  document.body.classList.add('intro-open');
   document.body.appendChild(overlay);
 
   const modal = overlay.querySelector('.se-modal');
@@ -622,6 +634,7 @@ function mount() {
   const close = () => {
     document.removeEventListener('keydown', onKey, true);
     overlay.remove();
+    document.body.classList.remove('intro-open');
   };
   // agent API hook: window.strudex.closeIntro()
   window.__strudelCloseIntro = () => {
@@ -717,7 +730,10 @@ function mount() {
     tracks.forEach((t, i) => {
       const btn = document.createElement('button');
       btn.type = 'button';
-      btn.className = i < 5 ? `se-track c${i}` : 'se-track';
+      // featured bigbeat goes directly under the pink tile and gets c5
+      const isFeatured = t.path === '/tracks/bigbeat/04-acid-breaks-v4.js';
+      const colorIdx = isFeatured ? 5 : (i === 5 ? 4 : i);
+      btn.className = i < 6 ? `se-track c${colorIdx}` : 'se-track';
       btn.dataset.path = t.path;
 
       const title = document.createElement('span');

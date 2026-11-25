@@ -1712,6 +1712,7 @@ function renderAutomation() {
       dot.title = `bar ${at}: ×${fmt(v)} — click to edit`;
       dot.addEventListener('click', (e) => {
         e.stopPropagation();
+        scrollEditorToLine(automationLines[i]);
         openAutoPointPopover(i, at, v, pi, e);
       });
       lane.appendChild(dot);
