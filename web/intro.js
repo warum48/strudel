@@ -71,13 +71,14 @@ const CONTENT = {
   en: {
     pages: [
       `
-        <p>Chances are you're sitting there wondering, "what else could I code?" Here's a great suggestion: music! We're not talking about bland track generation in soulless SUNO - no, we're going to make music with JavaScript! Every parameter can be changed in real time - added, removed, moved, knobs twisted while the composition plays, put on hold at a moment you like and modulated, modulated, modulated. Not enough knobs? Add one and modulate again.</p>
-        <p>If you already know Strudel.cc, this tool will expand what you can do; just learning? AI is here to help - ask it to change whatever you want, create a new track from scratch to match your mood, play and tweak it endlessly, make it yours and simply sink into the metamorphoses of waves.</p>
+        <p>Chances are you're sitting there thinking, - "what else could I code?". Here's a great offer: music! And this is not about banal track generation in soulless SUNO, no, here music is written in JavaScript! Every parameter can be changed in real time: add, remove, move, twist knobs while the composition plays, put it on hold at a moment you like and modulate, modulate, modulate. Not enough knobs? - add one and modulate again.</p>
+        <p>If you already know <a href="https://strudel.cc" target="_blank" rel="noopener">Strudel.cc</a> - this tool will expand your possibilities, just learning - AI is here to help <a href="/llms.txt" target="_blank" rel="noopener">AI welcome to /llms.txt</a>, ask it to change what you want, create a new track from scratch for your mood, play and tweak it endlessly, making it yours and simply sinking into the metamorphoses of waves.</p>
         <p class="se-note">Start by listening to the examples to get a feel for what's possible and sink into the hypnosis of sound.</p>
       `,
       `
         <p>The expander combines the best of two worlds - a visual timeline, fast slider control and fine, extremely flexible detail tweaks in code.</p>
         <p>Clicking an instrument name scrolls the code to its definition, a slider - to its parameters, a dot on the timeline - to its settings.</p>
+        <p>Code can be generated with AI (but don't expect a finished track from the first prompt: AI cannot listen to JavaScript, it will wire up the instruments and set the timeline, but you will be the one steering the sound and the final notes). Give a browser-capable AI agent a prompt like “Open <a href="https://strudex.runyourbiz.dpdns.org/" target="_blank" rel="noopener">https://strudex.runyourbiz.dpdns.org/</a>, write Dark Jazz in F# minor, actively use Rhodes piano” and edit the result until you're satisfied (or delighted).</p>
       `,
     ],
     intro: 'Intro',
@@ -90,13 +91,14 @@ const CONTENT = {
   ru: {
     pages: [
       `
-        <p>Скорее всего ты сидишь и думаешь, - "что бы мне еще накодировать?". Вот отличное предложение: музыку! Мы не говорим о банальной генерации трека в бездушном SUNO, нет, мы будем делать музыку яваскриптом! Каждый параметр можно поменять в рилтайме, добавить, убрать, подвинуть, покрутить ручки пока играет композиция, поставить ее на холд в понравившемся моменте и модулировать, модулировать, модулировать. Мало ручек? - добавил и снова модулируешь.</p>
-        <p>Если ты уже знаешь Strudel.cc - этот инструмент расширит твои возможности, только изучаешь - ИИ в помощь, просишь его изменить то что хочется, создать новый трек с нуля под твое настроение и бесконечно его играть и настраивать, делая его своим и просто погружаясь в метаморфозы волн.</p>
-        <p class="se-note">Начини с прослушивания примеров, чтобы оценить возможности и погрузиться в гипноз звука.</p>
+        <p>Скорее всего ты сидишь и думаешь, - "что бы мне еще накодировать?". Вот отличное предложение: музыку! И это не о банальной генерации трека в бездушном SUNO, нет, здесь музыка пишется яваскриптом! Каждый параметр можно поменять в рилтайме, добавить, убрать, подвинуть, покрутить ручки пока играет композиция, поставить ее на холд в понравившемся моменте и модулировать, модулировать, модулировать. Мало ручек? - добавил и снова модулируешь.</p>
+        <p>Если ты уже знаешь <a href="https://strudel.cc" target="_blank" rel="noopener">Strudel.cc</a> - этот инструмент расширит твои возможности, только изучаешь - ИИ в помощь <a href="/llms.txt" target="_blank" rel="noopener">AI welcome to /llms.txt</a>, просишь его изменить то что хочется, создать новый трек с нуля под твое настроение и бесконечно его играть и настраивать, делая его своим и просто погружаясь в метаморфозы волн.</p>
+        <p class="se-note">Начни с прослушивания примеров, чтобы оценить возможности и погрузиться в гипноз звука.</p>
       `,
       `
         <p>Экспандер сочетает в себе лучшее из двух миров - визуальный таймлан, быстрое управление слайдерами и тонкие чрезвычайно гибкие настройки деталей кодом.</p>
         <p>Клик на название интрумента проскроллит код до его опеределения, на слайдер - до его параметров, точка на таймлайне - ее настройки.</p>
+        <p>Код можно генерировать с помощью ИИ (но не надейся на законченный трек с первого промпта, ИИ не умеет слушать Ява-скрипт, он подключит тебе инструменты, настроит таймлайн, но рулевым звука и конечных нот ты будешь сам). Дай ИИ-агенту с доступом к браузеру подобный промпт: «Зайди на <a href="https://strudex.runyourbiz.dpdns.org/" target="_blank" rel="noopener">https://strudex.runyourbiz.dpdns.org/</a>, напиши Dark Jazz в F# minor, активно используй Rhodes piano» и редактируй результат до удовлетворения (ну или восторга).</p>
       `,
     ],
     intro: 'Интро',
@@ -111,7 +113,7 @@ const CONTENT = {
       `
         <p><b>This studio is agent-ready.</b> Every track is one readable JS file; the panel is a live view over that code. There is a small stable API and plain-text docs, so an AI agent can drive it without clicking through the UI.</p>
         <p>Open the site for your agent and say what you want in one line — for example “make me a hip-hop track”. The agent can close this intro, read the template and examples, write the track, and set it live.</p>
-        <p>Agent entry point: <code>/llms.txt</code>. Template: <code>/docs/prompt-track.en.md</code>. Rules: <code>/docs/rules.en.md</code>, <code>/docs/pitfalls.en.md</code>. Examples: <code>/tracks/_selected/</code>.</p>
+        <p>Agent entry point: <a href="/llms.txt" target="_blank" rel="noopener">/llms.txt</a>. Template: <code>/docs/prompt-track.en.md</code>. Rules: <code>/docs/rules.en.md</code>, <code>/docs/pitfalls.en.md</code>. Examples: <code>/tracks/_selected/</code>.</p>
       `,
       `
         <p>Give your agent this prompt:</p>
@@ -236,6 +238,12 @@ const STYLE = `
   .se-intro .se-copy p { margin: 0 0 14px; }
   .se-intro .se-copy p:last-child { margin-bottom: 0; }
   .se-intro .se-copy.se-page-in { animation: se-page 0.22s ease; }
+  .se-intro a {
+    color: var(--accent, #b3d80d);
+    text-decoration: none;
+    border-bottom: 1px solid currentColor;
+  }
+  .se-intro a:hover { color: #fff; }
   .se-intro .se-note {
     padding-left: 12px;
     color: #e3f07a;

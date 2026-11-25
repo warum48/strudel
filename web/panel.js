@@ -93,16 +93,105 @@ const setStatus = (t, err) => {
   statusEl.className = err ? 'err' : '';
 };
 
-// ── sample downloader ─────────────────────────────────────────────
-// "Download all samples" = only the sample maps the current track
-// declares in `samples(...)`, and only the keys it actually uses in
-// `s(...)`. Dirt-Samples is huge; downloading the whole JSON library
-// would be hundreds of MB for no reason. Each file goes through
-// wa.loadBuffer, so it lands in the engine's decoded-buffer cache.
+// ── sample preloader ──────────────────────────────────────────────
+// Universal: read the sample maps the current track declares in samples(...),
+// then match every string literal in the track against those map keys. No
+// hard-coded sample names. `warmSampleNetwork` starts on page load and fills
+// the HTTP cache (no AudioContext needed); `downloadAllSamples` decodes into
+// the engine cache after the first gesture, when loadBuffer is allowed.
 let sampleBusy = false;
+let sampleQueued = false;
+let sampleRun = 0;
+let sampleLoadedFor = '';
+let warmRun = 0;
+
+function currentTrackSource() {
+  const raw = globalThis.strudelMirror?.editor?.state?.doc?.toString?.() ?? code ?? '';
+  return raw.replace(/^\s*\/\/.*$/gm, '');
+}
+
+async function collectSampleUrls(src, isCurrent = () => true) {
+  const mapUrls = [...new Set([
+    'https://strudel.b-cdn.net/uzu-drumkit.json',
+    ...[...src.matchAll(/\bsamples\(\s*['"]([^'"]+)['"]/g)].map((m) => m[1]),
+  ])];
+  const maps = new Map();
+  for (const u of mapUrls) {
+    if (!isCurrent()) return [];
+    try {
+      const [json, base] = await wa.fetchSampleMap(u);
+      const b = String(base || '').endsWith('/') ? String(base) : String(base || '') + '/';
+      for (const [key, v] of Object.entries(json || {})) {
+        if (key === '_base') continue;
+        const files = Array.isArray(v) ? v : typeof v === 'string' ? [v] : null;
+        if (!files || !files.length) continue;
+        maps.set(key, files.map((f) => b + f));
+      }
+    } catch (e) {
+      console.warn('sample map failed', u, e);
+    }
+  }
+
+  const used = new Set();
+  for (const m of src.matchAll(/['"]([^'"]+)['"]/g)) {
+    for (const token of m[1].match(/[a-zA-Z][a-zA-Z0-9_]*/g) ?? []) {
+      if (maps.has(token)) used.add(token);
+    }
+  }
+  const urls = [];
+  for (const key of used) {
+    for (const url of maps.get(key) ?? []) {
+      if (!urls.includes(url)) urls.push(url);
+    }
+  }
+  return urls;
+}
+
+let sampleProgTimer = null;
+function setSampleProgress(fraction, done = false) {
+  const el = $('sampleProg');
+  if (!el) return;
+  const bar = el.firstElementChild;
+  clearTimeout(sampleProgTimer);
+  if (fraction > 0) el.classList.add('on');
+  bar.style.width = `${Math.max(0, Math.min(1, fraction)) * 100}%`;
+  if (done) {
+    sampleProgTimer = setTimeout(() => {
+      el.classList.remove('on');
+      bar.style.width = '0%';
+    }, 900);
+  }
+}
+
+// Page-load warm-up: download bytes into the browser cache before PLAY.
+async function warmSampleNetwork() {
+  const run = ++warmRun;
+  const out = $('sampleStatus');
+  const urls = await collectSampleUrls(currentTrackSource(), () => run === warmRun);
+  if (!urls.length) return;
+  if (out) out.textContent = `warming 0 / ${urls.length}`;
+  setSampleProgress(0.01);
+  let done = 0;
+  for (const url of urls) {
+    if (run !== warmRun) return;
+    try {
+      await fetch(url, { cache: 'force-cache' });
+    } catch {}
+    done++;
+    setSampleProgress((done / urls.length) * 0.7);
+    if (out && done % 5 === 0) out.textContent = `warming ${done} / ${urls.length}`;
+  }
+  setSampleProgress(0.7);
+  if (out) out.textContent = `warmed ${done} / ${urls.length}`;
+}
 
 async function downloadAllSamples() {
-  if (sampleBusy) return;
+  const run = ++sampleRun;
+  warmRun++; // stop the network warm-up; we are decoding now
+  if (sampleBusy) {
+    sampleQueued = true;
+    return;
+  }
   const btn = $('samples');
   const out = $('sampleStatus');
   sampleBusy = true;
@@ -111,65 +200,27 @@ async function downloadAllSamples() {
   out.textContent = 'scanning…';
 
   try {
-    const raw = globalThis.strudelMirror?.editor?.state?.doc?.toString?.() ?? code ?? '';
-    // comments in the track header also mention `samples('github:...')`;
-    // strip whole-line comments before looking for real calls.
-    const src = raw.replace(/^\s*\/\/.*$/gm, '');
-    // uzu-drumkit is already preloaded by the panel; include it so tracks
-    // using bd/sd/hh/... also get real files, not just the JSON map.
-    const mapUrls = [...new Set([
-      'https://strudel.b-cdn.net/uzu-drumkit.json',
-      ...[...src.matchAll(/\bsamples\(\s*['"]([^'"]+)['"]/g)].map((m) => m[1]),
-    ])];
-    // key → [absolute urls] across all maps the track declares.
-    const maps = new Map();
-    for (const u of mapUrls) {
-      try {
-        const [json, base] = await wa.fetchSampleMap(u);
-        const b = String(base || '').endsWith('/') ? String(base) : String(base || '') + '/';
-        for (const [key, v] of Object.entries(json || {})) {
-          if (key === '_base') continue;
-          const files = Array.isArray(v) ? v : typeof v === 'string' ? [v] : null;
-          if (!files || !files.length) continue;
-          maps.set(key, files.map((f) => b + f));
-        }
-      } catch (e) {
-        console.warn('sample map failed', u, e);
-      }
+    const src = currentTrackSource();
+    if (src === sampleLoadedFor) {
+      out.textContent = 'samples cached';
+      btn.textContent = 'SAMPLES ✓';
+      setSampleProgress(1, true);
+      return;
     }
-
-    // sample keys used by the track: latin tokens inside s("..."), then
-    // keep only those that exist in a loaded map (sine/sawtooth/etc. drop out).
-    const used = new Set();
-    for (const m of src.matchAll(/\bs\(\s*['"]([^'"]+)['"]\s*\)/g)) {
-      for (const token of m[1].match(/[a-zA-Z][a-zA-Z0-9_]*/g) ?? []) {
-        if (maps.has(token)) used.add(token);
-      }
-    }
-    // Dynamic break names are passed through `breakLane('name', ...)`, so the
-    // s("...") scan above does not see them.
-    for (const m of src.matchAll(/\bbreakLane\(\s*['"]([^'"]+)['"]/g)) {
-      for (const token of m[1].match(/[a-zA-Z][a-zA-Z0-9_]*/g) ?? []) {
-        if (maps.has(token)) used.add(token);
-      }
-    }
-    if (!used.size) {
+    const urls = await collectSampleUrls(src, () => run === sampleRun);
+    if (!urls.length) {
       out.textContent = 'no matching sample keys';
       btn.textContent = 'SAMPLES';
+      setSampleProgress(0, true);
       return;
     }
 
-    const urls = [];
-    for (const key of used) {
-      for (const url of maps.get(key) ?? []) {
-        if (!urls.includes(url)) urls.push(url);
-      }
-    }
-
+    setSampleProgress(0.7);
     let done = 0;
     let failed = 0;
     out.textContent = `0 / ${urls.length}`;
     for (const url of urls) {
+      if (run !== sampleRun) break;
       try {
         if (typeof wa.loadBuffer === 'function') {
           await wa.loadBuffer(url, wa.getAudioContext(), 'download', 0);
@@ -180,20 +231,76 @@ async function downloadAllSamples() {
         failed++;
       }
       done++;
+      setSampleProgress(0.7 + (done / urls.length) * 0.3);
       out.textContent = `${done} / ${urls.length}${failed ? ` · ${failed} err` : ''}`;
     }
     out.textContent = failed ? `done · ${failed} errors` : `all ${done} loaded`;
     btn.textContent = failed ? 'SAMPLES ⚠' : 'SAMPLES ✓';
+    setSampleProgress(1, true);
+    if (!failed) sampleLoadedFor = src;
   } catch (e) {
     out.textContent = e.message;
     btn.textContent = 'SAMPLES';
+    setSampleProgress(0, true);
   } finally {
     sampleBusy = false;
     btn.disabled = false;
+    if (sampleQueued) {
+      sampleQueued = false;
+      downloadAllSamples();
+    }
   }
 }
 
 $('samples')?.addEventListener('click', downloadAllSamples);
+
+/*
+ * FUTURE / WIP: offline WAV export (button removed from the final UI).
+ * STATUS: unfinished, does NOT work end-to-end.
+ *  - exports only part of the instruments (the renderer's sound/sample
+ *    registry and the live registry are not fully shared);
+ *  - output can be empty or missing layers;
+ *  - extremely slow, especially on the full track;
+ *  - full-track export needs chunking or a real-time recorder.
+ *
+ * async function exportWav() {
+ *   if (!mirror) return;
+ *   const pattern = mirror.repl?.state?.pattern ?? mirror.state?.pattern;
+ *   if (!pattern) {
+ *     setStatus('nothing to export — press PLAY first', true);
+ *     return;
+ *   }
+ *   const sched = mirror.repl?.scheduler;
+ *   let cps = Number(sched?.cps);
+ *   if (!Number.isFinite(cps) || cps <= 0) {
+ *     const bpm = Number(/const\\s+BPM\\s*=\\s*(\\d+(?:\\.\\d+)?)/.exec(code)?.[1]);
+ *     cps = bpm > 0 ? bpm / 4 / 60 : 0.5;
+ *   }
+ *   const total = timeline.length
+ *     ? Math.max(...timeline.map((s) => s.at + (s.length ?? s.len ?? 0)))
+ *     : 32;
+ *   const sel = timelineSel >= 0
+ *     ? timeline[timelineSel]
+ *     : (timeline.find((s) => /^DROP/i.test(s.name)) ?? timeline[0]);
+ *   const start = sel ? sel.at : 0;
+ *   const end = sel ? sel.at + (sel.length ?? sel.len ?? 0) : Math.min(total, 16);
+ *   const label = sel ? String(sel.name || 'section').replace(/[^\\w.-]+/g, '-') : 'bars';
+ *   const base = (track.split('/').pop() || 'track').replace(/\\.js$/i, '');
+ *   const name = `${base}-${label}`;
+ *   setStatus(`exporting ${label} (${end - start} bars) → ${name}.wav…`);
+ *   try {
+ *     await wa.renderPatternAudio(pattern, cps, start, end, 44100, 128, true, name);
+ *     if (playing) stop();
+ *     setStatus(`wav exported: ${name}.wav — press PLAY to continue`);
+ *   } catch (e) {
+ *     setStatus('export failed: ' + e.message, true);
+ *   }
+ * }
+ * $('exportWav')?.addEventListener('click', exportWav);
+ */
+
+
+
 
 // ── 1. bridge between knobs and widgets ───────────────────────────
 const values = {}; // id → value, the pattern signal reads from here
@@ -1008,6 +1115,7 @@ function renderSwitches(list) {
     root.appendChild(box);
   }
   if (modeGroup) modeGroup.style.display = modeRoot && modeRoot.childElementCount ? '' : 'none';
+  root.hidden = root.childElementCount === 0;
 }
 
 // ПЭДЫ: кнопка = мгновенное значение. pointerdown → max, pointerup/cancel/
@@ -2691,9 +2799,6 @@ async function loadTrack(p) {
   // обновляет его же слушатель изменений
   await new Promise((r) => setTimeout(r, 0));
   await play(); // выбор в меню — это жест пользователя, звук уже разрешён
-  // Warm the used sample buffers in the background. Without this the first
-  // trigger of a sample can wait for the network even when its map is ready.
-  downloadAllSamples();
 }
 
 async function boot() {
@@ -2713,6 +2818,17 @@ async function boot() {
   for (const ev of ['pointerdown', 'touchstart', 'keydown']) {
     window.addEventListener(ev, unlockAudio, { once: true, capture: true });
   }
+  let preloadGesture = false;
+  const kickPreload = async () => {
+    if (preloadGesture) return;
+    preloadGesture = true;
+    try {
+      await wa.getAudioContext().resume();
+    } catch {}
+    downloadAllSamples();
+  };
+  window.addEventListener('pointerdown', kickPreload, { once: true, capture: true });
+  window.addEventListener('keydown', kickPreload, { once: true, capture: true });
   mini.miniAllStrings();
 
   setStatus('reading track…');
@@ -2787,6 +2903,7 @@ async function boot() {
   fillThemes();
   requestAnimationFrame(drawSpectrum);
   setStatus('ready — hit PLAY');
+  warmSampleNetwork();
 }
 
 let audioReady;
@@ -2811,6 +2928,9 @@ async function play() {
     setTimeout(() => seekTimeline(target), 300);
   }
   setStatus(`${knobs.length} knobs · playing`);
+  // Warm the sample cache after the user gesture: loadBuffer needs a running
+  // audio context, and the first break/sample should not wait for the network.
+  downloadAllSamples();
 }
 
 function stop() {

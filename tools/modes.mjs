@@ -34,8 +34,8 @@ const raw = fs.readFileSync(file, 'utf8');
 
 const modeDecl = raw.match(/const\s+mode\s*=\s*slider\(\s*(-?[\d.]+)\s*,\s*(-?[\d.]+)\s*,\s*(-?[\d.]+)\s*,\s*[\d.]+\s*\)/);
 if (!modeDecl) {
-  console.error('в файле нет `const mode = slider(...)` — нечего переключать');
-  process.exit(1);
+  console.log('в файле нет `const mode = slider(...)` — режим зафиксирован, переключать нечего');
+  process.exit(0);
 }
 const maxMode = Number(modeDecl[3]);
 

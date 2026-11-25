@@ -1,11 +1,11 @@
 // BIG BEAT 04 · acid breaks v4 · 125 BPM · C minor
 // V4 arrangement (v3 kept as reference):
-//   - STOP is 4 bars, no drums, only the existing stab/pad/vinyl bed.
+//   - STOP is 2 bars, no drums, only the existing stab/pad/vinyl bed.
 //   - DROP 2 is split into 2A/2B: 2A thins the scale runs with quarter-note
 //     triplets, 2B keeps the full runs and adds percussion/hats.
 //     DROP 3 uses the moderate 3-up / 1-back line.
 //   - the whole DROP 2 (both halves) is copied again after OUTRO as DROP 3.
-//   - final OUTRO 2 is doubled (14 bars); OUTRO 3 mirrors INTRO.
+//   - final OUTRO 2 is 14 bars; OUTRO 3 (14 bars) mirrors INTRO.
 // Jazz phrasing notes: docs/jazz-solo.en.md.
 // Mini-notation only through m(...) (docs/pitfalls.en.md, Rule #1).
 const BPM = 125
@@ -16,26 +16,28 @@ if (typeof samples === 'function') {
   samples('github:tidalcycles/Dirt-Samples')
 }
 
-// ── transport / switches ─────────────────────────────────────────
+// ── transport (switches fixed for the final mix) ─────────────────
 const UI = {
   transport: { name: 'play', labels: ['loop', 'song', 'hold'] },
   holdBar: 'holdBar',
-  switches: {
-    mode: ['straight', 'broken', 'roll'],
-    breakSel: ['apache', 'amen', 'think', 'movement', 'b125:1', 'eeloil', 'n.orl', 'squib', 'b125:0'],
-    wave: ['sine', 'tri', 'square'],
-    octave: ['0', '+1', '-1', '-2'],
-  },
+  // final mix: no switches.
+  // mode: straight / broken / roll
+  // breakSel: apache / amen / think / movement / ...
+  // wave: sine / tri / square
+  // octave: 0 / +1 / -1 / -2
 }
 const play = slider(1, 0, 2, 1)
-const mode = slider(1, 0, 2, 1)
-const breakSel = slider(0, 0, 8, 1)
-const wave = slider(0, 0, 2, 1)
-const octave = slider(0, 0, 3, 1)
-const holdBar = slider(0, 0, 127, 1)
-const pickBreak = (i) => breakSel.fmap((v) => (v === i ? 1 : 0))
+// Final-track settings: wave/octave fixed; mode comes from TIMELINE.
+const wave = pure(0) // SINE
+const octave = pure(0) // 0
+const holdBar = slider(0, 0, 132, 1)
 const WAVE = wave.fmap((v) => ['sine', 'triangle', 'square'][v] || 'sine')
 const OCT = octave.fmap((v) => [0, 12, -12, -24][v] ?? 0)
+// Removed from the final track (for reference):
+// mode: driven by TIMELINE (GROOVE = straight, every DROP B = roll)
+// breakSel: slider 0..8, fixed to 0 (APACHE)
+// wave: slider 0..2, fixed to 0 (SINE)
+// octave: slider 0..3, fixed to 0
 
 // ── global mix ───────────────────────────────────────────────────
 const verb = slider(0.42, 0, 1, 0.01)
@@ -46,14 +48,14 @@ const instruments = {
     name: 'Drums',
     break: {
       name: 'Break',
-      vol: slider(0.59, 0, 1.2, 0.01),
+      vol: slider(0.2, 0, 1.2, 0.01),
       cut: slider(7000, 50, 14000, 100),
       grit: slider(0.28, 0, 0.9, 0.01),
       crush: slider(13, 8, 16, 0.5),
     },
     amen: {
       name: 'Amen weight',
-      vol: slider(0.58, 0, 0.8, 0.01),
+      vol: slider(0.28, 0, 0.8, 0.01),
       cut: slider(600, 50, 1200, 10),
     },
     chop: {
@@ -139,7 +141,7 @@ const instruments = {
     pad: {
       name: 'Pad',
       vol: slider(1.0, 0, 2.0, 0.01),
-      cut: slider(1370, 50, 4000, 20),
+      cut: slider(1250, 50, 4000, 20),
       att: slider(0.95, 0.01, 2.5, 0.01),
       dec: slider(2.83, 0.05, 4, 0.01),
     },
@@ -168,32 +170,33 @@ const instruments = {
 }
 const { drums, low, keys, atmos, fx } = instruments
 
-// ── form: 128 bars ───────────────────────────────────────────────
+// ── form: 133 bars ───────────────────────────────────────────────
 const TIMELINE = [
-  { at: 0, len: 8, name: 'INTRO', values: { break: 0, amen: 0, chop: 0, kick: 0, snare: 0, clap: 0, hat: 0.25, oh: 0, rim: 0, perc: 0, sub: 0, bass: 0, acid: 0.2, ghost: 0.5, stab: 0, pad: 0.6, solo: 0, soloPart: 0, siren: 0.1, riser: 0, vinyl: 1 } },
-  { at: 8, len: 8, name: 'INTRO 2', values: { break: 0, amen: 0, chop: 0, kick: 0.5, snare: 0.3, clap: 0, hat: 0.5, oh: 0, rim: 0, perc: 0, sub: 0.6, bass: 0.4, acid: 0.4, ghost: 0.5, stab: 0.3, pad: 0.5, solo: 0.15, soloPart: 0, siren: 0.1, riser: 0, vinyl: 0.8 } },
-  { at: 16, len: 8, name: 'GROOVE', values: { break: 1, amen: 0, chop: 0, kick: 1, snare: 1, clap: 0.7, hat: 1, oh: 0.6, rim: 0, perc: 0, sub: 1, bass: 1, acid: 0.9, ghost: 0.7, stab: 0.6, pad: 0.35, solo: 0, soloPart: 0, siren: 0, riser: 0, vinyl: 0.5 } },
-  { at: 24, len: 8, name: 'BUILD', values: { break: 1, amen: 0, chop: 0.3, kick: 1, snare: 0.6, clap: 0.5, hat: 1, oh: 0.4, rim: 0, perc: 0, sub: 1, bass: 1, acid: 0.8, ghost: 0.5, stab: 0.4, pad: 0.5, solo: 0, soloPart: 0, siren: 0.5, riser: 1, vinyl: 0.4 } },
-  { at: 32, len: 4, name: 'STOP', values: { break: 0, amen: 0, chop: 0, kick: 0, snare: 0, clap: 0, hat: 0, oh: 0, rim: 0, perc: 0, sub: 0, bass: 0, acid: 0, ghost: 0, stab: 1, pad: 0.3, solo: 0, soloPart: 0, siren: 0, riser: 0, vinyl: 0.2 } },
-  { at: 36, len: 16, name: 'DROP', values: { break: 1, amen: 0.8, chop: 0.5, kick: 1, snare: 1, clap: 0.9, hat: 1, oh: 0.7, rim: 0.4, perc: 0, sub: 1, bass: 1, acid: 1, ghost: 1, stab: 1, pad: 0.4, solo: 1.0, soloPart: 0, siren: 0.6, riser: 0, vinyl: 0.3 } },
-  { at: 52, len: 8, name: 'BREAK', values: { break: 0.55, amen: 0.3, chop: 0, kick: 0, snare: 0, clap: 0, hat: 0.3, oh: 0, rim: 0.7, perc: 0, sub: 0, bass: 0, acid: 0.45, ghost: 0.9, stab: 0.5, pad: 1.0, solo: 1.0, soloPart: 1, siren: 0.7, riser: 0, vinyl: 1 } },
-  { at: 60, len: 8, name: 'RETURN', values: { break: 1, amen: 0.6, chop: 0.6, kick: 1, snare: 1, clap: 0.8, hat: 1, oh: 0.7, rim: 0.5, perc: 0, sub: 1, bass: 1, acid: 1, ghost: 0.8, stab: 0.8, pad: 0.4, solo: 0.85, soloPart: 0, siren: 0, riser: 0, vinyl: 0.4 } },
-  { at: 68, len: 8, name: 'DROP 2A', values: { break: 1, amen: 0.8, chop: 0.5, kick: 1, snare: 1, clap: 0.9, hat: 1, oh: 0.7, rim: 0.4, perc: 0, sub: 1, bass: 1, acid: 1, ghost: 1, stab: 1, pad: 0.4, solo: 1.0, soloPart: 4, siren: 0.6, riser: 0, vinyl: 0.3 } },
-  { at: 76, len: 8, name: 'DROP 2B', values: { break: 1, amen: 0.8, chop: 0.5, kick: 1, snare: 1, clap: 1.0, hat: 1.2, oh: 1.0, rim: 0.6, perc: 1, sub: 1, bass: 1, acid: 1, ghost: 1, stab: 1, pad: 0.4, solo: 1.0, soloPart: 2, siren: 0.6, riser: 0, vinyl: 0.3 } },
-  { at: 84, len: 7, name: 'OUTRO', values: { break: 0.7, amen: 0, chop: 0, kick: 0, snare: 0, clap: 0, hat: 0.25, oh: 0, rim: 0, perc: 0, sub: 0, bass: 0, acid: 0.4, ghost: 0.5, stab: 0.4, pad: 0.8, solo: 0.3, soloPart: 0, siren: 0.2, riser: 0, vinyl: 1 } },
-  { at: 91, len: 8, name: 'DROP 3A', values: { break: 1, amen: 0.8, chop: 0.5, kick: 1, snare: 1, clap: 0.9, hat: 1, oh: 0.7, rim: 0.4, perc: 0, sub: 1, bass: 1, acid: 1, ghost: 1, stab: 1, pad: 0.4, solo: 1.0, soloPart: 3, siren: 0.6, riser: 0, vinyl: 0.3 } },
-  { at: 99, len: 8, name: 'DROP 3B', values: { break: 1, amen: 0.8, chop: 0.5, kick: 1, snare: 1, clap: 1.0, hat: 1.2, oh: 1.0, rim: 0.6, perc: 1, sub: 1, bass: 1, acid: 1, ghost: 1, stab: 1, pad: 0.4, solo: 1.0, soloPart: 3, siren: 0.6, riser: 0, vinyl: 0.3 } },
-  { at: 107, len: 14, name: 'OUTRO 2', values: { break: 0.7, amen: 0, chop: 0, kick: 0, snare: 0, clap: 0, hat: 0.25, oh: 0, rim: 0, perc: 0, sub: 0, bass: 0, acid: 0.4, ghost: 0.5, stab: 0.4, pad: 0.8, solo: 0.3, soloPart: 0, siren: 0.2, riser: 0, vinyl: 1 } },
-  { at: 121, len: 7, name: 'OUTRO 3', values: { break: 0, amen: 0, chop: 0, kick: 0, snare: 0, clap: 0, hat: 0.25, oh: 0, rim: 0, perc: 0, sub: 0, bass: 0, acid: 0.2, ghost: 0.5, stab: 0, pad: 0.6, solo: 0, soloPart: 0, siren: 0.1, riser: 0, vinyl: 1 } },
+  { at: 0, len: 8, name: 'INTRO', values: { mode: 1, break: 0, amen: 0, chop: 0, kick: 0, snare: 0, clap: 0, hat: 0.25, oh: 0, rim: 0, perc: 0, sub: 0, bass: 0, acid: 0.2, ghost: 0.5, stab: 0, pad: 0.6, solo: 0, soloPart: 0, siren: 0.1, riser: 0, vinyl: 1 } },
+  { at: 8, len: 8, name: 'INTRO 2', values: { mode: 1, break: 0, amen: 0, chop: 0, kick: 0.5, snare: 0.3, clap: 0, hat: 0.5, oh: 0, rim: 0, perc: 0, sub: 0.6, bass: 0.4, acid: 0.4, ghost: 0.5, stab: 0.3, pad: 0.5, solo: 0.15, soloPart: 0, siren: 0.1, riser: 0, vinyl: 0.8 } },
+  { at: 16, len: 8, name: 'GROOVE', values: { mode: 0, break: 1, amen: 0, chop: 0, kick: 1, snare: 1, clap: 0.7, hat: 1, oh: 0.6, rim: 0, perc: 0, sub: 1, bass: 1, acid: 0.9, ghost: 0.7, stab: 0.6, pad: 0.35, solo: 0, soloPart: 0, siren: 0, riser: 0, vinyl: 0.5 } },
+  { at: 24, len: 8, name: 'BUILD', values: { mode: 1, break: 1, amen: 0, chop: 0.3, kick: 1, snare: 0.6, clap: 0.5, hat: 1, oh: 0.4, rim: 0, perc: 0, sub: 1, bass: 1, acid: 0.8, ghost: 0.5, stab: 0.4, pad: 0.5, solo: 0, soloPart: 0, siren: 0.5, riser: 1, vinyl: 0.4 } },
+  { at: 32, len: 2, name: 'STOP', values: { mode: 1, break: 0, amen: 0, chop: 0, kick: 0, snare: 0, clap: 0, hat: 0, oh: 0, rim: 0, perc: 0, sub: 0, bass: 0, acid: 0, ghost: 0, stab: 1, pad: 0.3, solo: 0, soloPart: 0, siren: 0, riser: 0, vinyl: 0.2 } },
+  { at: 34, len: 16, name: 'DROP', values: { mode: 1, break: 1, amen: 0.8, chop: 0.5, kick: 1, snare: 1, clap: 0.9, hat: 1, oh: 0.7, rim: 0.4, perc: 0, sub: 1, bass: 1, acid: 1, ghost: 1, stab: 1, pad: 0.4, solo: 1.0, soloPart: 0, siren: 0.6, riser: 0, vinyl: 0.3 } },
+  { at: 50, len: 8, name: 'BREAK', values: { mode: 1, break: 0.55, amen: 0.3, chop: 0, kick: 0, snare: 0, clap: 0, hat: 0.3, oh: 0, rim: 0.7, perc: 0, sub: 0, bass: 0, acid: 0.45, ghost: 0.9, stab: 0.5, pad: 1.0, solo: 1.0, soloPart: 1, siren: 0.7, riser: 0, vinyl: 1 } },
+  { at: 58, len: 8, name: 'RETURN', values: { mode: 1, break: 1, amen: 0.6, chop: 0.6, kick: 1, snare: 1, clap: 0.8, hat: 1, oh: 0.7, rim: 0.5, perc: 0, sub: 1, bass: 1, acid: 1, ghost: 0.8, stab: 0.8, pad: 0.4, solo: 0.85, soloPart: 0, siren: 0, riser: 0, vinyl: 0.4 } },
+  { at: 66, len: 8, name: 'DROP 2A', values: { mode: 1, break: 1, amen: 0.8, chop: 0.5, kick: 1, snare: 1, clap: 0.9, hat: 1, oh: 0.7, rim: 0.4, perc: 0, sub: 1, bass: 1, acid: 1, ghost: 1, stab: 1, pad: 0.4, solo: 1.0, soloPart: 4, siren: 0.6, riser: 0, vinyl: 0.3 } },
+  { at: 74, len: 8, name: 'DROP 2B', values: { mode: 2, break: 1, amen: 0.8, chop: 0.5, kick: 1, snare: 1, clap: 1.0, hat: 1.2, oh: 1.0, rim: 0.6, perc: 1, sub: 1, bass: 1, acid: 1, ghost: 1, stab: 1, pad: 0.4, solo: 1.0, soloPart: 2, siren: 0.6, riser: 0, vinyl: 0.3 } },
+  { at: 82, len: 7, name: 'OUTRO', values: { mode: 1, break: 0.7, amen: 0, chop: 0, kick: 0, snare: 0, clap: 0, hat: 0.25, oh: 0, rim: 0, perc: 0, sub: 0, bass: 0, acid: 0.4, ghost: 0.5, stab: 0.4, pad: 0.8, solo: 0.3, soloPart: 0, siren: 0.2, riser: 0, vinyl: 1 } },
+  { at: 89, len: 8, name: 'DROP 3A', values: { mode: 1, break: 1, amen: 0.8, chop: 0.5, kick: 1, snare: 1, clap: 0.9, hat: 1, oh: 0.7, rim: 0.4, perc: 0, sub: 1, bass: 1, acid: 1, ghost: 1, stab: 1, pad: 0.4, solo: 1.0, soloPart: 3, siren: 0.6, riser: 0, vinyl: 0.3 } },
+  { at: 97, len: 8, name: 'DROP 3B', values: { mode: 2, break: 1, amen: 0.8, chop: 0.5, kick: 1, snare: 1, clap: 1.0, hat: 1.2, oh: 1.0, rim: 0.6, perc: 1, sub: 1, bass: 1, acid: 1, ghost: 1, stab: 1, pad: 0.4, solo: 1.0, soloPart: 3, siren: 0.6, riser: 0, vinyl: 0.3 } },
+  { at: 105, len: 14, name: 'OUTRO 2', values: { mode: 1, break: 0.7, amen: 0, chop: 0, kick: 0, snare: 0, clap: 0, hat: 0.25, oh: 0, rim: 0, perc: 0, sub: 0, bass: 0, acid: 0.4, ghost: 0.5, stab: 0.4, pad: 0.8, solo: 0.3, soloPart: 0, siren: 0.2, riser: 0, vinyl: 1 } },
+  { at: 119, len: 14, name: 'OUTRO 3', values: { mode: 1, break: 0, amen: 0, chop: 0, kick: 0, snare: 0, clap: 0, hat: 0.25, oh: 0, rim: 0, perc: 0, sub: 0, bass: 0, acid: 0.2, ghost: 0.5, stab: 0, pad: 0.6, solo: 0, soloPart: 0, siren: 0.1, riser: 0, vinyl: 1 } },
 ]
 
 const AUTOMATION = [
-  { path: 'drums.break.cut', points: [[0, 0.5], [8, 0.7], [16, 1], [24, 1], [31, 1.7], [32, 0.35], [36, 1.5], [52, 0.55], [60, 1.2], [68, 1.5], [76, 1.6], [84, 0.45], [91, 1.5], [99, 1.6], [107, 0.45], [121, 0.5], [128, 0.5]] },
-  { path: 'low.bass.cut', points: [[0, 0.85], [16, 1], [52, 0.7], [60, 1], [68, 1], [84, 0.8], [91, 1], [107, 0.8], [121, 0.85], [128, 0.85]] },
-  { path: 'keys.acid.cut', points: [[0, 0.6], [16, 0.9], [24, 1.1], [31, 1.8], [36, 2], [52, 0.6], [60, 1.4], [68, 2], [84, 0.5], [91, 2], [107, 0.4], [121, 0.6], [128, 0.6]] },
-  { path: 'keys.ghost.cut', points: [[0, 0.7], [16, 0.9], [31, 1.3], [36, 1.5], [52, 0.7], [60, 1.3], [68, 1.5], [84, 0.6], [91, 1.5], [107, 0.5], [121, 0.7], [128, 0.7]] },
-  { path: 'keys.stab.cut', points: [[0, 0.7], [16, 1], [31, 1.4], [36, 1.6], [52, 0.6], [60, 1.3], [68, 1.6], [84, 0.5], [91, 1.6], [107, 0.4], [121, 0.7], [128, 0.7]] },
-  { path: 'atmos.siren.vol', points: [[0, 0.5], [16, 0], [24, 0.8], [31, 1.4], [36, 0.6], [52, 1.2], [60, 0], [68, 0.6], [84, 0.2], [91, 0.6], [107, 0.2], [121, 0.5], [128, 0.5]] },
+  { path: 'keys.pad.cut', points: [[0, 0], [8, 1]] },
+  { path: 'drums.break.cut', points: [[0, 0.5], [8, 0.7], [16, 1], [24, 1], [31, 1.7], [32, 0.35], [34, 1.5], [50, 0.55], [58, 1.2], [66, 1.5], [74, 1.6], [82, 0.45], [89, 1.5], [97, 1.6], [105, 0.45], [119, 0], [133, 0.5]] },
+  { path: 'low.bass.cut', points: [[0, 0.85], [16, 1], [50, 0.7], [58, 1], [66, 1], [82, 0.8], [89, 1], [105, 0.8], [119, 0.85], [133, 0.85]] },
+  { path: 'keys.acid.cut', points: [[0, 0.6], [16, 0.9], [24, 1.1], [31, 1.8], [34, 2], [50, 0.6], [58, 1.4], [66, 2], [82, 0.5], [89, 2], [105, 0.4], [119, 0.6], [133, 0.6]] },
+  { path: 'keys.ghost.cut', points: [[0, 0.7], [16, 0.9], [31, 1.3], [34, 1.5], [50, 0.7], [58, 1.3], [66, 1.5], [82, 0.6], [89, 1.5], [105, 0.5], [119, 0.7], [133, 0.7]] },
+  { path: 'keys.stab.cut', points: [[0, 0.7], [16, 1], [31, 1.4], [34, 1.6], [50, 0.6], [58, 1.3], [66, 1.6], [82, 0.5], [89, 1.6], [105, 0.4], [119, 0.7], [133, 0.7]] },
+  { path: 'atmos.siren.vol', points: [[0, 0.5], [16, 0], [24, 0.8], [31, 1.4], [34, 0.6], [50, 1.2], [58, 0], [66, 0.6], [82, 0.2], [89, 0.6], [105, 0.2], [119, 0.5], [133, 0.5]] },
 ]
 
 const TL_TOTAL = Math.max(...TIMELINE.map((s) => s.at + s.len))
@@ -237,6 +240,9 @@ const sectionAt = (bar) => {
 const holdIndex = holdBar.fmap((bar) => sectionAt(Math.max(0, Math.round(bar))))
 const sectionValue = (key) =>
   holdIndex.pick(TIMELINE.map((sec) => pure(sec.values[key] ?? 0)))
+const mode = tlCurve('mode').mul(songGate)
+  .add(pure(1).mul(loopGate))
+  .add(sectionValue('mode').mul(holdGate))
 const tlOr = (key, loopLevel = pure(1)) =>
   tlCurve(key).mul(songGate).add(loopLevel.mul(loopGate)).add(sectionValue(key).mul(holdGate))
 const gateOf = (key) => tlOr(key).fmap((v) => v > 0.001)
@@ -413,25 +419,10 @@ const audible = (hap) => {
 
 // ── lanes ────────────────────────────────────────────────────────
 
-// BREAK — the hook, switchable so the alternatives can be auditioned live.
-// apache / movement are instrumental; amen is the classic dry break; think is
-// the vocal one. Each loop keeps its own natural length and pitch.
-const breakLane = (name, bars, idx, shift = 0) => {
-  const lane = shift ? s(name).loopAt(bars).late(shift) : s(name).loopAt(bars)
-  return lane.gain(drums.break.vol.mul(tlOr('break')).mul(pickBreak(idx)))
-}
-// BREAK — the top lane; breakSel auditions the alternatives.
-$: stack(
-  breakLane('apache', 2, 0),
-  breakLane('amen', 4, 1, 1),
-  breakLane('think', 1, 2),
-  breakLane('movement', 2, 3),
-  breakLane('breaks125:1', 1, 4),
-  breakLane('eeloil', 2, 5),
-  breakLane('neworleans', 2, 6),
-  breakLane('squib', 2, 7),
-  breakLane('breaks125:0', 1, 8),
-  )
+// BREAK — final mix uses Apache only. The audition set (amen, think,
+// movement, breaks125, eeloil, neworleans, squib) is kept in git history.
+$: s('apache').loopAt(2)
+  .gain(drums.break.vol.mul(tlOr('break')))
   .hpf(70).lpf(drums.break.cut.mul(autoAt('drums.break.cut')))
   .distort(drums.break.grit)
   .crush(drums.break.crush)
@@ -562,7 +553,7 @@ $: STAB.s('sawtooth').clip(0.4)
 // PAD — low sustained chord bed, only where the arrangement asks for air.
 $: PAD.s('sawtooth').clip(1)
   .gain(keys.pad.vol.mul(tlOr('pad')))
-  .hpf(180).lpf(keys.pad.cut).lpq(1)
+  .hpf(180).lpf(keys.pad.cut.mul(autoAt('keys.pad.cut'))).lpq(1)
   .attack(keys.pad.att).decay(keys.pad.dec).sustain(0.8).release(2.4)
   .chorus(0.35)
   .room(verb.mul(1.0)).roomsize(8).roomlp(9000).roomdim(0.2)
