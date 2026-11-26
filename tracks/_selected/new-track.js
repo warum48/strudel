@@ -123,6 +123,7 @@ $: note(m('d3 f3 a3 d4 f4 a4 d4 f4'))
   .attack(0.002).decay(0.12).sustain(0).release(0.05)
   .room(verb.mul(0.4)).roomsize(fx.reverb.size)
   .mask(gateOf('arp'))
+  ._pianoroll()
 
 // ── PAD: D minor chord, silent in section 1, on from section 2 ────
 $: note(m('<[d3,f3,a3]>')).slow(2)
@@ -138,6 +139,7 @@ $: s('bd').struct(m('x*4'))
   .gain(drums.kick.vol.mul(tlOr('kick')))
   .lpf(180).decay(0.33).sustain(0)
   .mask(gateOf('kick'))
+  ._scope()
 
 $: s('hh').struct(m('x*8'))
   .gain(drums.hat.vol.mul(tlOr('hat')))

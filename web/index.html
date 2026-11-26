@@ -359,6 +359,7 @@
     border: 1px solid var(--line);
     background: #0b0d0a;
     overflow: hidden;
+    cursor: pointer;
   }
   #timeline .tl-ruler { position: absolute; left: 0; right: 0; top: 0; height: 20px; border-bottom: 1px solid var(--line); }
   #timeline .tl-tick { position: absolute; top: 0; bottom: 0; border-left: 1px solid #20251d; color: var(--dim); font-size: 9px; padding-left: 3px; }
@@ -536,6 +537,13 @@
   }
   #copyCode:hover { color: var(--text); border-color: #3a4234; }
   #copyCode.copied { color: #0d0f0c; background: var(--accent); border-color: var(--accent); }
+  .viz-toggle {
+    display: inline-flex; align-items: center; gap: 5px;
+    color: var(--dim); font-size: 10px; letter-spacing: 0.12em;
+    text-transform: uppercase; cursor: pointer; user-select: none;
+  }
+  .viz-toggle input { width: 12px; height: 12px; margin: 0; accent-color: var(--accent); }
+  body.viz-off .cm-inline-viz { display: none !important; }
   /* Master EQ: desktop-hidden, shown at the bottom of the mobile stack */
   #masterEq { display: none; flex: none; padding: 10px 12px; border-top: 1px solid var(--line); background: #11140f; }
   #masterEq .gl { font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--dim); margin-bottom: 8px; }
@@ -777,7 +785,7 @@
 </details>
 
 <!-- ── AUTOMATION: изменения слайдеров во времени, под TIMELINE ── -->
-<details id="automation">
+<details id="automation" open>
   <summary>
     <span class="tl-cap">Automation</span>
     <span id="autoStatus">no AUTOMATION</span>
@@ -816,7 +824,8 @@
     <div class="bar">
       <span>track: <span class="kbd" id="trackPath">…</span></span>
       <span class="spacer"></span>
-      <span>Ctrl+Enter — run · Ctrl+. — stop · Cmd also works</span>
+      <label class="viz-toggle"><input type="checkbox" id="vizToggle" checked /> visualizations</label>
+      <span>Ctrl+Enter — run · Ctrl+. — stop</span>
       <button id="copyCode" type="button" class="copy-code" aria-label="copy track code" title="copy track code">
         <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <rect x="9" y="9" width="11" height="11" rx="2"></rect>

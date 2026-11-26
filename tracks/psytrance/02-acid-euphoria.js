@@ -369,6 +369,7 @@ $: s('sbd').struct(m('x*4'))
   .postgain(drums.kick.post)
   .duckorbit(2).duckattack(0.2).duckdepth(duck)
   .mask(gateOf('kick')).filter(audible)
+  ._scope()
 
 // TR-909 closed hats, 16ths; mode changes the grid.
 $: s('hh').bank('RolandTR909').struct(groove('hats'))
@@ -390,6 +391,7 @@ $: s('cp').struct(groove('clap'))
   .lpf(drums.clap.cut).decay(drums.clap.decay).sustain(0)
   .room(verb.mul(0.5)).roomsize(fx.reverb.size)
   .mask(gateOf('clap')).filter(audible)
+  ._scope()
 
 // Shaker, mode-dependent grid.
 $: s('sh').struct(groove('shaker'))
@@ -419,6 +421,7 @@ $: bassLine.s('sawtooth')
   .release(low.bass.release)
   .orbit(2)
   .mask(gateOf('bass')).filter(audible)
+  ._pianoroll()
 
 // Acid: switchangel_acid + dynamic cutoff. This is the exemplary sound.
 $: acidLine
@@ -448,6 +451,7 @@ $: pluckLine.s('triangle')
   .room(verb.mul(1.2)).roomsize(fx.reverb.size)
   .delay(keys.pluck.echo).delaytime(fx.delay.time).delayfeedback(fx.delay.fb.mul(0.8))
   .mask(gateOf('pluck')).filter(audible)
+  ._pianoroll()
 
 // Strings: EX12 slow saw pad on a static F#m chord; continuous filter LFO.
 $: stringsLine.slow(2).s('sawtooth')

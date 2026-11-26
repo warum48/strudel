@@ -3069,6 +3069,19 @@ $('root').addEventListener(
 );
 
 // ── mobile header menu + copy-code button ────────────────────────
+function bindVizToggle() {
+  const cb = $('vizToggle');
+  if (!cb) return;
+  let on = true;
+  try { on = localStorage.getItem('strudex:viz') !== '0'; } catch {}
+  cb.checked = on;
+  document.body.classList.toggle('viz-off', !on);
+  cb.addEventListener('change', () => {
+    document.body.classList.toggle('viz-off', !cb.checked);
+    try { localStorage.setItem('strudex:viz', cb.checked ? '1' : '0'); } catch {}
+  });
+}
+
 function bindHeaderMenu() {
   const btn = $('menuBtn');
   const headerEl = document.querySelector('header');
@@ -3120,6 +3133,7 @@ function bindNewTrack() {
 }
 
 bindPadKeys();
+bindVizToggle();
 bindHeaderMenu();
 bindCopyCode();
 bindNewTrack();

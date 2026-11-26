@@ -454,7 +454,6 @@ $: s('bd').bank('RolandTR909').struct(mode.pick(grooves.kick))
   .decay(drums.kick.decay).sustain(0).release(0.06)
   .duckorbit(2).duckdepth(0.62).duckattack(0.012)
   .mask(gateOf('kick'))
-  ._scope()
 
 // 909 SNARE + CLAP — backbeat on 2 and 4, ghosts between.
 $: stack(
@@ -467,7 +466,6 @@ $: stack(
   .hpf(180).lpf(drums.snare.cut)
   .room(verb.mul(0.18)).roomsize(fx.reverb.size)
   .mask(gateOf('snare'))
-  ._scope()
 
 // HATS + OPEN HAT — the top layer. No worklets here (16 events a bar).
 $: s('hh').bank('RolandTR909').struct(mode.pick(grooves.hat))

@@ -25,6 +25,13 @@ and the **code** must stay in sync with its source file. Current mapping:
 | Production | Source |
 |---|---|
 | `tracks/_selected/00-jazzy-breaks.js` | `tracks/bigbeat/04-acid-breaks-v4.js` |
+| `tracks/_selected/01-mekong-sunrise.js` | `tracks/techno/18-khmer-dub-v5.js` |
+| `tracks/_selected/02-bodhi.js` | `tracks/techno/17-halfstep-dub-v3.js` |
+| `tracks/_selected/03-cold-rooms.js` | `tracks/coldwave/03-cold-rooms-v3.js` |
+| `tracks/_selected/04-ein-fest.js` | `tracks/darkwave/01-static-confession.js` |
+| `tracks/_selected/05-bright-road.js` | `tracks/psytrance/02-acid-euphoria.js` |
+
+`new-track.js` is the starter, not a copy of another track.
 
 ## Drum & bass — root series
 

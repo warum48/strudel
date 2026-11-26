@@ -380,6 +380,7 @@ $: s('bd').bank('RolandTR606').struct(groove('kick'))
   .decay(drums.kick.decay).sustain(0).release(0.04)
   .duckorbit(2).duckdepth(0.5).duckattack(0.01)
   .filter(audible)
+  ._scope()
 
 $: s('sd').bank('LinnLM1').struct(groove('snare'))
   .gain(drums.snare.vol.mul(tlOr('snare')))
@@ -387,6 +388,7 @@ $: s('sd').bank('LinnLM1').struct(groove('snare'))
   .decay(drums.snare.decay).sustain(0).release(0.08)
   .room(verb.mul(drums.snare.room)).roomsize(fx.reverb.size)
   .filter(audible)
+  ._scope()
 
 $: s('rim').bank('RolandTR808').struct(m('~ ~ ~ x ~ ~ x ~ ~ ~ ~ x ~ ~ x ~'))
   .gain(drums.rim.vol.mul(tlOr('rim')))
@@ -426,6 +428,7 @@ $: figures.roots.struct(groove('bass'))
   .clip(0.9).decay(0.1).sustain(0.5).release(0.05)
   .orbit(2)
   .filter(audible)
+  ._pianoroll()
 
 // Juno-пэд: долгая атака/релиз, тёмный срез, один общий рум.
 $: chords.slow(2)
@@ -518,6 +521,7 @@ $: riff.fast(keys.arpwall.rate).add(arpAuto.pick([note(12), note(24)])).degradeB
   .room(verb.mul(0.5)).roomsize(fx.reverb.size)
   .pan(sine.slow(8).range(0.3, 0.7))
   .filter(audible)
+  ._pianoroll()
 
 // Break lead: редкая фраза вместо основного лида (только BREAK).
 $: riff.slow(2).struct('x ~ ~ ~ ~ ~ ~ ~')

@@ -771,6 +771,7 @@ $: s(m('bd*4'))
   .decay(drums.kick.decay).sustain(0).release(0.08)
   .room(verb.mul(0.12)).roomsize(fx.reverb.size)
   .mask(gateOf('kick')).filter(audible)
+  ._scope()
 
 $: s('oh')
   .struct(hatLine)
@@ -825,6 +826,7 @@ $: note(bassLine)
   .lpf(bass.dub.cut.mul(autoAt('bass.dub.cut'))).lpq(1.2)
   .decay(bass.dub.decay).sustain(0.5).release(0.2)
   .mask(gateOf('dub')).filter(audible)
+  ._pianoroll()
 
 $: note(PAD_A)
   .s('sawtooth').partials([1, 0.45, 0.25, 0.1, 0.05])
@@ -921,6 +923,7 @@ $: note(MOOG_ARP_CHORDS)
   .delayfeedback(fx.dub.feedback.mul(0.7))
   .room(verb.mul(moog.arp.room)).roomsize(fx.reverb.size)
   .mask(gateOf('arp')).filter(audible)
+  ._pianoroll()
 
 // ARP2 — octave-up Moog arp, only in DEEP; more saturated and open.
 $: note(MOOG_ARP_CHORDS)

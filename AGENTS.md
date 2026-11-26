@@ -46,8 +46,14 @@ strudel.cc too. Details: `docs/pitfalls.en.md` → Rule #1.
   "removed from the final track" notes.
 - Keep the **code** of a production file in sync with its source track. When
   editing the source, port the same code change to its `_selected` copy;
-  comments may stay curated. Current mapping:
-  - `tracks/_selected/00-jazzy-breaks.js` ← `tracks/bigbeat/04-acid-breaks-v4.js`
+  comments may stay curated. Current mapping (also in `docs/TRACKS.md`):
+  - `00-jazzy-breaks` ← `bigbeat/04-acid-breaks-v4`
+  - `01-mekong-sunrise` ← `techno/18-khmer-dub-v5`
+  - `02-bodhi` ← `techno/17-halfstep-dub-v3`
+  - `03-cold-rooms` ← `coldwave/03-cold-rooms-v3`
+  - `04-ein-fest` ← `darkwave/01-static-confession`
+  - `05-bright-road` ← `psytrance/02-acid-euphoria`
+  - `new-track` is the starter, no source copy.
 
 ## Docs language
 

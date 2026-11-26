@@ -322,6 +322,7 @@ $: s('bd').bank('RolandTR909').struct(groove('kick'))
   .duckorbit(2).duckdepth(0.4).duckattack(0.02)
   .mask(gateOf('kick'))
   .filter(audible)
+  ._scope()
 
 $: s('sd').bank('RolandTR909').struct(groove('snare'))
   .gain(drums.snare.vol.mul(tlOr('snare')))
@@ -330,6 +331,7 @@ $: s('sd').bank('RolandTR909').struct(groove('snare'))
   .room(verb.mul(drums.snare.room)).roomsize(fx.reverb.size)
   .mask(gateOf('snare'))
   .filter(audible)
+  ._scope()
 
 $: s('cp').bank('RolandTR909').struct(groove('snare'))
   .gain(drums.clap.vol.mul(tlOr('clap')))
@@ -385,6 +387,7 @@ $: figures.pedal.struct(groove('bass'))
   .orbit(2)
   .mask(gateOf('bass'))
   .filter(audible)
+  ._pianoroll()
 
 // Sine-саб в припевах: тот же педальный A, без гармонического хода.
 $: figures.sub.s('sine')
@@ -462,6 +465,7 @@ $: leadLine
   .pan(sine.slow(8).range(0.42, 0.58))
   .mask(gateOf('lead'))
   .filter(audible)
+  ._pianoroll()
 
 // Воздух: не «pink», а тёмный brown-шум.
 $: s('brown').struct('x*2')
