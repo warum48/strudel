@@ -16,6 +16,16 @@ source of truth for exact parameter values.
   - `song` — old two-state `song` (LOOP / SONG);
   - `play` — current three-state `play` (LOOP / SONG / HOLD) + `holdBar`.
 
+## Production set (`tracks/_selected/`)
+
+`_selected` is the public set: non-local hosts serve only these tracks.
+Production titles/headers are curated for users, comments must be official,
+and the **code** must stay in sync with its source file. Current mapping:
+
+| Production | Source |
+|---|---|
+| `tracks/_selected/00-jazzy-breaks.js` | `tracks/bigbeat/04-acid-breaks-v4.js` |
+
 ## Drum & bass — root series
 
 | File | BPM | Bars | Layers | Sliders | Transport | Description |
@@ -44,6 +54,15 @@ Style notes: `docs/hip-hop/README.en.md`.
 | `02-stems-hardcore.js` | 200 | — | 20 | 81 | loop | 200 BPM hardcore built from stem-style layered hits. |
 
 Style notes: `docs/breakcore/README.en.md`.
+
+## Big beat — `tracks/bigbeat/`
+
+| File | BPM | Bars | Layers | Sliders | Transport | Description |
+|---|---:|---:|---:|---:|---|---|
+| `01-acid-breaks.js` | 125 | 72 | 16 | 28 | play | Acid breaks / two-drummer big beat in C minor: sliced Amen + 909-style kit, one 303 line, fuzz bass, chord stabs, spy-jazz colour, siren bed, eight sections with a one-bar STOP before the drop. Kept as the pre-listening version (Amen crush was 0.2 bits). |
+| `02-acid-breaks-v2.js` | 125 | 72 | 17 | 28 | play | Listening fix: Amen crush 12 bits, intro filter opens earlier, stab/acid/spy raised, one filtered chord cue on the last 16th of STOP; DROP enters audibly. |
+
+Style notes: `docs/bigbeat/README.en.md` → `06-practice.en.md` → `07-variants.en.md`.
 
 ## Coldwave — `tracks/coldwave/`
 

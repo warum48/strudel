@@ -175,7 +175,7 @@ const TIMELINE = [
   { at: 0, len: 8, name: 'INTRO', values: { mode: 1, break: 0, amen: 0, chop: 0, kick: 0, snare: 0, clap: 0, hat: 0.25, oh: 0, rim: 0, perc: 0, sub: 0, bass: 0, acid: 0.2, ghost: 0.5, stab: 0, pad: 0.6, solo: 0, soloPart: 0, siren: 0.1, riser: 0, vinyl: 1 } },
   { at: 8, len: 8, name: 'INTRO 2', values: { mode: 1, break: 0, amen: 0, chop: 0, kick: 1, snare: 1, clap: 0.7, hat: 1, oh: 0.6, rim: 0, perc: 0, sub: 0.6, bass: 0.4, acid: 0.4, ghost: 0.5, stab: 0.3, pad: 0.5, solo: 0.15, soloPart: 0, siren: 0.1, riser: 0, vinyl: 0.8 } },
   { at: 16, len: 8, name: 'GROOVE', values: { mode: 0, break: 1, amen: 0, chop: 0, kick: 1, snare: 1, clap: 0.7, hat: 1, oh: 0.6, rim: 0, perc: 0, sub: 1, bass: 1, acid: 0.9, ghost: 0.7, stab: 0.6, pad: 0.35, solo: 0, soloPart: 0, siren: 0, riser: 0, vinyl: 0.5 } },
-  { at: 24, len: 8, name: 'BUILD', values: { mode: 1, break: 1, amen: 0, chop: 0.3, kick: 1, snare: 0.6, clap: 0.5, hat: 1, oh: 0.4, rim: 0, perc: 0, sub: 1, bass: 1, acid: 0.8, ghost: 0.5, stab: 0.4, pad: 0.5, solo: 0, soloPart: 0, siren: 0.5, riser: 1, vinyl: 0.4 } },
+  { at: 24, len: 8, name: 'BUILD', values: { mode: 2, break: 1, amen: 0, chop: 0.3, kick: 1, snare: 0.6, clap: 0.5, hat: 1, oh: 0.4, rim: 0, perc: 0, sub: 1, bass: 1, acid: 0.8, ghost: 0.5, stab: 0.4, pad: 0.5, solo: 0, soloPart: 0, siren: 0.5, riser: 1, vinyl: 0.4 } },
   { at: 32, len: 2, name: 'STOP', values: { mode: 1, break: 0, amen: 0, chop: 0, kick: 0, snare: 0, clap: 0, hat: 0, oh: 0, rim: 0, perc: 0, sub: 0, bass: 0, acid: 0, ghost: 0, stab: 1, pad: 0.3, solo: 0, soloPart: 0, siren: 0, riser: 0, vinyl: 0.2 } },
   { at: 34, len: 16, name: 'DROP', values: { mode: 1, break: 1, amen: 0.8, chop: 0.5, kick: 1, snare: 1, clap: 0.9, hat: 1, oh: 0.7, rim: 0.4, perc: 0, sub: 1, bass: 1, acid: 1, ghost: 1, stab: 1, pad: 0.4, solo: 1.0, soloPart: 0, siren: 0.6, riser: 0, vinyl: 0.3 } },
   { at: 50, len: 8, name: 'BREAK', values: { mode: 1, break: 0.55, amen: 0.3, chop: 0, kick: 0, snare: 0, clap: 0, hat: 0.3, oh: 0, rim: 0.7, perc: 0, sub: 0, bass: 0, acid: 0.45, ghost: 0.9, stab: 0.5, pad: 1.0, solo: 1.0, soloPart: 1, siren: 0.7, riser: 0, vinyl: 1 } },
@@ -190,7 +190,7 @@ const TIMELINE = [
 ]
 
 const AUTOMATION = [
-  { path: 'keys.pad.cut', points: [[0, 0], [8, 1]] },
+  { path: 'keys.pad.cut', points: [[0, 0], [8, 1], [119, 1], [133, 0]] },
   { path: 'drums.break.cut', points: [[0, 0.5], [8, 0.7], [16, 0.1], [24, 1], [31, 1.7], [32, 0.35], [34, 1.5], [50, 0.55], [58, 1.2], [66, 1.5], [74, 1.6], [82, 0.45], [89, 1.5], [97, 1.6], [105, 0.45], [119, 0], [133, 0.5]] },
   { path: 'low.bass.cut', points: [[0, 0.85], [16, 1], [50, 0.7], [58, 1], [66, 1], [82, 0.8], [89, 1], [105, 0.8], [119, 0.85], [133, 0.85]] },
   { path: 'keys.acid.cut', points: [[0, 0.6], [16, 0.9], [24, 1.1], [31, 1.8], [34, 2], [50, 0.6], [58, 1.4], [66, 2], [82, 0.5], [89, 2], [105, 0.4], [119, 0.6], [133, 0.6]] },

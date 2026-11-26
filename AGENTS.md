@@ -35,6 +35,20 @@ calls `miniAllStrings()` and hides this, so always verify the track in
 strudel.cc too. Details: `docs/pitfalls.en.md` → Rule #1.
 
 
+## Production tracks (`tracks/_selected/`)
+
+- `tracks/_selected/` is the public production set. Non-local hosts serve only
+  these files; everything else under `tracks/` stays local.
+- Production files use curated, user-facing titles/headers (e.g. `ACID JAZZ ·
+  jazzy breaks` rather than the internal working name).
+- Comments in production files must be official and useful to every user: no
+  dev notes, version history, tooling commands, audition leftovers or
+  "removed from the final track" notes.
+- Keep the **code** of a production file in sync with its source track. When
+  editing the source, port the same code change to its `_selected` copy;
+  comments may stay curated. Current mapping:
+  - `tracks/_selected/00-jazzy-breaks.js` ← `tracks/bigbeat/04-acid-breaks-v4.js`
+
 ## Docs language
 
 English is the default documentation language. New docs and updates go to the

@@ -117,6 +117,7 @@ function currentTrackSource() {
 async function collectSampleUrls(src, isCurrent = () => true) {
   const mapUrls = [...new Set([
     'https://strudel.b-cdn.net/uzu-drumkit.json',
+    'https://strudel.b-cdn.net/tidal-drum-machines.json',
     ...[...src.matchAll(/\bsamples\(\s*['"]([^'"]+)['"]/g)].map((m) => m[1]),
   ])];
   const maps = new Map();
@@ -136,35 +137,40 @@ async function collectSampleUrls(src, isCurrent = () => true) {
     }
   }
 
-  const used = new Set();
-  for (const m of src.matchAll(/['"]([^'"]+)['"]/g)) {
-    for (const token of m[1].match(/[a-zA-Z][a-zA-Z0-9_]*/g) ?? []) {
-      if (maps.has(token)) used.add(token);
-    }
+  const used = new Map(); // key -> Set(variant index)
+  const addUse = (key, idxs) => {
+    if (!maps.has(key)) return;
+    if (!used.has(key)) used.set(key, new Set());
+    const set = used.get(key);
+    for (const i of idxs) set.add(i);
+  };
+
+  // s('name') with an optional .bank('X') and .n(...): load only the variants
+  // the track actually names, not every file of every Dirt-Samples key.
+  for (const m of src.matchAll(/\bs\(\s*['"]([^'"]+)['"]\s*\)/g)) {
+    const raw = m[1];
+    const [baseName, variant] = raw.split(':');
+    const tail = src.slice(m.index + m[0].length, m.index + m[0].length + 300);
+    const bank = /\.bank\(\s*['"]([^'"]+)['"]\s*\)/.exec(tail)?.[1];
+    const key = bank && maps.has(`${bank}_${baseName}`) ? `${bank}_${baseName}` : baseName;
+    if (!maps.has(key)) continue;
+    const idxs = new Set();
+    if (variant !== undefined && /^\d+$/.test(variant)) idxs.add(Number(variant));
+    const n = /\.n\(\s*(?:m\(\s*)?['"]([^'"]+)['"]/.exec(tail)?.[1];
+    if (n) for (const t of n.match(/\d+/g) ?? []) idxs.add(Number(t));
+    if (!idxs.size) idxs.add(0);
+    addUse(key, idxs);
   }
+
   const urls = [];
-  for (const key of used) {
-    for (const url of maps.get(key) ?? []) {
-      if (!urls.includes(url)) urls.push(url);
+  for (const [key, idxs] of used) {
+    const files = maps.get(key) ?? [];
+    for (const i of idxs) {
+      const url = files[i] ?? files[0];
+      if (url && !urls.includes(url)) urls.push(url);
     }
   }
   return urls;
-}
-
-let sampleProgTimer = null;
-function setSampleProgress(fraction, done = false) {
-  const el = $('sampleProg');
-  if (!el) return;
-  const bar = el.firstElementChild;
-  clearTimeout(sampleProgTimer);
-  if (fraction > 0) el.classList.add('on');
-  bar.style.width = `${Math.max(0, Math.min(1, fraction)) * 100}%`;
-  if (done) {
-    sampleProgTimer = setTimeout(() => {
-      el.classList.remove('on');
-      bar.style.width = '0%';
-    }, 900);
-  }
 }
 
 // Page-load warm-up: download bytes into the browser cache before PLAY.
