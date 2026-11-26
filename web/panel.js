@@ -2688,7 +2688,7 @@ function editorCode() {
 function readAutosave(p) {
   try {
     const j = JSON.parse(localStorage.getItem(AUTOSAVE_KEY) || 'null');
-    if (j && j.track === p && typeof j.code === 'string') return j.code;
+    if (j && j.track === p && typeof j.code === 'string') return j;
   } catch {}
   return null;
 }
@@ -2696,7 +2696,7 @@ function readAutosave(p) {
 function writeAutosave(p, src) {
   if (!p || typeof src !== 'string' || !src) return;
   try {
-    localStorage.setItem(AUTOSAVE_KEY, JSON.stringify({ track: p, code: src, at: Date.now() }));
+    localStorage.setItem(AUTOSAVE_KEY, JSON.stringify({ track: p, code: src, base: baseCode, at: Date.now() }));
     lastAutosaveCode = src;
   } catch {}
 }
@@ -2805,7 +2805,8 @@ async function loadTrack(p) {
   setStatus('reading track…');
   const fileSrc = await readTrack(p);
   baseCode = fileSrc;
-  const savedCode = readAutosave(p);
+  const saved = readAutosave(p);
+  const savedCode = saved && saved.base === fileSrc ? saved.code : null;
   const src = savedCode && savedCode !== fileSrc ? savedCode : fileSrc;
   stop(); // старый паттерн глушим: иначе два трека играют разом
   soloed.clear();
@@ -2870,7 +2871,8 @@ async function boot() {
   track = await fillTrackSelect();
   const fileSrc = await readTrack(track);
   baseCode = fileSrc;
-  const savedCode = readAutosave(track);
+  const saved = readAutosave(track);
+  const savedCode = saved && saved.base === fileSrc ? saved.code : null;
   code = savedCode && savedCode !== fileSrc ? savedCode : fileSrc;
   lastAutosaveCode = code;
   scenes = scanScenes(code);

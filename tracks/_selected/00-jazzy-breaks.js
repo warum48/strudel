@@ -408,6 +408,7 @@ $: s('apache').loopAt(2)
   .room(verb.mul(0.08)).roomsize(fx.reverb.size)
   .mask(gateOf('break'))
   .filter(audible)
+  ._scope()
 
 // AMEN WEIGHT — a low-passed 4-bar Amen under the drop. Body, not a second hook.
 $: s('amen').loopAt(4).late(1)
@@ -431,6 +432,7 @@ $: s('bd').bank('RolandTR909').struct(mode.pick(grooves.kick))
   .decay(drums.kick.decay).sustain(0).release(0.06)
   .duckorbit(2).duckdepth(0.62).duckattack(0.012)
   .mask(gateOf('kick'))
+  ._scope()
 
 // 909 SNARE + CLAP — backbeat on 2 and 4, ghosts between.
 $: stack(
@@ -443,6 +445,7 @@ $: stack(
   .hpf(180).lpf(drums.snare.cut)
   .room(verb.mul(0.18)).roomsize(fx.reverb.size)
   .mask(gateOf('snare'))
+  ._scope()
 
 // HATS + OPEN HAT — the top layer.
 $: s('hh').bank('RolandTR909').struct(mode.pick(grooves.hat))
@@ -489,6 +492,7 @@ $: BASS.s('sawtooth')
   .pan(0.5)
   .orbit(2)
   .mask(gateOf('bass'))
+  ._pianoroll()
 
 // Rhodes voice: sine/triangle body, octave tines, chorus + tremolo + delay.
 const rhodes = (pat, g, cut, att, dec, hold) => stack(
@@ -554,6 +558,7 @@ $: soloRhodes(SOLO.ctranspose(OCT), keys.solo.vol.mul(tlOr('solo')), keys.solo.c
   .pan(sine.slow(6).range(0.4, 0.6))
   .orbit(4)
   .mask(gateOf('solo'))
+  ._pianoroll()
 
 // SIREN — band-passed noise with a slow envelope; the "shout" replacement.
 $: s('white').slow(8).bpf(660).bpq(11).bpenv(3)
