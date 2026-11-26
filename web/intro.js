@@ -730,9 +730,9 @@ function mount() {
     tracks.forEach((t, i) => {
       const btn = document.createElement('button');
       btn.type = 'button';
-      // featured bigbeat goes directly under the pink tile and gets c5
+      // last slot is always c5 (blue-violet); featured bigbeat also lands there
       const isFeatured = t.path === '/tracks/bigbeat/04-acid-breaks-v4.js';
-      const colorIdx = isFeatured ? 5 : (i === 5 ? 4 : i);
+      const colorIdx = isFeatured ? 5 : i;
       btn.className = i < 6 ? `se-track c${colorIdx}` : 'se-track';
       btn.dataset.path = t.path;
 
