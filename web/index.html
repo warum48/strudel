@@ -260,6 +260,27 @@
     border-bottom: 1px solid var(--line);
     background: #11140f;
   }
+  /* ── SCENES — @scenes presets (any key names) ── */
+  #scenes {
+    flex: none;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 12px;
+    border-bottom: 1px solid var(--line);
+    background: #11140f;
+  }
+  #scenes[hidden] { display: none; }
+  #scenes .cap { color: var(--dim); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; width: 100%; }
+  #scenes button.scene {
+    flex: 1 1 auto;
+    min-width: 62px;
+    padding: 7px 8px;
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
   /* ── PADS — momentary: держишь — играет, отпустил — ушло ── */
   #pads {
     flex: none;
@@ -810,6 +831,7 @@
       <div class="rows" id="globalRows"></div>
     </div>
     <div id="switches"></div>
+    <div id="scenes" hidden></div>
     <div id="pads"></div>
     <div id="mixlist"></div>
   </aside>

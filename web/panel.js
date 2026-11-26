@@ -173,6 +173,22 @@ async function collectSampleUrls(src, isCurrent = () => true) {
   return urls;
 }
 
+let sampleProgTimer = null;
+function setSampleProgress(fraction, done = false) {
+  const el = $('sampleProg');
+  if (!el) return;
+  const bar = el.firstElementChild;
+  clearTimeout(sampleProgTimer);
+  if (fraction > 0) el.classList.add('on');
+  bar.style.width = `${Math.max(0, Math.min(1, fraction)) * 100}%`;
+  if (done) {
+    sampleProgTimer = setTimeout(() => {
+      el.classList.remove('on');
+      bar.style.width = '0%';
+    }, 900);
+  }
+}
+
 // Page-load warm-up: download bytes into the browser cache before PLAY.
 async function warmSampleNetwork() {
   const run = ++warmRun;
@@ -2192,436 +2208,52 @@ function bindPadKeys() {
   });
 }
 
-// ── SCENES: Intro / Theme + JSON export/import ─────────────────────
+// ── SCENES: `// @scenes` presets (any key names) ──────────────────
 function renderScenes() {
-  const intro = $('sceneIntro');
-  const theme = $('sceneTheme');
-  if (!intro || !theme) return;
-  const hasIntro = !!(scenes && scenes.intro && Object.keys(scenes.intro).length);
-  const hasTheme = !!(scenes && scenes.theme && Object.keys(scenes.theme).length);
-  intro.disabled = !hasIntro;
-  theme.disabled = !hasTheme;
-  intro.title = hasIntro ? 'apply intro scene' : 'no @scenes.intro in this track';
-  theme.title = hasTheme ? 'apply theme scene' : 'no @scenes.theme in this track';
-  setSceneStatus(
-    hasIntro || hasTheme
-      ? [hasIntro && 'intro', hasTheme && 'theme'].filter(Boolean).join(' / ')
-      : 'no scenes',
-  );
-}
-
-// Применяем значения по путям дерева. Идём с конца: правка числа меняет
-// длину текста и сдвигает только то, что правее, а мы уже отправили те
-// значения по их исходным id. Так пачка из 90 ручек не путает движок.
-// МИКШЕР: ровно `vol` каждого инструмента, в порядке дерева.
-function renderMixer(groups) {
-  const root = $('mixlist');
+  const root = $('scenes');
+  if (!root) return;
   root.innerHTML = '';
-  const rows = document.createElement('div');
-  rows.className = 'rows';
-  for (const [g, insts] of groups) {
-    for (const [inst, params] of insts) {
-      const vol = params.find((p) => p.path[2] === 'vol');
-      if (!vol) continue;
-      const row = makeRow(vol, instLabel(g, inst));
-      row.classList.add('is-vol');
-      const id = `${g}.${inst}`;
-      const dot = document.createElement('i');
-      dot.className = 'act-dot';
-      dot.dataset.inst = id;
-      dot.title = id + ' — sounding';
-      row.querySelector('label')?.prepend(dot);
-      const tools = document.createElement('span');
-      tools.className = 'mx-tools';
-      for (const [label, set, cls] of [
-        ['M', muted, 'm'],
-        ['S', soloed, 's'],
-      ]) {
-        const b = document.createElement('button');
-        b.type = 'button';
-        b.textContent = label;
-        b.title = cls === 'm' ? 'mute instrument' : 'solo instrument';
-        b.classList.add(cls);
-        b.classList.toggle('on', set.has(id));
-        b.addEventListener('click', (e) => {
-          e.stopPropagation();
-          if (set.has(id)) set.delete(id);
-          else set.add(id);
-          b.classList.toggle('on', set.has(id));
-          applyMixerState();
-        });
-        tools.appendChild(b);
-      }
-      const gm = instrumentMutes.get(inst);
-      if (gm) {
-        const gmKnob = knobs.find((k) => k.path.length === 0 && k.name === gm);
-        if (gmKnob) {
-          const b = document.createElement('button');
-          b.type = 'button';
-          b.className = 'g';
-          b.dataset.gmute = gm;
-          b.textContent = 'G';
-          b.title = `group mute: ${gm}`;
-          const groups2 = [...new Set(instrumentMutes.values())].sort();
-          b.style.setProperty('--g', MUTE_COLORS[groups2.indexOf(gm) % MUTE_COLORS.length]);
-          const paint = () => b.classList.toggle('on', Number(gmKnob.value) > 0.5);
-          paint();
-          b.addEventListener('click', (e) => {
-            e.stopPropagation();
-            const next = Number(gmKnob.value) > 0.5 ? gmKnob.min : gmKnob.max;
-            gmKnob.value = next;
-            setKnob(gmKnob, next);
-            document
-              .querySelectorAll(`.mx-tools button.g[data-gmute="${gm}"]`)
-              .forEach((x) => x.classList.toggle('on', next > 0.5));
-          });
-          tools.appendChild(b);
-        }
-      }
-      row.appendChild(tools);
-      rows.appendChild(row);
-    }
+  const entries = Object.entries(scenes || {}).filter(([, v]) => v && typeof v === 'object');
+  if (!entries.length) {
+    root.hidden = true;
+    return;
   }
-  root.appendChild(rows);
-}
-
-// ТОНКИЕ НАСТРОЙКИ: всё, кроме vol. Два уровня сворачивания — группа и
-// инструмент; состояние запоминается между eval'ами (openState).
-function renderTone(groups) {
-  const root = $('tonelist');
-  root.innerHTML = '';
-  for (const [g, insts] of groups) {
-    const gParams = [...insts.values()].reduce((a, p) => a + p.filter((x) => x.path[2] !== 'vol').length, 0);
-    if (!gParams) continue;
-
-    const gd = document.createElement('details');
-    gd.className = 'grp';
-    const autoGroup = AUTO_OPEN_GROUPS.has(g) || [...insts.keys()].some((i) => AUTO_OPEN_INSTS.has(i));
-    gd.open = openState.get(g) ?? autoGroup;
-    gd.addEventListener('toggle', () => openState.set(g, gd.open));
-    const gs = document.createElement('summary');
-    gs.innerHTML = `<span>${groupLabel(g)}</span><span class="n">${gParams}</span>`;
-    gd.appendChild(gs);
-    const gbody = document.createElement('div');
-    gbody.className = 'body';
-
-    for (const [inst, params] of insts) {
-      const own = params.filter((p) => p.path[2] !== 'vol');
-      if (!own.length) continue;
-      const key = `${g}.${inst}`;
-      const id = document.createElement('details');
-      id.className = 'inst';
-      id.open = openState.get(key) ?? (AUTO_OPEN_GROUPS.has(g) || AUTO_OPEN_INSTS.has(inst));
-      id.addEventListener('toggle', () => openState.set(key, id.open));
-      const is = document.createElement('summary');
-      is.innerHTML = `<span>${instLabel(g, inst)}</span><span class="n">${own.length}</span>`;
-      id.appendChild(is);
-      const body = document.createElement('div');
-      body.className = 'rows';
-      for (const p of own) body.appendChild(makeRow(p, paramLabel(p.name)));
-      id.appendChild(body);
-      gbody.appendChild(id);
-    }
-
-    gd.appendChild(gbody);
-    root.appendChild(gd);
+  root.hidden = false;
+  const cap = document.createElement('span');
+  cap.className = 'cap';
+  cap.textContent = 'Scenes';
+  root.appendChild(cap);
+  for (const [name, values] of entries) {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'scene';
+    b.textContent = name;
+    b.title = `apply scene: ${name}`;
+    b.addEventListener('click', () => applyValues(values, name));
+    root.appendChild(b);
   }
 }
 
-function makeRow(k, label) {
-  const row = document.createElement('div');
-  row.className = 'row' + (k.name === 'vol' ? ' is-vol' : '') + (k.name === 'cut' ? ' is-cut' : '');
-  const lab = document.createElement('label');
-  lab.textContent = label || k.name;
-  lab.title = k.path.length >= 3
-    ? `${k.path.join('.')} — click: jump to pattern`
-    : (k.path.length ? k.path.join('.') : k.name);
-  lab.style.cursor = k.path.length >= 3 ? 'pointer' : '';
-  if (k.path.length >= 3) {
-    lab.addEventListener('click', (e) => {
-      e.stopPropagation();
-      scrollToInstrumentPattern(k.path[0], k.path[1]);
-    });
+// Apply values by knob paths, right-to-left so edits do not shift positions.
+function applyValues(values, label = 'scene') {
+  const byKey = new Map(knobs.map((k) => [knobKey(k), k]));
+  const entries = Object.entries(values || {});
+  const pairs = [];
+  for (const [key, raw] of entries) {
+    const k = byKey.get(key);
+    const v = Number(raw);
+    if (!k || !Number.isFinite(v)) continue;
+    pairs.push([k, Math.min(k.max, Math.max(k.min, v))]);
   }
-  const input = document.createElement('input');
-  input.type = 'range';
-  input.min = k.min;
-  input.max = k.max;
-  input.step = k.step ?? (k.max - k.min) / 1000;
-  input.value = k.value;
-  const out = document.createElement('span');
-  out.className = 'v';
-  out.textContent = fmt(k.value);
-  input.addEventListener('input', () => {
-    const v = Number(input.value);
-    out.textContent = fmt(v);
+  pairs.sort((a, b) => b[0].idx - a[0].idx);
+  for (const [k, v] of pairs) {
+    k.value = v;
     setKnob(k, v);
-  });
-  row.append(lab, input, out);
-  row.addEventListener('click', (e) => {
-    if (e.target.closest?.('button,input,select')) return;
-    if (!mirror?.editor) return;
-    scrollEditorToLine(mirror.editor.state.doc.lineAt(k.anchor).number);
-  });
-  knobByAnchor.set('slider_' + k.anchor, { input, out, knob: k });
-  return row;
-}
-
-const instId = (k) => (k.path.length >= 3 ? `${k.path[0]}.${k.path[1]}` : null);
-
-// Mute/solo живут в панели, не в коде: в документе остаётся base-громкость,
-// движку уходит эффективная. Так solo не сбрасывает vol и снимается сразу.
-function effectiveVol(k, base = Number(k.base ?? k.value)) {
-  const id = instId(k);
-  if (!id) return base;
-  if (muted.has(id)) return 0;
-  if (soloed.size && !soloed.has(id)) return 0;
-  return base;
-}
-
-function applyMixerState() {
-  for (const k of knobs) {
-    if (k.name !== 'vol' || k.path.length < 3) continue;
-    window.postMessage(
-      { type: 'cm-slider', id: 'slider_' + k.anchor, value: effectiveVol(k), internal: true },
-      null,
-    );
   }
-}
-
-function applyDefaultMutes() {
-  if (defaultMutesApplied) return;
-  const gates = knobs.filter((k) => k.name === 'gate' && k.path.length >= 3);
-  const vols = knobs.filter((k) => k.name === 'vol' && k.path.length >= 3);
-  const targets = [...vols, ...gates];
-  if (!targets.length) return;
-  for (const k of targets.sort((a, b) => b.idx - a.idx)) {
-    if (Number(k.value) !== 0) {
-      k.value = 0;
-      setKnob(k, 0);
-    }
-  }
-  defaultMutesApplied = true;
   render();
-  setStatus('default: all volumes 0 and muted — raise vol + click M');
-}
-
-// A knob is the same drag a widget gets: the number into the document + a message
-// to the engine. Позицию числа НЕ запоминаем: после любой правки всё правее
-// сдвигается, а id виджета (`slider_<offset>`) живёт до следующего eval.
-// Поэтому каждый раз заново сканируем документ и берём k.idx-й вызов slider(.
-function setKnob(k, v) {
-  // держим k.value актуальным для панели: setKnob пишет значение в код
-  k.value = Number(v);
-  const src = mirror.editor.state.doc.toString();
-  const site = scanSliders(src).sites[k.idx];
-  if (site) {
-    const head = /^slider\(\s*(-?\d+(?:\.\d+)?)/.exec(src.slice(site.pos, site.pos + 40));
-    if (head) {
-      const from = site.pos + head[0].length - head[1].length;
-      mirror.editor.dispatch({ changes: { from, to: from + head[1].length, insert: fmt(v) } });
-    }
-  }
-  if (k.name === 'vol' && k.path.length >= 3) k.base = Number(v)
-  const out = k.name === 'vol' && k.path.length >= 3 ? effectiveVol(k, Number(v)) : Number(v)
-  window.postMessage({ type: 'cm-slider', id: 'slider_' + k.anchor, value: out, internal: true }, null);
-}
-
-// ── 5. editor theme and visualizer ────────────────────────────────
-lockDetailsToggle('timeline');
-lockDetailsToggle('automation');
-// cm.themes — 39 color schemes from strudel.cc itself; activateTheme writes the
-// theme into `:root` as `--background/--foreground/--caret/...` variables. Our own
-// variables are --bg/--panel/--text/--accent, they do not collide, so the panel
-// keeps its lime accent whatever theme the code wears.
-function paintCmSliders() {
-  document.querySelectorAll('.cm-slider input[type="range"]').forEach((sl) => {
-    const min = Number(sl.min);
-    const max = Number(sl.max);
-    const val = Number(sl.value);
-    const pct = max > min ? Math.max(0, Math.min(100, ((val - min) / (max - min)) * 100)) : 0;
-    sl.style.setProperty('--p', pct + '%');
-    if (!sl._paintBound) {
-      sl._paintBound = true;
-      sl.addEventListener('input', () => paintCmSliders());
-    }
-  });
-}
-setInterval(paintCmSliders, 250);
-
-function fillThemes() {
-  const sel = $('theme');
-  const names = Object.keys(cm.themes || {}).filter((n) => n !== ROOMV);
-  if (cm.themes?.[ROOMV]) names.unshift(ROOMV);
-  for (const name of names) {
-    const o = document.createElement('option');
-    o.value = name;
-    o.textContent = name;
-    sel.appendChild(o);
-  }
-  sel.value = ROOMV;
-  sel.addEventListener('change', () => applyTheme(sel.value));
-  applyTheme(ROOMV);
-}
-
-function applyTheme(name) {
-  try {
-    // setTheme reconfigures the CodeMirror theme compartment (syntax colors);
-    // initTheme alone only writes CSS variables used by the page background.
-    if (mirror && typeof mirror.setTheme === 'function') mirror.setTheme(name);
-    else cm.initTheme(name);
-    document.documentElement.dataset.theme = name;
-  } catch (e) {
-    setStatus(e.message, true);
-  }
-}
-
-// ── inline visualizers: `_pianoroll()` прямо в коде ─────────────────────────
-// В strudel.cc это НЕ полноэкранная картинка, а block-widget CodeMirror: канвас
-// вставляется блоком под той строкой, где стоит вызов. На трек их может быть
-// сколько угодно — по одному на инструмент.
-//
-// Как это работает в пакете: транспайлер видит вызов зарегистрированного метода
-// (`_pianoroll`, `_punchcard`, `_spiral`, `_pitchwheel`, `_scope`, `_spectrum`),
-// переписывает его в `_pianoroll('<id>')` и кладёт в meta.widgets конфиг
-// `{type, index, to}`. После eval StrudelMirror зовёт updateWidgets(), а
-// BlockWidget.toDOM() достаёт готовый элемент из своего реестра по
-// `getWidgetID(cfg)` = `<id>_widget_<type>_<index>`. Метод паттерна должен сам
-// создать canvas и положить его в этот реестр — setWidget(id, canvas).
-//
-// Почему не работает «из коробки»: @strudel/codemirror регистрирует эти методы
-// на СВОЁМ Pattern.prototype, а под esm.sh это не тот инстанс ядра, на котором
-// евал-ится трек (та же причина, по которой нам нужен свой sliderWithID).
-// Поэтому регистрируем руками на нашем core, а canvas отдаём в их реестр.
-const widgetCanvases = {};
-
-// ширина — по реальной ширине кода, иначе канвас 500px висит посреди пустой
-// панели, а на узком окне вылезает за край. Замер один раз, при создании.
-function codeWidth() {
-  const el = document.querySelector('#root .cm-content');
-  const w = el?.clientWidth || 0;
-  return Math.max(320, Math.min(900, (w || 560) - 48));
-}
-
-function widgetCanvas(id, options = {}) {
-  const { width = codeWidth(), height = 58, pixelRatio = window.devicePixelRatio || 1 } = options;
-  let c = widgetCanvases[id];
-  if (!c) {
-    c = document.createElement('canvas');
-    c.className = 'cm-inline-viz';
-    widgetCanvases[id] = c;
-  }
-  // канвас 1:1 с CSS * pixelRatio: painter'ы считают геометрию в пикселях
-  // канваса, поэтому растянутый CSS даёт мыло и уехавшие линии
-  c.width = Math.round(width * pixelRatio);
-  c.height = Math.round(height * pixelRatio);
-  c.style.width = width + 'px';
-  c.style.height = height + 'px';
-  cm.setWidget(id, c); // реестр CodeMirror — оттуда его заберёт BlockWidget
-  return c.getContext('2d');
-}
-// для отладки из консоли: какие канвасы уже созданы и под какими id
-window.__vizCanvases = widgetCanvases;
-
-// лайм панели по умолчанию; любой вызов может переопределить своими опциями.
-// inactive не чёрный и не лайм: ноты должны читаться на тёмном фоне, но не
-// спорить с активной (лаймовой) нотой и плейхедом.
-const VIZ_LOOK = { active: '#b3d80d', inactive: '#6b7d55', playheadColor: '#e3f07a' };
-
-// 🛑 ГЛАВНАЯ ЛОВУШКА ВИЗУАЛИЗАТОРОВ: __pianoroll рисует ноту с прозрачностью
-// `velocity * gain` из значения hap'а. У нас `gain` — это РУЧКА ГРОМКОСТИ
-// микшера, а все ударные по умолчанию стоят в нуле: картинка есть, нот не
-// видно (проверено — на канвасе оставалась одна линия плейхеда). Поэтому в
-// витрину отдаём копии hap'ов с gain = 1: ритм видно всегда, независимо от
-// того, выкручена дорожка или нет. Звук при этом не трогаем — см. ниже, какая
-// копия уходит в эфир, а какая только в canvas.
-const vizHaps = (haps) =>
-  haps.map((h) => {
-    // уже 1 — не копируем: painter зовётся каждый кадр, а у хэтов это 300+ hap'ов
-    if (h.value?.gain === 1) return h;
-    const value = typeof h.value === 'object' && h.value !== null ? { ...h.value, gain: 1 } : { value: h.value, gain: 1 };
-    return new core.Hap(h.whole, h.part, value, h.context);
-  });
-
-function registerInlineViz() {
-  const P = core.Pattern.prototype;
-
-  // pianoroll рисует сам (Pattern.prototype.draw → свой rAF), поэтому ему нужен
-  // не painter, а сам паттерн. Отсюда приём с «тенью»: в эфир уходит исходный
-  // паттерн (return this — звук и ручки как были), а рисуется его копия с
-  // gain = 1 и тегом id.
-  P._pianoroll = function (id, options = {}) {
-    const ctx = widgetCanvas(id, options);
-    const shadow = this.withHaps(vizHaps).tag(id);
-    shadow.pianoroll({ fold: 1, ...VIZ_LOOK, ...options, ctx, id });
-    return this;
-  };
-
-  // punchcard/spiral/pitchwheel работают наоборот: они вешают painter в state
-  // паттерна (onPaint), а painter зовёт Drawer редактора — и painter обязан
-  // висеть на ТОМ паттерне, который играет. Поэтому тут возвращаем this с
-  // тегом, а gain правим уже внутри painter'а: нарисовать — да, сыграть — нет.
-  //
-  // 🛑 И рисуем НЕ переданные painter'у haps. Дорожка кончается
-  // `.filter(audible)` — при нулевой громкости в паттерне нет ни одного hap'а,
-  // и ролл был бы пустым (то есть ровно тем багом, который мы только что
-  // вылечили). Поэтому спрашиваем свой, незагейченный паттерн: `self`.
-  const ownHaps = (self, id, time, drawTime) => {
-    const [lb, la] = drawTime ?? [-2, 2];
-    const from = Math.max(0, time - Math.abs(lb));
-    return vizHaps(self.queryArc(from, time + la).filter((h) => h.hasTag(id)));
-  };
-
-  P._punchcard = function (id, options = {}) {
-    const ctx = widgetCanvas(id, options);
-    const opts = { fold: 1, ...VIZ_LOOK, ...options, ctx, id };
-    const self = this.tag(id);
-    return self.onPaint((c, time, haps, drawTime) =>
-      draw.__pianoroll({
-        ctx,
-        time,
-        haps: ownHaps(self, id, time, drawTime),
-        ...draw.getDrawOptions(drawTime, opts),
-      }),
-    );
-  };
-
-  // круглые — квадратный канвас, иначе кольцо растягивается в эллипс
-  // `_spiral` сюда НЕ заведён намеренно: его функция рисования (drawSpiral)
-  // не экспортируется из @strudel/draw, поэтому перехватить haps и починить
-  // gain нельзя — на нулевой громкости он рисовал бы пустоту.
-  P._pitchwheel = function (id, options = {}) {
-    const size = options.size || 200;
-    const opts = { width: size, height: size, ...VIZ_LOOK, ...options, size: size / 5, id };
-    const ctx = widgetCanvas(id, opts);
-    const self = this.tag(id);
-    return self.onPaint((c, time, haps, drawTime) =>
-      draw.pitchwheel({
-        ...opts,
-        time,
-        ctx,
-        // свой запрос, не haps от Drawer'а — см. ownHaps выше
-        haps: ownHaps(self, id, time, drawTime).filter((h) => h.isActive(time)),
-      }),
-    );
-  };
-
-  // осциллограф/спектр живут в @strudel/webaudio; если их там нет — молча пропускаем
-  if (typeof P.scope === 'function') {
-    P._scope = function (id, options = {}) {
-      const opts = { width: 500, height: 58, pos: 0.5, scale: 1, ...options };
-      const ctx = widgetCanvas(id, opts);
-      return this.tag(id).scope({ ...opts, ctx, id });
-    };
-  }
-  if (typeof P.spectrum === 'function') {
-    P._spectrum = function (id, options = {}) {
-      const size = options.size || 200;
-      const opts = { width: size, height: size, ...options, size: size / 5 };
-      const ctx = widgetCanvas(id, opts);
-      return this.tag(id).spectrum({ ...opts, ctx, id });
-    };
-  }
+  renderScenes();
+  setSceneStatus(`${label}: ${pairs.length}/${entries.length} values`);
+  return pairs.length;
 }
 
 // ── 6. editor and transport ───────────────────────────────────────
@@ -2970,6 +2602,7 @@ async function play() {
     pendingSeek = null;
     setTimeout(() => seekTimeline(target), 300);
   }
+  showTrackInfo(track, editorCode());
   setStatus(`${knobs.length} knobs · playing`);
   writeAutosave(track, editorCode());
   updateEditedFlag();
@@ -3012,7 +2645,7 @@ async function importTrack(file) {
   mirror.editor.dispatch({ changes: { from: 0, to: mirror.editor.state.doc.length, insert: code } });
   await mirror.evaluate();
   buildKnobs();
-  $('title').textContent = file.name.replace(/\.js$/i, '');
+  showTrackInfo(track, editorCode());
   setSceneStatus(`track imported: ${file.name}`);
 }
 
@@ -3152,8 +2785,10 @@ window.strudex = {
   setCode: async (code) => {
     if (!mirror) { try { await audioReady; } catch {} }
     if (!mirror) throw new Error('engine not ready');
-    mirror.setCode(String(code));
+    const src = String(code);
+    mirror.setCode(src);
     await play();
+    showTrackInfo(track, src);
     return true;
   },
   loadTrack: (p) => window.__strudelPickTrack(p),

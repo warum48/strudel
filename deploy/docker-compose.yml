@@ -28,3 +28,4 @@ services:
       - ../tracks:/app/tracks:ro
       - ../docs:/app/docs:ro
       - ../samples:/app/samples:ro
+      - ../llms.txt:/app/llms.txt:ro

@@ -11,7 +11,11 @@ automation). It is designed to be driven by an AI agent as well as a human.
    - `/docs/prompt-track.en.md` — the track-generation brief and file standard
    - `/docs/rules.en.md` — style frames and anti-patterns
    - `/docs/pitfalls.en.md` — Strudel gotchas (mandatory)
+   - `/docs/practice-atlas.en.md` — playable BPM/scale/16-step recipes for every style
+   - `/docs/new-tricks.en.md` — Strudel features absent from our tracks, with syntax
    - `/docs/references.en.md` — external sources index
+   Genre playbooks live in `/docs/<style>/`; big beat is the deepest worked
+   example (`/docs/bigbeat/README.en.md` → `06-practice` → `07-variants`).
 3. Study examples under `/tracks/_selected/` (public set) and
    `/tracks/coldwave/03-cold-rooms-v3.js` (full reference: TIMELINE, AUTOMATION,
    `autoCurve`, `tlCurve`, `UI` manifest).
@@ -62,3 +66,5 @@ UI ids if a real click is needed: `#track` (picker), `#newTrack`, `#play`,
 - Localhost sees the full library.
 - Any other host (the public deployment) lists and serves only
   `/tracks/_selected/`; other track files answer 404.
+
+Same-tab browser control (extension/CDP, `window.strudex`): `/docs/agent-browser.en.md`.
