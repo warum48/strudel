@@ -1,4 +1,4 @@
-// ACID JAZZ · jazzy breaks · 125 BPM · C minor
+// ACID JAZZ · JAZZY BREAKS · 125 BPM · C minor
 
 const BPM = 125
 setcpm(BPM / 4) // one cycle = one 4/4 bar = 1920 ms
