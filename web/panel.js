@@ -785,7 +785,6 @@ function scanScenes(src) {
   }
 }
 let scenes = null;
-let importedScenes = null; // JSON import can override scenes until track change
 
 const knobKey = (k) => (k.path.length ? k.path.join('.') : k.name);
 function setSceneStatus(text) {
@@ -951,7 +950,7 @@ function buildKnobs() {
   automationLines = scanAutomationLines(src, automation);
   renderAutomation();
   if (timelineSel >= timeline.length) timelineSel = timeline.length - 1;
-  scenes = importedScenes || scanScenes(src);
+  scenes = scanScenes(src);
   renderScenes();
   const ws = mirror.widgets.filter((w) => w.type === 'slider').sort((a, b) => a.from - b.from);
   if (sites.length !== ws.length) {
@@ -2208,74 +2207,6 @@ function renderScenes() {
 // Применяем значения по путям дерева. Идём с конца: правка числа меняет
 // длину текста и сдвигает только то, что правее, а мы уже отправили те
 // значения по их исходным id. Так пачка из 90 ручек не путает движок.
-function applyValues(values, label = 'scene') {
-  const byKey = new Map(knobs.map((k) => [knobKey(k), k]));
-  const entries = Object.entries(values || {});
-  const pairs = [];
-  for (const [key, raw] of entries) {
-    const k = byKey.get(key);
-    const v = Number(raw);
-    if (!k || !Number.isFinite(v)) continue;
-    pairs.push([k, Math.min(k.max, Math.max(k.min, v))]);
-  }
-  pairs.sort((a, b) => b[0].idx - a[0].idx);
-  for (const [k, v] of pairs) {
-    k.value = v;
-    setKnob(k, v);
-  }
-  render();
-  renderScenes();
-  setSceneStatus(`${label}: ${pairs.length}/${entries.length} values`);
-  return pairs.length;
-}
-
-function exportScene() {
-  const values = {};
-  for (const k of knobs) values[knobKey(k)] = k.value;
-  const payload = { track: trackName(track), values, scenes };
-  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  const base = trackName(track).replace(/[\/\\]+/g, '-');
-  const stamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-');
-  a.download = `${base}-${stamp}.json`;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
-  setSceneStatus(`exported ${Object.keys(values).length} values`);
-}
-
-async function importScene(file) {
-  try {
-    const text = await file.text();
-    const json = JSON.parse(text);
-    if (json && json.scenes && typeof json.scenes === 'object') {
-      importedScenes = json.scenes;
-      scenes = importedScenes;
-      renderScenes();
-    }
-    const values = json && json.values && typeof json.values === 'object' ? json.values : json;
-    if (!values || typeof values !== 'object') throw new Error('no values in JSON');
-    const n = applyValues(values, 'imported');
-    setSceneStatus(`imported ${n} values${json.track ? ' · ' + json.track : ''}`);
-  } catch (e) {
-    setSceneStatus('import error: ' + e.message);
-    setStatus(e.message, true);
-  }
-}
-
-function bindScenes() {
-  $('sceneExport')?.addEventListener('click', exportScene);
-  $('sceneImport')?.addEventListener('click', () => $('sceneFile')?.click());
-  $('sceneFile')?.addEventListener('change', (e) => {
-    const f = e.target.files?.[0];
-    if (f) importScene(f);
-    e.target.value = '';
-  });
-}
-
 // МИКШЕР: ровно `vol` каждого инструмента, в порядке дерева.
 function renderMixer(groups) {
   const root = $('mixlist');
@@ -2474,7 +2405,7 @@ function applyDefaultMutes() {
 // сдвигается, а id виджета (`slider_<offset>`) живёт до следующего eval.
 // Поэтому каждый раз заново сканируем документ и берём k.idx-й вызов slider(.
 function setKnob(k, v) {
-  // держим k.value актуальным: exportScene берёт значения из knobs, а не из кода
+  // держим k.value актуальным для панели: setKnob пишет значение в код
   k.value = Number(v);
   const src = mirror.editor.state.doc.toString();
   const site = scanSliders(src).sites[k.idx];
@@ -2811,7 +2742,6 @@ function closeUnsaved(result) {
   if (resolve) resolve(result);
 }
 function bindUnsaved() {
-  $('uSliders')?.addEventListener('click', () => exportScene());
   $('uCode')?.addEventListener('click', () => exportTrack());
   $('uDiscard')?.addEventListener('click', () => closeUnsaved(true));
   $('uCancel')?.addEventListener('click', () => closeUnsaved(false));
@@ -2883,7 +2813,6 @@ async function loadTrack(p) {
   code = src;
   lastAutosaveCode = src;
   writeAutosave(p, src);
-  importedScenes = null;
   scenes = scanScenes(src);
   renderScenes();
   mirror.setCode(src);
@@ -3182,7 +3111,6 @@ function bindNewTrack() {
   });
 }
 
-bindScenes();
 bindPadKeys();
 bindHeaderMenu();
 bindCopyCode();
