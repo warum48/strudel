@@ -214,6 +214,41 @@
     box-shadow: 0 0 6px var(--accent);
     transition: width .2s linear;
   }
+  #unsaved {
+    position: fixed;
+    inset: 0;
+    z-index: 12000;
+    display: grid;
+    place-items: center;
+    padding: 24px;
+    background: rgba(5, 7, 4, 0.74);
+    -webkit-backdrop-filter: blur(9px) saturate(0.85);
+  }
+  #unsaved[hidden] { display: none; }
+  #unsaved .u-box {
+    width: min(520px, 92vw);
+    background: #151814;
+    border: 1px solid #2b3226;
+    border-radius: 4px;
+    padding: 18px 18px 14px;
+    box-shadow: 0 22px 60px rgba(0, 0, 0, 0.6);
+  }
+  #unsaved .u-title {
+    color: var(--accent);
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  #unsaved .u-text {
+    margin: 0 0 16px;
+    color: var(--text);
+    line-height: 1.45;
+  }
+  #unsaved .u-actions { display: flex; flex-wrap: wrap; gap: 6px; justify-content: flex-end; }
+  #unsaved button { font: inherit; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; padding: 7px 12px; }
+  #unsaved #uDiscard { border-color: var(--warn); color: var(--warn); }
+  #unsaved #uCancel { border-color: var(--line); color: var(--dim); }
   #samples:disabled { opacity: 0.55; cursor: progress; }
   /* панелька переключателей — отдельным блоком между Global и микшером */
   #switches {
@@ -674,6 +709,18 @@
 </head>
 <body>
 <div id="sampleProg" aria-hidden="true"><i></i></div>
+<div id="unsaved" hidden>
+  <div class="u-box" role="dialog" aria-modal="true" aria-labelledby="uTitle">
+    <div class="u-title" id="uTitle">Unsaved changes</div>
+    <p class="u-text" id="uText"></p>
+    <div class="u-actions">
+      <button type="button" id="uSliders">SLIDERS JSON</button>
+      <button type="button" id="uCode">CODE JS</button>
+      <button type="button" id="uDiscard">DISCARD</button>
+      <button type="button" id="uCancel">CANCEL</button>
+    </div>
+  </div>
+</div>
 <header>
   <h1 id="title">…</h1>
   <span class="sub" id="sub"></span>

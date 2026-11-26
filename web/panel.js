@@ -70,6 +70,10 @@ if (cm.themes && cm.themes.sublime && !cm.themes[ROOMV]) {
 // дать другому и открыть тот же трек.
 const DEFAULT_TRACK = '/tracks/techno/12-slowtrap-v3.js';
 let track = DEFAULT_TRACK;
+const AUTOSAVE_KEY = 'strudex:autosave';
+let baseCode = '';
+let lastAutosaveCode = '';
+let autosaveTimer = null;
 
 const trackName = (p) => p.replace(/^\/tracks\//, '').replace(/\.js$/, '');
 const trackTitle = (p) => {
@@ -253,6 +257,7 @@ async function downloadAllSamples() {
 }
 
 $('samples')?.addEventListener('click', downloadAllSamples);
+bindUnsaved();
 
 /*
  * FUTURE / WIP: offline WAV export (button removed from the final UI).
@@ -2739,6 +2744,86 @@ async function readTrack(p) {
   return res.text();
 }
 
+function editorCode() {
+  try { return mirror?.editor?.state?.doc?.toString?.() ?? code ?? ''; } catch { return code ?? ''; }
+}
+
+function readAutosave(p) {
+  try {
+    const j = JSON.parse(localStorage.getItem(AUTOSAVE_KEY) || 'null');
+    if (j && j.track === p && typeof j.code === 'string') return j.code;
+  } catch {}
+  return null;
+}
+
+function writeAutosave(p, src) {
+  if (!p || typeof src !== 'string' || !src) return;
+  try {
+    localStorage.setItem(AUTOSAVE_KEY, JSON.stringify({ track: p, code: src, at: Date.now() }));
+    lastAutosaveCode = src;
+  } catch {}
+}
+
+function isDirty() {
+  return !!mirror && !!baseCode && editorCode() !== baseCode;
+}
+
+function setEditedFlag(on) {
+  const u = new URL(location.href);
+  if (on) u.searchParams.set('edited', '1');
+  else u.searchParams.delete('edited');
+  history.replaceState(null, '', u);
+}
+
+function updateEditedFlag() {
+  setEditedFlag(isDirty());
+}
+
+function startAutosave() {
+  if (autosaveTimer) return;
+  autosaveTimer = setInterval(() => {
+    if (!mirror || !track) return;
+    const src = editorCode();
+    if (!src || src === lastAutosaveCode) return;
+    writeAutosave(track, src);
+    updateEditedFlag();
+  }, 700);
+  window.addEventListener('beforeunload', () => writeAutosave(track, editorCode()));
+}
+
+// ── unsaved changes warning ───────────────────────────────────────
+let unsavedResolve = null;
+function unsavedPrompt(nextPath) {
+  const el = $('unsaved');
+  if (!el) return Promise.resolve(true);
+  $('uText').textContent =
+    `Current track ${trackName(track)} has unsaved changes. ` +
+    `Switching to ${trackName(nextPath)} discards them (this browser keeps only one autosave slot). ` +
+    `Download a copy first if you need it.`;
+  el.hidden = false;
+  return new Promise((resolve) => { unsavedResolve = resolve; });
+}
+function closeUnsaved(result) {
+  const el = $('unsaved');
+  if (el) el.hidden = true;
+  const resolve = unsavedResolve;
+  unsavedResolve = null;
+  if (resolve) resolve(result);
+}
+function bindUnsaved() {
+  $('uSliders')?.addEventListener('click', () => exportScene());
+  $('uCode')?.addEventListener('click', () => exportTrack());
+  $('uDiscard')?.addEventListener('click', () => closeUnsaved(true));
+  $('uCancel')?.addEventListener('click', () => closeUnsaved(false));
+  $('unsaved')?.addEventListener('click', (e) => {
+    if (e.target === $('unsaved')) closeUnsaved(false);
+  });
+  document.addEventListener('keydown', (e) => {
+    if (!$('unsaved') || $('unsaved').hidden) return;
+    if (e.key === 'Escape') { e.preventDefault(); closeUnsaved(false); }
+  });
+}
+
 // Длина трека — из TIMELINE и BPM. Один такт = 4 доли,
 // setcpm(BPM/4) => такт = 4/BPM минуты.
 function trackDuration(src, bpm) {
@@ -2773,8 +2858,19 @@ function showTrackInfo(p, src) {
 
 async function loadTrack(p) {
   if (!mirror || p === track) return;
+  if (isDirty()) {
+    const ok = await unsavedPrompt(p);
+    if (!ok) {
+      const sel = $('track');
+      if (sel) sel.value = track;
+      return;
+    }
+  }
   setStatus('reading track…');
-  const src = await readTrack(p);
+  const fileSrc = await readTrack(p);
+  baseCode = fileSrc;
+  const savedCode = readAutosave(p);
+  const src = savedCode && savedCode !== fileSrc ? savedCode : fileSrc;
   stop(); // старый паттерн глушим: иначе два трека играют разом
   soloed.clear();
   muted.clear();
@@ -2785,6 +2881,8 @@ async function loadTrack(p) {
   timelineSel = -1;
   track = p;
   code = src;
+  lastAutosaveCode = src;
+  writeAutosave(p, src);
   importedScenes = null;
   scenes = scanScenes(src);
   renderScenes();
@@ -2796,6 +2894,7 @@ async function loadTrack(p) {
   if (sBtn) { sBtn.textContent = 'SAMPLES'; sBtn.disabled = false; }
   if (sOut) sOut.textContent = '';
   history.replaceState(null, '', '#' + p);
+  updateEditedFlag();
   // даём CodeMirror разложить документ: evaluate() читает this.code, который
   // обновляет его же слушатель изменений
   await new Promise((r) => setTimeout(r, 0));
@@ -2834,7 +2933,11 @@ async function boot() {
 
   setStatus('reading track…');
   track = await fillTrackSelect();
-  code = await readTrack(track);
+  const fileSrc = await readTrack(track);
+  baseCode = fileSrc;
+  const savedCode = readAutosave(track);
+  code = savedCode && savedCode !== fileSrc ? savedCode : fileSrc;
+  lastAutosaveCode = code;
   scenes = scanScenes(code);
   renderScenes();
   showTrackInfo(track, code);
@@ -2900,6 +3003,8 @@ async function boot() {
   window.strudelMirror = mirror;
   window.__mirror = mirror;
   window.__cm = cm;
+  startAutosave();
+  updateEditedFlag();
 
   fillThemes();
   requestAnimationFrame(drawSpectrum);
@@ -2929,6 +3034,8 @@ async function play() {
     setTimeout(() => seekTimeline(target), 300);
   }
   setStatus(`${knobs.length} knobs · playing`);
+  writeAutosave(track, editorCode());
+  updateEditedFlag();
   // Warm the sample cache after the user gesture: loadBuffer needs a running
   // audio context, and the first break/sample should not wait for the network.
   downloadAllSamples();

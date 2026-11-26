@@ -173,7 +173,7 @@ const { drums, low, keys, atmos, fx } = instruments
 // ── form: 133 bars ───────────────────────────────────────────────
 const TIMELINE = [
   { at: 0, len: 8, name: 'INTRO', values: { mode: 1, break: 0, amen: 0, chop: 0, kick: 0, snare: 0, clap: 0, hat: 0.25, oh: 0, rim: 0, perc: 0, sub: 0, bass: 0, acid: 0.2, ghost: 0.5, stab: 0, pad: 0.6, solo: 0, soloPart: 0, siren: 0.1, riser: 0, vinyl: 1 } },
-  { at: 8, len: 8, name: 'INTRO 2', values: { mode: 1, break: 0, amen: 0, chop: 0, kick: 0.5, snare: 0.3, clap: 0, hat: 0.5, oh: 0, rim: 0, perc: 0, sub: 0.6, bass: 0.4, acid: 0.4, ghost: 0.5, stab: 0.3, pad: 0.5, solo: 0.15, soloPart: 0, siren: 0.1, riser: 0, vinyl: 0.8 } },
+  { at: 8, len: 8, name: 'INTRO 2', values: { mode: 1, break: 0, amen: 0, chop: 0, kick: 1, snare: 1, clap: 0.7, hat: 1, oh: 0.6, rim: 0, perc: 0, sub: 0.6, bass: 0.4, acid: 0.4, ghost: 0.5, stab: 0.3, pad: 0.5, solo: 0.15, soloPart: 0, siren: 0.1, riser: 0, vinyl: 0.8 } },
   { at: 16, len: 8, name: 'GROOVE', values: { mode: 0, break: 1, amen: 0, chop: 0, kick: 1, snare: 1, clap: 0.7, hat: 1, oh: 0.6, rim: 0, perc: 0, sub: 1, bass: 1, acid: 0.9, ghost: 0.7, stab: 0.6, pad: 0.35, solo: 0, soloPart: 0, siren: 0, riser: 0, vinyl: 0.5 } },
   { at: 24, len: 8, name: 'BUILD', values: { mode: 1, break: 1, amen: 0, chop: 0.3, kick: 1, snare: 0.6, clap: 0.5, hat: 1, oh: 0.4, rim: 0, perc: 0, sub: 1, bass: 1, acid: 0.8, ghost: 0.5, stab: 0.4, pad: 0.5, solo: 0, soloPart: 0, siren: 0.5, riser: 1, vinyl: 0.4 } },
   { at: 32, len: 2, name: 'STOP', values: { mode: 1, break: 0, amen: 0, chop: 0, kick: 0, snare: 0, clap: 0, hat: 0, oh: 0, rim: 0, perc: 0, sub: 0, bass: 0, acid: 0, ghost: 0, stab: 1, pad: 0.3, solo: 0, soloPart: 0, siren: 0, riser: 0, vinyl: 0.2 } },
