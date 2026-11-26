@@ -2256,6 +2256,369 @@ function applyValues(values, label = 'scene') {
   return pairs.length;
 }
 
+function renderMixer(groups) {
+  const root = $('mixlist');
+  root.innerHTML = '';
+  const rows = document.createElement('div');
+  rows.className = 'rows';
+  for (const [g, insts] of groups) {
+    for (const [inst, params] of insts) {
+      const vol = params.find((p) => p.path[2] === 'vol');
+      if (!vol) continue;
+      const row = makeRow(vol, instLabel(g, inst));
+      row.classList.add('is-vol');
+      const id = `${g}.${inst}`;
+      const dot = document.createElement('i');
+      dot.className = 'act-dot';
+      dot.dataset.inst = id;
+      dot.title = id + ' — sounding';
+      row.querySelector('label')?.prepend(dot);
+      const tools = document.createElement('span');
+      tools.className = 'mx-tools';
+      for (const [label, set, cls] of [
+        ['M', muted, 'm'],
+        ['S', soloed, 's'],
+      ]) {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.textContent = label;
+        b.title = cls === 'm' ? 'mute instrument' : 'solo instrument';
+        b.classList.add(cls);
+        b.classList.toggle('on', set.has(id));
+        b.addEventListener('click', (e) => {
+          e.stopPropagation();
+          if (set.has(id)) set.delete(id);
+          else set.add(id);
+          b.classList.toggle('on', set.has(id));
+          applyMixerState();
+        });
+        tools.appendChild(b);
+      }
+      const gm = instrumentMutes.get(inst);
+      if (gm) {
+        const gmKnob = knobs.find((k) => k.path.length === 0 && k.name === gm);
+        if (gmKnob) {
+          const b = document.createElement('button');
+          b.type = 'button';
+          b.className = 'g';
+          b.dataset.gmute = gm;
+          b.textContent = 'G';
+          b.title = `group mute: ${gm}`;
+          const groups2 = [...new Set(instrumentMutes.values())].sort();
+          b.style.setProperty('--g', MUTE_COLORS[groups2.indexOf(gm) % MUTE_COLORS.length]);
+          const paint = () => b.classList.toggle('on', Number(gmKnob.value) > 0.5);
+          paint();
+          b.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const next = Number(gmKnob.value) > 0.5 ? gmKnob.min : gmKnob.max;
+            gmKnob.value = next;
+            setKnob(gmKnob, next);
+            document
+              .querySelectorAll(`.mx-tools button.g[data-gmute="${gm}"]`)
+              .forEach((x) => x.classList.toggle('on', next > 0.5));
+          });
+          tools.appendChild(b);
+        }
+      }
+      row.appendChild(tools);
+      rows.appendChild(row);
+    }
+  }
+  root.appendChild(rows);
+}
+
+// ТОНКИЕ НАСТРОЙКИ: всё, кроме vol. Два уровня сворачивания — группа и
+// инструмент; состояние запоминается между eval'ами (openState).
+function renderTone(groups) {
+  const root = $('tonelist');
+  root.innerHTML = '';
+  for (const [g, insts] of groups) {
+    const gParams = [...insts.values()].reduce((a, p) => a + p.filter((x) => x.path[2] !== 'vol').length, 0);
+    if (!gParams) continue;
+
+    const gd = document.createElement('details');
+    gd.className = 'grp';
+    const autoGroup = AUTO_OPEN_GROUPS.has(g) || [...insts.keys()].some((i) => AUTO_OPEN_INSTS.has(i));
+    gd.open = openState.get(g) ?? autoGroup;
+    gd.addEventListener('toggle', () => openState.set(g, gd.open));
+    const gs = document.createElement('summary');
+    gs.innerHTML = `<span>${groupLabel(g)}</span><span class="n">${gParams}</span>`;
+    gd.appendChild(gs);
+    const gbody = document.createElement('div');
+    gbody.className = 'body';
+
+    for (const [inst, params] of insts) {
+      const own = params.filter((p) => p.path[2] !== 'vol');
+      if (!own.length) continue;
+      const key = `${g}.${inst}`;
+      const id = document.createElement('details');
+      id.className = 'inst';
+      id.open = openState.get(key) ?? (AUTO_OPEN_GROUPS.has(g) || AUTO_OPEN_INSTS.has(inst));
+      id.addEventListener('toggle', () => openState.set(key, id.open));
+      const is = document.createElement('summary');
+      is.innerHTML = `<span>${instLabel(g, inst)}</span><span class="n">${own.length}</span>`;
+      id.appendChild(is);
+      const body = document.createElement('div');
+      body.className = 'rows';
+      for (const p of own) body.appendChild(makeRow(p, paramLabel(p.name)));
+      id.appendChild(body);
+      gbody.appendChild(id);
+    }
+
+    gd.appendChild(gbody);
+    root.appendChild(gd);
+  }
+}
+
+function makeRow(k, label) {
+  const row = document.createElement('div');
+  row.className = 'row' + (k.name === 'vol' ? ' is-vol' : '') + (k.name === 'cut' ? ' is-cut' : '');
+  const lab = document.createElement('label');
+  lab.textContent = label || k.name;
+  lab.title = k.path.length >= 3
+    ? `${k.path.join('.')} — click: jump to pattern`
+    : (k.path.length ? k.path.join('.') : k.name);
+  lab.style.cursor = k.path.length >= 3 ? 'pointer' : '';
+  if (k.path.length >= 3) {
+    lab.addEventListener('click', (e) => {
+      e.stopPropagation();
+      scrollToInstrumentPattern(k.path[0], k.path[1]);
+    });
+  }
+  const input = document.createElement('input');
+  input.type = 'range';
+  input.min = k.min;
+  input.max = k.max;
+  input.step = k.step ?? (k.max - k.min) / 1000;
+  input.value = k.value;
+  const out = document.createElement('span');
+  out.className = 'v';
+  out.textContent = fmt(k.value);
+  input.addEventListener('input', () => {
+    const v = Number(input.value);
+    out.textContent = fmt(v);
+    setKnob(k, v);
+  });
+  row.append(lab, input, out);
+  row.addEventListener('click', (e) => {
+    if (e.target.closest?.('button,input,select')) return;
+    if (!mirror?.editor) return;
+    scrollEditorToLine(mirror.editor.state.doc.lineAt(k.anchor).number);
+  });
+  knobByAnchor.set('slider_' + k.anchor, { input, out, knob: k });
+  return row;
+}
+
+const instId = (k) => (k.path.length >= 3 ? `${k.path[0]}.${k.path[1]}` : null);
+
+// Mute/solo живут в панели, не в коде: в документе остаётся base-громкость,
+// движку уходит эффективная. Так solo не сбрасывает vol и снимается сразу.
+function effectiveVol(k, base = Number(k.base ?? k.value)) {
+  const id = instId(k);
+  if (!id) return base;
+  if (muted.has(id)) return 0;
+  if (soloed.size && !soloed.has(id)) return 0;
+  return base;
+}
+
+function applyMixerState() {
+  for (const k of knobs) {
+    if (k.name !== 'vol' || k.path.length < 3) continue;
+    window.postMessage(
+      { type: 'cm-slider', id: 'slider_' + k.anchor, value: effectiveVol(k), internal: true },
+      null,
+    );
+  }
+}
+
+function applyDefaultMutes() {
+  if (defaultMutesApplied) return;
+  const gates = knobs.filter((k) => k.name === 'gate' && k.path.length >= 3);
+  const vols = knobs.filter((k) => k.name === 'vol' && k.path.length >= 3);
+  const targets = [...vols, ...gates];
+  if (!targets.length) return;
+  for (const k of targets.sort((a, b) => b.idx - a.idx)) {
+    if (Number(k.value) !== 0) {
+      k.value = 0;
+      setKnob(k, 0);
+    }
+  }
+  defaultMutesApplied = true;
+  render();
+  setStatus('default: all volumes 0 and muted — raise vol + click M');
+}
+
+// A knob is the same drag a widget gets: the number into the document + a message
+// to the engine. Позицию числа НЕ запоминаем: после любой правки всё правее
+// сдвигается, а id виджета (`slider_<offset>`) живёт до следующего eval.
+// Поэтому каждый раз заново сканируем документ и берём k.idx-й вызов slider(.
+function setKnob(k, v) {
+  // держим k.value актуальным для панели: setKnob пишет значение в код
+  k.value = Number(v);
+  const src = mirror.editor.state.doc.toString();
+  const site = scanSliders(src).sites[k.idx];
+  if (site) {
+    const head = /^slider\(\s*(-?\d+(?:\.\d+)?)/.exec(src.slice(site.pos, site.pos + 40));
+    if (head) {
+      const from = site.pos + head[0].length - head[1].length;
+      mirror.editor.dispatch({ changes: { from, to: from + head[1].length, insert: fmt(v) } });
+    }
+  }
+  if (k.name === 'vol' && k.path.length >= 3) k.base = Number(v)
+  const out = k.name === 'vol' && k.path.length >= 3 ? effectiveVol(k, Number(v)) : Number(v)
+  window.postMessage({ type: 'cm-slider', id: 'slider_' + k.anchor, value: out, internal: true }, null);
+}
+
+// ── 5. editor theme and visualizer ────────────────────────────────
+lockDetailsToggle('timeline');
+lockDetailsToggle('automation');
+// cm.themes — 39 color schemes from strudel.cc itself; activateTheme writes the
+// theme into `:root` as `--background/--foreground/--caret/...` variables. Our own
+// variables are --bg/--panel/--text/--accent, they do not collide, so the panel
+// keeps its lime accent whatever theme the code wears.
+function paintCmSliders() {
+  document.querySelectorAll('.cm-slider input[type="range"]').forEach((sl) => {
+    const min = Number(sl.min);
+    const max = Number(sl.max);
+    const val = Number(sl.value);
+    const pct = max > min ? Math.max(0, Math.min(100, ((val - min) / (max - min)) * 100)) : 0;
+    sl.style.setProperty('--p', pct + '%');
+    if (!sl._paintBound) {
+      sl._paintBound = true;
+      sl.addEventListener('input', () => paintCmSliders());
+    }
+  });
+}
+setInterval(paintCmSliders, 250);
+
+function fillThemes() {
+  const sel = $('theme');
+  const names = Object.keys(cm.themes || {}).filter((n) => n !== ROOMV);
+  if (cm.themes?.[ROOMV]) names.unshift(ROOMV);
+  for (const name of names) {
+    const o = document.createElement('option');
+    o.value = name;
+    o.textContent = name;
+    sel.appendChild(o);
+  }
+  sel.value = ROOMV;
+  sel.addEventListener('change', () => applyTheme(sel.value));
+  applyTheme(ROOMV);
+}
+
+function applyTheme(name) {
+  try {
+    // setTheme reconfigures the CodeMirror theme compartment (syntax colors);
+    // initTheme alone only writes CSS variables used by the page background.
+    if (mirror && typeof mirror.setTheme === 'function') mirror.setTheme(name);
+    else cm.initTheme(name);
+    document.documentElement.dataset.theme = name;
+  } catch (e) {
+    setStatus(e.message, true);
+  }
+}
+
+
+// ── inline visualizers: `_pianoroll()` прямо в коде ─────────────────────────
+// В strudel.cc это НЕ полноэкранная картинка, а block-widget CodeMirror: канвас
+// вставляется блоком под той строкой, где стоит вызов. На трек их может быть
+// сколько угодно — по одному на инструмент.
+const widgetCanvases = {};
+
+function codeWidth() {
+  const el = document.querySelector('#root .cm-content');
+  const w = el?.clientWidth || 0;
+  return Math.max(320, Math.min(900, (w || 560) - 48));
+}
+
+function widgetCanvas(id, options = {}) {
+  const { width = codeWidth(), height = 58, pixelRatio = window.devicePixelRatio || 1 } = options;
+  let c = widgetCanvases[id];
+  if (!c) {
+    c = document.createElement('canvas');
+    c.className = 'cm-inline-viz';
+    widgetCanvases[id] = c;
+  }
+  c.width = Math.round(width * pixelRatio);
+  c.height = Math.round(height * pixelRatio);
+  c.style.width = width + 'px';
+  c.style.height = height + 'px';
+  cm.setWidget(id, c);
+  return c.getContext('2d');
+}
+window.__vizCanvases = widgetCanvases;
+
+const VIZ_LOOK = { active: '#b3d80d', inactive: '#6b7d55', playheadColor: '#e3f07a' };
+
+const vizHaps = (haps) =>
+  haps.map((h) => {
+    if (h.value?.gain === 1) return h;
+    const value = typeof h.value === 'object' && h.value !== null ? { ...h.value, gain: 1 } : { value: h.value, gain: 1 };
+    return new core.Hap(h.whole, h.part, value, h.context);
+  });
+
+function registerInlineViz() {
+  const P = core.Pattern.prototype;
+
+  P._pianoroll = function (id, options = {}) {
+    const ctx = widgetCanvas(id, options);
+    const shadow = this.withHaps(vizHaps).tag(id);
+    shadow.pianoroll({ fold: 1, ...VIZ_LOOK, ...options, ctx, id });
+    return this;
+  };
+
+  const ownHaps = (self, id, time, drawTime) => {
+    const [lb, la] = drawTime ?? [-2, 2];
+    const from = Math.max(0, time - Math.abs(lb));
+    return vizHaps(self.queryArc(from, time + la).filter((h) => h.hasTag(id)));
+  };
+
+  P._punchcard = function (id, options = {}) {
+    const ctx = widgetCanvas(id, options);
+    const opts = { fold: 1, ...VIZ_LOOK, ...options, ctx, id };
+    const self = this.tag(id);
+    return self.onPaint((c, time, haps, drawTime) =>
+      draw.__pianoroll({
+        ctx,
+        time,
+        haps: ownHaps(self, id, time, drawTime),
+        ...draw.getDrawOptions(drawTime, opts),
+      }),
+    );
+  };
+
+  P._pitchwheel = function (id, options = {}) {
+    const size = options.size || 200;
+    const opts = { width: size, height: size, ...VIZ_LOOK, ...options, size: size / 5, id };
+    const ctx = widgetCanvas(id, opts);
+    const self = this.tag(id);
+    return self.onPaint((c, time, haps, drawTime) =>
+      draw.pitchwheel({
+        ...opts,
+        time,
+        ctx,
+        haps: ownHaps(self, id, time, drawTime).filter((h) => h.isActive(time)),
+      }),
+    );
+  };
+
+  if (typeof P.scope === 'function') {
+    P._scope = function (id, options = {}) {
+      const opts = { width: 500, height: 58, pos: 0.5, scale: 1, ...options };
+      const ctx = widgetCanvas(id, opts);
+      return this.tag(id).scope({ ...opts, ctx, id });
+    };
+  }
+  if (typeof P.spectrum === 'function') {
+    P._spectrum = function (id, options = {}) {
+      const size = options.size || 200;
+      const opts = { width: size, height: size, ...options, size: size / 5 };
+      const ctx = widgetCanvas(id, opts);
+      return this.tag(id).spectrum({ ...opts, ctx, id });
+    };
+  }
+}
+
 // ── 6. editor and transport ───────────────────────────────────────
 let mirror;
 let code = '';
