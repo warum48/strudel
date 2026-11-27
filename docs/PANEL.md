@@ -85,12 +85,31 @@ use `UI` plus `const TIMELINE` / `const AUTOMATION`.
 - `at` and `len` are bars; sections are contiguous.
 - `values` are multipliers or switch values. Repeat every key in every section;
   the curve carries the last value forward.
-- Click a section or the ruler to seek. The playhead follows the song.
+- Click the ruler (or empty timeline) to seek; clicking a section block
+  selects it and opens its details popup (in HOLD it also seeks there). The
+  playhead follows the song. A seek is immediate (no bar quantization: the
+  main-thread scheduler has already queued the next bar, so delaying the jump
+  would overlap or shift it). Long looping-sample lanes carry `cut` so the old
+  tail stops on retrigger.
+- Clicking a section block opens its **details popup** right under that block
+  (`web/section.js`). The read-only summary answers "which phrase line plays
+  here": it lists only lanes with a resolved phrase, as
+  `Group  Instrument PHRASE` (e.g. `Synths Riff lead ACID_C`);
+  drum lanes and other phrase-less lanes are omitted, as are multipliers —
+  those live only in the editable target list below. Phrase resolution reads
+  `const X = note(PHRASE)`, `pickVar.pick([PHRASE_A, …])` (with `pickVar` from
+  `tlOr('key', …)` / `tlCurve('key')`) and derived lines such as
+  `const SUB = BASS.ctranspose(-12)`.
+  The popup also edits `name`, `length`, `order`, per-target `values`
+  (change / delete / add) and can remove the section; zero-valued instrument
+  targets are hidden until re-added. `at` is read-only because sections stay
+  contiguous. Closing: `×`, Escape, a click outside the timeline, or collapsing
+  TIMELINE.
 - The AUTOMATION body keeps its current 160px max height. Lanes stay 22px
   tall; when there are more of them, the body scrolls instead of squeezing
   the rows.
-- Section edits are applied on Ctrl/Cmd+Enter; there is no separate APPLY
-  button in the current panel.
+- Section edits write the `const TIMELINE` literal immediately; press
+  Ctrl/Cmd+Enter to hear them. There is no separate APPLY button.
 - In LOOP the timeline and automation are collapsed and disabled (the engine
   plays the loop values). SONG follows the sections. HOLD freezes the playhead
   and uses the section under `holdBar`.
@@ -108,7 +127,8 @@ The panel only renders the data; the sound is produced by the track code
 ### Phrase editor (piano roll)
 
 The small piano button in the code toolbar opens a piano-roll popup to its
-left. It edits the plain note phrases a track already declares:
+left. It lives in `web/phrase.js`; `initPhraseEditor({ getMirror, status })`
+wires it. It edits the plain note phrases a track already declares:
 
 ```js
 const ACID_C = phrase([ 'c3 c3 c3 db3 …', … ])
@@ -120,19 +140,29 @@ const SOLO_A = solos([ 'c4 ~ ~ c4 …', … ])
   chosen over "instrument first, then phrase": a single action, no half-filled
   state, and the instrument stays visible in the list. The choice is remembered
   in `localStorage` (`strudex:phraseSel`).
-- **bar** — one bar of the phrase at a time.
-- **steps** — 8 or 16 columns. Changing the grid re-maps the bar: downsampling
-  keeps the first hit of each span, upsampling puts the original notes on the
-  even steps and leaves the rest empty.
-- **Grid** — rows are semitones from C to B across the phrase range; white and
-  black keys are shaded, C rows get a heavier bottom line and every 4th column
-  a heavier left line. A step holds one note: clicking a cell places that row's
-  pitch (replacing whatever was there), clicking the filled cell clears it.
-- **Apply to code** rewrites only the selected bar's string literal in the
-  document; nothing is evaluated — press Ctrl/Cmd+Enter to hear it. The editor
-  works on plain whitespace-separated bars; a phrase that uses mini-notation
-  accents (`* / , <…>`) or non-note tokens is listed as `(unsupported)` and
-  stays read-only.
+- **Whole phrase, not one bar** — the grid shows every bar of the phrase side
+  by side, with a `bar N` ruler above the step numbers and a heavier separator
+  at each bar start. Four 16-step bars fit on a wide screen; when the screen is
+  narrower than the grid, the body scrolls horizontally instead of squeezing
+  the cells. Longer phrases use the same rule: full width if it fits, otherwise
+  the widest the screen allows plus scroll.
+- **steps** — 8 or 16 per bar, applied to every bar. Downsampling keeps the
+  first hit of each span; upsampling puts the original notes on the even steps
+  and leaves the rest empty.
+- **Grid** — always two octaves (24 semitones), so the popup height does not
+  jump when the phrase changes. White and black keys are shaded, C rows get a
+  heavier bottom line, every 4th column and every bar start a heavier left line.
+  **oct − / +**, in the bottom bar under the keyboard, moves the visible window;
+  it auto-centres on the phrase when a new phrase is picked, and the range label
+  turns yellow if some notes sit outside the window.
+  A step holds one note: clicking a cell places that row's pitch (replacing
+  whatever was there), clicking the filled cell clears it.
+- **Apply** rewrites only the bars whose text changed (each as its own string
+  literal) and then evaluates the code, exactly like Ctrl/Cmd+Enter, so a
+  playing track picks the new riff up immediately. The editor works on plain
+  whitespace-separated bars; a phrase that uses mini-notation accents
+  (`* / , <…>`) or non-note tokens is listed as `(unsupported)` and stays
+  read-only.
 
 ### Scenes, mutes, pads
 
@@ -160,9 +190,12 @@ const SOLO_A = solos([ 'c4 ~ ~ c4 …', … ])
   has haps in the current bar. The engine only reports the hap
   (sample/`n`/`gain`/`orbit`), not the `$:` block it came from, so the panel
   matches lanes heuristically: sample, then orbit, then gain closeness. Shared
-  samples or scaled gains can make the guess ambiguous. For an exact lamp add
-  `.label('group.inst')` to a `$:` block — the label travels with the hap and
-  wins over the heuristics.
+  samples or scaled gains can make the guess ambiguous — the classic case is
+  several melodic lanes on `sawtooth`: the section multiplier scales `gain`, and
+  the lamp can land on the wrong instrument. For an exact lamp add
+  `.label('group.inst')` to every lane that shares a sample; the label travels
+  with the hap and wins over the heuristics. Do not label a combined stack
+  (snare + clap) — the label would light both instruments at once.
 
 ### Slider widgets
 

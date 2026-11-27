@@ -20,6 +20,24 @@ move. A static `cut` knob is fine when the phrasing itself carries the acid.
 The slider `min` still stays 50 (hard rule above). Details:
 `docs/rules.en.md` → “303 cutoff automation”.
 
+## Activity lamps — label shared-sample lanes
+
+**Add `.label('group.inst')` to any `$:` lane whose sample is shared with
+another lane** — two melodic lanes on `sawtooth`, siren and riser both on
+`white`, helper-built lanes (`rhodes`, `upright`, …). The panel matches haps by
+label first; without it the fallback (sample → orbit → gain) can light the wrong
+instrument once a section multiplier scales the gain. Do not label a combined
+stack (snare + clap): a label lights every instrument in that lane, while their
+distinct samples already separate them.
+
+## Looping samples — one `cut` group per lane
+
+**A `$:` lane built on a long looping sample (`s('amen').loopAt(4)`) gets
+`.cut(n)` with a unique n.** A retrigger — including after a seek — then stops
+the previous instance instead of layering the old tail under the new one. Use
+the same group only when one voice is meant to interrupt another (open/closed
+hat). Short one-shots and drum stacks with distinct samples do not need it.
+
 ## Theory page upkeep
 
 The **running Strudel theory notebook** exists in two files:

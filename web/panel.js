@@ -43,6 +43,9 @@
 
 // Локальный бандл (см. tools/build-vendor.mjs): один инстанс core для паттернов,
 // codemirror и draw; никаких esm.sh в рантайме.
+import { initPhraseEditor, scanPhrases } from '/web/phrase.js';
+import { initSectionEditor, openSectionEditor, syncSectionEditor } from '/web/section.js';
+
 const V = await import('/web/vendor/strudel.js');
 const cm = V.cm;
 const core = V.core;
@@ -1026,6 +1029,7 @@ function buildKnobs() {
   muteNames = scanMuteNames(src);
   instrumentMutes = scanInstrumentMutes(src);
   timeline = scanTimeline(src);
+  rebuildPhraseMap(src);
   automation = scanAutomation(src);
   timelineLines = scanTimelineLines(src);
   automationLines = scanAutomationLines(src, automation);
@@ -1470,6 +1474,7 @@ function renderTimeline() {
       }
       renderTimeline();
       scrollEditorToLine(timelineLines[i]);
+      openSectionEditor(i);
     });
     // Двойной клик — войти в HOLD на этой секции (если ещё не в нём).
     b.addEventListener('dblclick', (e) => {
@@ -1487,157 +1492,7 @@ function renderTimeline() {
     secs.appendChild(b);
   });
   updatePlayhead();
-  renderTimelineInspector();
-}
-
-function renderTimelineInspector() {
-  const root = $('tlInspector');
-  if (!root) return;
-  root.innerHTML = '';
-  const sec = timeline[timelineSel];
-  if (!sec) {
-    const d = document.createElement('div');
-    d.className = 'tl-empty';
-    d.textContent = 'select a section to edit it';
-    root.appendChild(d);
-    return;
-  }
-
-  const textRow = (label, value, onchange, type = 'text') => {
-    const row = document.createElement('div');
-    row.className = 'tl-row';
-    const lab = document.createElement('label');
-    lab.textContent = label;
-    const inp = document.createElement('input');
-    inp.type = type;
-    inp.value = value;
-    if (type === 'number') {
-      inp.min = '0';
-      inp.step = '1';
-    }
-    inp.addEventListener('change', () => onchange(inp.value));
-    row.append(lab, inp);
-    return row;
-  };
-
-  const nameRow = textRow('name', sec.name, (v) => {
-    sec.name = String(v || 'section');
-    commitTimeline();
-  });
-  const atRow = textRow('at', sec.at, () => {}, 'number');
-  const atInput = atRow.querySelector('input');
-  if (atInput) {
-    atInput.disabled = true;
-    atInput.title = 'auto: sections are contiguous';
-  }
-  const lenRow = textRow('length', sec.length, (v) => {
-    const n = Math.max(1, Number(v) || 1);
-    sec.length = n;
-    commitTimeline();
-  }, 'number');
-  root.append(nameRow, atRow, lenRow);
-
-  const moveRow = document.createElement('div');
-  moveRow.className = 'tl-row';
-  const moveLab = document.createElement('label');
-  moveLab.textContent = 'order';
-  const up = document.createElement('button');
-  up.type = 'button';
-  up.textContent = '↑';
-  up.title = 'move section earlier';
-  const down = document.createElement('button');
-  down.type = 'button';
-  down.textContent = '↓';
-  down.title = 'move section later';
-  up.addEventListener('click', () => {
-    if (timelineSel <= 0) return;
-    [timeline[timelineSel - 1], timeline[timelineSel]] = [timeline[timelineSel], timeline[timelineSel - 1]];
-    timelineSel--;
-    commitTimeline();
-  });
-  down.addEventListener('click', () => {
-    if (timelineSel >= timeline.length - 1) return;
-    [timeline[timelineSel + 1], timeline[timelineSel]] = [timeline[timelineSel], timeline[timelineSel + 1]];
-    timelineSel++;
-    commitTimeline();
-  });
-  moveRow.append(moveLab, up, down);
-  root.appendChild(moveRow);
-
-  const vals = document.createElement('div');
-  vals.className = 'tl-vals';
-  const entries = Object.entries(sec.values || {});
-  for (const [key, raw] of entries) {
-    const row = document.createElement('div');
-    row.className = 'tl-val';
-    const lab = document.createElement('span');
-    lab.textContent = tlKeyLabel(key) + ' ×';
-    lab.title = key;
-    const inp = document.createElement('input');
-    inp.type = 'number';
-    inp.step = '0.01';
-    inp.value = raw;
-    inp.addEventListener('change', () => {
-      const v = Number(inp.value);
-      if (!Number.isFinite(v)) return;
-      sec.values[key] = v;
-      commitTimeline();
-    });
-    const del = document.createElement('button');
-    del.type = 'button';
-    del.textContent = '×';
-    del.title = 'remove target';
-    del.addEventListener('click', () => {
-      delete sec.values[key];
-      commitTimeline();
-    });
-    row.append(lab, inp, del);
-    vals.appendChild(row);
-  }
-  root.appendChild(vals);
-
-  const add = document.createElement('div');
-  add.className = 'tl-add';
-  const sel = document.createElement('select');
-  const lanes = [...new Set([...TL_LANES, ...Object.keys(sec.values || {})])];
-  for (const key of lanes) {
-    const o = document.createElement('option');
-    o.value = key;
-    o.textContent = key;
-    sel.appendChild(o);
-  }
-  sel.value = lanes[0];
-  const val = document.createElement('input');
-  val.type = 'number';
-  val.step = '0.01';
-  val.value = sec.values[sel.value] ?? 1;
-  sel.addEventListener('change', () => {
-    val.value = sec.values[sel.value] ?? 1;
-  });
-  const addBtn = document.createElement('button');
-  addBtn.type = 'button';
-  addBtn.textContent = '+';
-  addBtn.title = 'add target at this section';
-  addBtn.addEventListener('click', () => {
-    const key = sel.value;
-    const v = Number(val.value);
-    if (!Number.isFinite(v)) return;
-    sec.values[key] = v;
-    commitTimeline();
-  });
-  add.append(sel, val, addBtn);
-  root.appendChild(add);
-
-  const delSec = document.createElement('button');
-  delSec.type = 'button';
-  delSec.textContent = 'remove section';
-  delSec.style.marginTop = '6px';
-  delSec.addEventListener('click', () => {
-    timeline.splice(timelineSel, 1);
-    timelineSel = -1;
-    commitTimeline();
-  });
-  root.appendChild(delSec);
+  syncSectionEditor();
 }
 
 function commitTimeline() {
@@ -3286,468 +3141,113 @@ function bindNewTrack() {
   });
 }
 
-// ── PHRASE EDITOR: piano-roll for note phrases ──────────────────
-// Reads every `const NAME = phrase([...])` / `solos([...])` from the document,
-// draws one bar as a monophonic piano roll and writes the edited bar back into
-// that string literal. Nothing is auto-evaluated: Apply only edits the code.
-const PH_GROUP_DEFS = [
-  { id: 'riff', title: 'Riff lead', re: /^ACID/ },
-  { id: 'echo', title: 'Pulse echo', re: /^MEL/ },
-  { id: 'bass', title: 'Bass', re: /^BASS/ },
-  { id: 'stab', title: 'Stabs', re: /^STAB/ },
-  { id: 'pad', title: 'Pad', re: /^PAD/ },
-  { id: 'solo', title: 'Solo', re: /^SOLO/ },
-];
-const PH_GROUP_OTHER = { id: 'other', title: 'Other' };
-const PH_PC = { c: 0, d: 2, e: 4, f: 5, g: 7, a: 9, b: 11 };
-const PH_FLAT = ['c', 'db', 'd', 'eb', 'e', 'f', 'gb', 'g', 'ab', 'a', 'bb', 'b'];
-const PH_BLACK = new Set([1, 3, 6, 8, 10]);
-const PH_ACCENT = /[*\/,<>()[\]{}]/;
-const PH_STORE_KEY = 'strudex:phraseSel';
-
-let phList = [];
-let phSel = null;
-let phBar = 0;
-let phSteps = 16;
-let phWorking = [];
-let phKey = '';
-let phAnchor = null;
-const phEdits = new Map();
-
-function phNoteMidi(tok) {
-  const m = /^([a-g])([bs]?)(-?\d+)$/.exec(String(tok).toLowerCase());
-  if (!m) return null;
-  let pc = PH_PC[m[1]];
-  if (m[2] === 's') pc = (pc + 1) % 12;
-  if (m[2] === 'b') pc = (pc + 11) % 12;
-  return (Number(m[3]) + 1) * 12 + pc;
-}
-
-function phMidiLabel(midi) {
-  const pc = ((midi % 12) + 12) % 12;
-  return PH_FLAT[pc] + (Math.floor(midi / 12) - 1);
-}
-
-function phArrayEnd(src, start) {
-  let depth = 0;
-  let inStr = false;
-  let quote = '';
-  let esc = false;
-  for (let i = start; i < src.length; i++) {
-    const c = src[i];
-    if (inStr) {
-      if (esc) esc = false;
-      else if (c === '\\') esc = true;
-      else if (c === quote) inStr = false;
-      continue;
-    }
-    if (c === '"' || c === "'" || c === '`') { inStr = true; quote = c; continue; }
-    if (c === '[') depth++;
-    else if (c === ']') {
-      depth--;
-      if (depth === 0) return i;
-    }
-  }
-  return -1;
-}
-
-function phStringLiterals(src, from, to) {
-  const out = [];
-  let i = from;
-  while (i <= to) {
-    const c = src[i];
-    if (c === '"' || c === "'" || c === '`') {
-      const q = c;
-      let j = i + 1;
-      let esc = false;
-      let value = '';
-      while (j < src.length) {
-        const d = src[j];
-        if (esc) { value += d; esc = false; }
-        else if (d === '\\') esc = true;
-        else if (d === q) break;
-        else value += d;
-        j++;
-      }
-      out.push({ start: i, end: j + 1, value, quote: q });
-      i = j + 1;
-    } else i++;
-  }
-  return out;
-}
-
-function phBarTokens(text) {
-  const t = String(text).trim();
-  if (!t) return [];
-  if (PH_ACCENT.test(t)) return null;
-  const toks = t.split(/\s+/);
-  return toks.every((tok) => tok === '~' || phNoteMidi(tok) !== null) ? toks : null;
-}
-
-function phScanPhrases(src) {
-  const list = [];
-  const re = /const\s+([A-Za-z_$][\w$]*)\s*=\s*(phrase|solos)\s*\(\s*\[/g;
-  let m;
-  while ((m = re.exec(src))) {
-    const arrStart = m.index + m[0].length - 1;
-    const arrEnd = phArrayEnd(src, arrStart);
-    if (arrEnd < 0) continue;
-    const strings = phStringLiterals(src, arrStart + 1, arrEnd - 1);
-    if (!strings.length) continue;
-    const bars = strings.map((s) => s.value.trim());
-    const tokens = bars.map(phBarTokens);
-    list.push({
-      name: m[1],
-      kind: m[2],
-      bars,
-      strings,
-      tokens,
-      unsupported: tokens.some((t) => t === null),
-    });
-  }
-  return list;
-}
-
-const phGroupOf = (name) => PH_GROUP_DEFS.find((g) => g.re.test(name)) || PH_GROUP_OTHER;
-
-// Re-map a bar to the chosen grid: downsample keeps the first hit of each span,
-// upsample places the original notes on the even steps and leaves the rest empty.
-function phResample(tokens, steps) {
-  const len = tokens ? tokens.length : 0;
-  if (!len) return new Array(steps).fill('~');
-  if (len === steps) return tokens.slice();
-  const out = [];
-  if (steps < len) {
-    for (let i = 0; i < steps; i++) {
-      const a = Math.floor((i * len) / steps);
-      const b = Math.max(a + 1, Math.floor(((i + 1) * len) / steps));
-      let pick = '~';
-      for (let j = a; j < b; j++) {
-        if (tokens[j] && tokens[j] !== '~') { pick = tokens[j]; break; }
-      }
-      out.push(pick);
-    }
-  } else {
-    const f = steps / len;
-    for (let i = 0; i < steps; i++) {
-      const aligned = Number.isInteger(f) ? i % f === 0 : Math.abs(i - Math.round(i / f) * f) < 0.5;
-      out.push(aligned ? tokens[Math.min(len - 1, Math.floor(i / f))] : '~');
-    }
-  }
-  return out;
-}
-
-function phSetStatus(text, err = false) {
-  const el = $('phStatus');
-  if (!el) return;
-  el.textContent = text || '';
-  el.classList.toggle('err', !!err);
-}
-
-function phEnsureWorking() {
-  if (!phSel) { phWorking = []; phKey = ''; return; }
-  phKey = `${phSel.name}#${phBar}#${phSteps}`;
-  if (phEdits.has(phKey) && phEdits.get(phKey).length === phSteps) {
-    phWorking = phEdits.get(phKey).slice();
-    return;
-  }
-  phWorking = phResample(phSel.tokens[phBar], phSteps);
-}
-
-function phSyncBarSelect() {
-  const sel = $('phBar');
-  if (!sel || !phSel) return;
-  sel.innerHTML = '';
-  for (let i = 0; i < phSel.bars.length; i++) {
-    const o = document.createElement('option');
-    o.value = String(i);
-    o.textContent = String(i + 1);
-    sel.appendChild(o);
-  }
-  sel.value = String(phBar);
-}
-
-function phLoad(name) {
-  phSel = phList.find((p) => p.name === name) || phSel;
-  if (!phSel) { phWorking = []; phRenderGrid(); return; }
-  try { localStorage.setItem(PH_STORE_KEY, phSel.name); } catch {}
-  if (phBar >= phSel.bars.length) phBar = 0;
-  const toks = phSel.tokens[phBar];
-  if (Array.isArray(toks) && (toks.length === 8 || toks.length === 16)) phSteps = toks.length;
-  const stepsSel = $('phSteps');
-  if (stepsSel) stepsSel.value = String(phSteps);
-  phSyncBarSelect();
-  phEnsureWorking();
-  phRenderGrid();
-}
-
-function phRebuildSelect() {
-  const sel = $('phName');
-  if (!sel) return;
-  const groups = new Map();
-  for (const p of phList) {
-    const g = phGroupOf(p.name);
-    if (!groups.has(g.id)) groups.set(g.id, { g, items: [] });
-    groups.get(g.id).items.push(p);
-  }
-  sel.innerHTML = '';
-  const groupOrder = new Map(PH_GROUP_DEFS.map((g, i) => [g.id, i]));
-  const ordered = [...groups.values()].sort(
-    (a, b) => (groupOrder.get(a.g.id) ?? 99) - (groupOrder.get(b.g.id) ?? 99),
-  );
-  for (const { g, items } of ordered) {
-    const og = document.createElement('optgroup');
-    og.label = g.title;
-    for (const p of items) {
-      const o = document.createElement('option');
-      o.value = p.name;
-      o.textContent = p.unsupported ? `${p.name} (unsupported)` : p.name;
-      o.disabled = p.unsupported;
-      og.appendChild(o);
-    }
-    sel.appendChild(og);
-  }
-  let want = '';
-  try { want = localStorage.getItem(PH_STORE_KEY) || ''; } catch {}
-  const pick = phList.find((p) => p.name === want && !p.unsupported)
-    || phList.find((p) => !p.unsupported && phGroupOf(p.name).id === 'riff')
-    || phList.find((p) => !p.unsupported)
-    || phList[0];
-  if (pick) {
-    sel.value = pick.name;
-    phLoad(pick.name);
-  }
-}
-
-function phPitchRows() {
-  const set = new Set();
-  if (phSel) {
-    for (const toks of phSel.tokens) {
-      for (const t of toks || []) {
-        const midi = phNoteMidi(t);
-        if (midi !== null) set.add(midi);
-      }
-    }
-  }
-  for (const t of phWorking) {
-    const midi = phNoteMidi(t);
-    if (midi !== null) set.add(midi);
-  }
-  if (!set.size) return [];
-  const lo = Math.floor(Math.min(...set) / 12) * 12;
-  const hi = Math.floor(Math.max(...set) / 12) * 12 + 11;
-  const rows = [];
-  for (let midi = hi; midi >= lo; midi--) rows.push(midi);
-  return rows;
-}
-
-function phToggleStep(step, midi) {
-  if (!phWorking.length) return;
-  const cur = phWorking[step];
-  const curMidi = cur && cur !== '~' ? phNoteMidi(cur) : null;
-  phWorking[step] = curMidi === midi ? '~' : phMidiLabel(midi);
-  if (phKey) phEdits.set(phKey, phWorking.slice());
-  phRenderGrid();
-  phSetStatus('unsaved — Apply to code');
-}
-
-function phRenderGrid() {
-  const body = $('phBody');
-  if (!body) return;
-  if (!phSel) {
-    body.innerHTML = '<div class="ph-empty">no phrase constants found in this track</div>';
-    $('phApply').disabled = true;
-    return;
-  }
-  if (phSel.unsupported) {
-    body.innerHTML = '<div class="ph-empty">this phrase uses mini-notation accents (* / , &lt;…&gt;) or non-note tokens — piano editing is off for it</div>';
-    $('phApply').disabled = true;
-    $('phHint').textContent = phSel.name;
-    return;
-  }
-  if (!phWorking.length || phWorking.length !== phSteps) phEnsureWorking();
-  const rows = phPitchRows();
-  if (!rows.length) {
-    body.innerHTML = '<div class="ph-empty">this phrase has no pitched notes</div>';
-    $('phApply').disabled = true;
-    return;
-  }
-  const table = document.createElement('table');
-  table.className = 'ph';
-  const thead = document.createElement('thead');
-  const hr = document.createElement('tr');
-  const corner = document.createElement('th');
-  corner.className = 'ph-corner';
-  hr.appendChild(corner);
-  for (let s = 0; s < phSteps; s++) {
-    const th = document.createElement('th');
-    th.className = 'ph-step' + (s % 4 === 0 ? ' ph-4' : '');
-    th.textContent = String(s + 1);
-    hr.appendChild(th);
-  }
-  thead.appendChild(hr);
-  table.appendChild(thead);
-  const tb = document.createElement('tbody');
-  for (const midi of rows) {
-    const pc = ((midi % 12) + 12) % 12;
-    const tr = document.createElement('tr');
-    const key = document.createElement('td');
-    key.className = 'ph-key ' + (PH_BLACK.has(pc) ? 'black' : 'white') + (pc === 0 ? ' ph-c' : '');
-    key.textContent = phMidiLabel(midi);
-    tr.appendChild(key);
-    for (let s = 0; s < phSteps; s++) {
-      const td = document.createElement('td');
-      td.className = 'ph-slot' + (s % 4 === 0 ? ' ph-4' : '') + (pc === 0 ? ' ph-c' : '');
-      const tok = phWorking[s];
-      const on = !!tok && tok !== '~' && phNoteMidi(tok) === midi;
-      const b = document.createElement('button');
-      b.type = 'button';
-      b.className = 'ph-cell' + (on ? ' on' : '');
-      b.title = `${phMidiLabel(midi)} · step ${s + 1}`;
-      b.setAttribute('aria-label', `${on ? 'clear' : 'place'} ${phMidiLabel(midi)} on step ${s + 1}`);
-      b.addEventListener('click', () => phToggleStep(s, midi));
-      td.appendChild(b);
-      tr.appendChild(td);
-    }
-    tb.appendChild(tr);
-  }
-  table.appendChild(tb);
-  body.innerHTML = '';
-  body.appendChild(table);
-  $('phHint').textContent = `${phSel.name} · bar ${phBar + 1}/${phSel.bars.length} · ${phSteps} steps`;
-  $('phApply').disabled = false;
-}
-
-function phApply() {
-  if (!mirror?.editor || !phSel || phSel.unsupported) return;
-  const text = phWorking.join(' ');
-  const src = mirror.editor.state.doc.toString();
-  const info = phScanPhrases(src).find((p) => p.name === phSel.name);
-  const s = info?.strings?.[phBar];
-  if (!s) {
-    phSetStatus('phrase moved in code — reopen the editor', true);
-    return;
-  }
-  const q = s.quote || "'";
-  const esc = text.replace(/\\/g, '\\\\').split(q).join('\\' + q);
-  mirror.editor.dispatch({ changes: { from: s.start + 1, to: s.end - 1, insert: esc } });
-  if (phKey) phEdits.delete(phKey);
-  phList = phScanPhrases(mirror.editor.state.doc.toString());
-  phSel = phList.find((p) => p.name === phSel.name) || phSel;
-  phEnsureWorking();
-  phRenderGrid();
-  phSetStatus('saved to code — Ctrl+Enter to hear it');
-  setStatus('phrase saved — Ctrl+Enter or APPLY');
-}
-
-function ensurePhrasePop() {
-  let el = $('phrasePop');
-  if (el) return el;
-  el = document.createElement('div');
-  el.id = 'phrasePop';
-  el.setAttribute('role', 'dialog');
-  el.setAttribute('aria-label', 'phrase editor');
-  el.innerHTML = `
-    <div class="ph-head">
-      <label>phrase <select id="phName"></select></label>
-      <label>bar <select id="phBar"></select></label>
-      <label>steps <select id="phSteps"><option value="8">8</option><option value="16" selected>16</option></select></label>
-      <span class="ph-hint" id="phHint"></span>
-    </div>
-    <div class="ph-body" id="phBody"></div>
-    <div class="ph-foot">
-      <span class="ph-status" id="phStatus"></span>
-      <button type="button" class="save" id="phApply">Apply to code</button>
-      <button type="button" id="phClose">Close</button>
-    </div>`;
-  document.body.appendChild(el);
-  $('phName').addEventListener('change', () => {
-    phBar = 0;
-    phLoad($('phName').value);
-  });
-  $('phBar').addEventListener('change', () => {
-    phBar = Number($('phBar').value) || 0;
-    phLoad(phSel?.name);
-  });
-  $('phSteps').addEventListener('change', () => {
-    phSteps = Number($('phSteps').value) === 8 ? 8 : 16;
-    phEnsureWorking();
-    phRenderGrid();
-  });
-  $('phApply').addEventListener('click', phApply);
-  $('phClose').addEventListener('click', closePhraseEditor);
-  document.addEventListener('pointerdown', (e) => {
-    if (!el.classList.contains('open')) return;
-    if (el.contains(e.target)) return;
-    if (phAnchor && (e.target === phAnchor || phAnchor.contains(e.target))) return;
-    closePhraseEditor();
-  });
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && el.classList.contains('open')) {
-      e.preventDefault();
-      closePhraseEditor();
-    }
-  });
-  return el;
-}
-
-function openPhraseEditor(btn) {
-  const el = ensurePhrasePop();
-  phAnchor = btn || null;
-  const src = mirror?.editor?.state?.doc?.toString?.() ?? '';
-  phList = src ? phScanPhrases(src) : [];
-  el.classList.add('open');
-  btn?.classList.add('on');
-  phSetStatus('');
-  if (!phList.length) {
-    $('phName').innerHTML = '';
-    $('phBar').innerHTML = '';
-    $('phHint').textContent = '';
-    phSel = null;
-    phWorking = [];
-    phRenderGrid();
-    phSetStatus('nothing to edit in this track', true);
-  } else {
-    phRebuildSelect();
-  }
-  const r = btn.getBoundingClientRect();
-  const w = el.offsetWidth || 640;
-  const h = el.offsetHeight || 480;
-  let left = r.left - w - 8;
-  if (left < 8) left = Math.max(8, r.right - w);
-  let top = r.bottom + 6;
-  if (top + h > window.innerHeight - 8) top = Math.max(8, window.innerHeight - h - 8);
-  el.style.left = `${Math.round(left)}px`;
-  el.style.top = `${Math.round(top)}px`;
-  $('phName')?.focus();
-}
-
-function closePhraseEditor() {
-  const el = $('phrasePop');
-  if (!el) return;
-  el.classList.remove('open');
-  phAnchor?.classList.remove('on');
-}
-
-function bindPhraseEditor() {
-  const btn = $('phraseBtn');
-  if (!btn) return;
-  btn.addEventListener('click', () => {
-    if ($('phrasePop')?.classList.contains('open')) {
-      closePhraseEditor();
-      return;
-    }
-    openPhraseEditor(btn);
-  });
-}
-
 bindPadKeys();
 bindSwitchPanel();
 bindVizToggle();
 bindHeaderMenu();
 bindCopyCode();
 bindNewTrack();
-bindPhraseEditor();
+// Which phrase constant is playing for an instrument in a section.
+// Detects `const pickVar = tlOr('key', …)` and `const LANE = pickVar.pick([PHRASE_A, …])`,
+// then maps the LANE name to the section value key (`ACID` → `acid`, `MEL` → `ghost`).
+let phraseBars = new Map();
+let phrasePicks = [];
+let phraseStatics = new Map();
+let phraseDerived = [];
+const PHRASE_LANE = { acid: 'acid', bass: 'bass', sub: 'sub', mel: 'ghost', ghost: 'ghost', stab: 'stab', pad: 'pad', solo: 'solo' };
+
+function rebuildPhraseMap(src) {
+  phraseBars = new Map();
+  phrasePicks = [];
+  phraseStatics = new Map();
+  phraseDerived = [];
+  try {
+    for (const p of scanPhrases(src)) phraseBars.set(p.name, Math.max(1, p.bars.length));
+  } catch {}
+  const keys = new Map();
+  const rebind = /const\s+(\w+)\s*=\s*[^\n;]*?\b(?:tlOr|tlCurve|sectionValue)\s*\(\s*['"](\w+)['"]/g;
+  let m;
+  while ((m = rebind.exec(src))) keys.set(m[1], m[2]);
+  const repick = /const\s+(\w+)\s*=\s*(\w+)\.pick\s*\(\s*\[([\s\S]*?)\]\s*\)/g;
+  while ((m = repick.exec(src))) {
+    const key = keys.get(m[2]);
+    if (!key) continue;
+    const names = [];
+    for (const id of m[3].matchAll(/[A-Za-z_$][\w$]*/g)) {
+      if (phraseBars.has(id[0]) && !names.includes(id[0])) names.push(id[0]);
+    }
+    if (names.length) phrasePicks.push({ varName: m[1], key, names });
+  }
+  // `const STAB = note(STAB_A)` — a phrase that never changes with the section.
+  const restat = /const\s+(\w+)\s*=\s*note\s*\(\s*([A-Za-z_$][\w$]*)\s*\)/g;
+  while ((m = restat.exec(src))) {
+    const lane = PHRASE_LANE[m[1].toLowerCase()];
+    if (lane && phraseBars.has(m[2])) phraseStatics.set(lane, m[2]);
+  }
+  // `const SUB = BASS.ctranspose(-12)` — same phrase line, one octave down.
+  const rederive = /const\s+(\w+)\s*=\s*(\w+)\.ctranspose\(\s*-?\d+\s*\)/g;
+  while ((m = rederive.exec(src))) {
+    const lane = PHRASE_LANE[m[1].toLowerCase()];
+    const from = PHRASE_LANE[m[2].toLowerCase()] || m[2].toLowerCase();
+    if (lane && from) phraseDerived.push({ lane, from });
+  }
+}
+
+function phraseMapFor(sec) {
+  const out = {};
+  for (const pick of phrasePicks) {
+    const raw = sec.values?.[pick.key];
+    if (raw == null) continue;
+    const idx = Math.max(0, Math.min(pick.names.length - 1, Math.round(Number(raw))));
+    const name = pick.names[idx];
+    if (!name) continue;
+    const bars = phraseBars.get(name) || 1;
+    const lane = PHRASE_LANE[pick.varName.toLowerCase()] || pick.varName.toLowerCase();
+    out[lane] = { name, bar: (Math.max(0, sec.at) % bars) + 1 };
+  }
+  for (const [lane, name] of phraseStatics) {
+    if (out[lane]) continue;
+    const bars = phraseBars.get(name) || 1;
+    out[lane] = { name, bar: (Math.max(0, sec.at) % bars) + 1 };
+  }
+  for (const d of phraseDerived) {
+    if (!out[d.lane] && out[d.from]) out[d.lane] = { ...out[d.from] };
+  }
+  return out;
+}
+
+// Section values are lane keys (`kick`, `acid`, `riffStage`). Resolve them to
+// the instrument's own `name:` and group, so the section popup reads as
+// "Drums · Kick ×1" instead of raw keys. Selector keys fall back to the switch
+// captions or a humanized key.
+const sectionValueLabel = (key) => {
+  const knob = knobs.find((k) => k.path.length >= 3 && k.path[k.path.length - 2] === key)
+    || knobs.find((k) => k.path.length >= 2 && k.path[k.path.length - 1] === key);
+  if (knob) {
+    const g = knob.path[0];
+    return {
+      group: labels[g] || cap(g),
+      label: labels[`${g}.${key}`] || cap(key),
+      kind: 'instrument',
+    };
+  }
+  if (switchCaps && Object.prototype.hasOwnProperty.call(switchCaps, key)) {
+    return { group: 'switches', label: pretty(key), kind: 'switch' };
+  }
+  return { group: '', label: pretty(key), kind: 'other' };
+};
+
+initPhraseEditor({ getMirror: () => mirror, status: (t, e) => setStatus(t, e) });
+initSectionEditor({
+  getTimeline: () => timeline,
+  getSelected: () => timelineSel,
+  setSelected: (i) => { timelineSel = i; },
+  commit: commitTimeline,
+  lanes: () => TL_LANES,
+  labelFor: sectionValueLabel,
+  phrasesFor: phraseMapFor,
+  status: (t, e) => setStatus(t, e),
+});
 audioReady = boot().catch((e) => {
   console.error(e);
   setStatus(e.message, true);

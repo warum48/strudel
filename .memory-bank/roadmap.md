@@ -40,3 +40,4 @@ None.
 - A second IDM character (8-bit/micro-edit or dark ambient glitch).
 - A second Khmer character (mahori / arak / boxing standalone).
 - A documented sample-pack inventory for offline checks.
+- Panel: floating windows (drag + resize for phrase/section popups) — backlog I-001.

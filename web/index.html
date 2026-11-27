@@ -433,26 +433,43 @@
   #timeline button.tl-block .nm { display: block; font-weight: 700; letter-spacing: 0.04em; }
   #timeline button.tl-block .mt { display: block; color: var(--dim); font-size: 9px; margin-top: 2px; }
   #timeline .tl-playhead { position: absolute; top: 20px; bottom: 0; width: 2px; left: 0; background: var(--accent); box-shadow: 0 0 8px var(--accent); pointer-events: none; }
-  /* section inspector intentionally hidden for now (kept for later) */
-  #timeline .tl-inspector { display: none !important; }
-  #timeline .tl-inspector:empty { display: none; }
-  #timeline .tl-row { display: flex; align-items: center; gap: 5px; margin-bottom: 5px; }
-  #timeline .tl-row label { color: var(--dim); min-width: 58px; font-size: 9px; text-transform: uppercase; letter-spacing: 0.06em; }
-  #timeline .tl-row input[type="text"], #timeline .tl-row input[type="number"], #timeline .tl-row select {
-    background: #11140f; color: var(--text); border: 1px solid var(--line); padding: 2px 4px; font-size: 10px; min-width: 0;
+  /* ── SECTION DETAILS popup: hangs under the selected timeline block ── */
+  #sectionPop {
+    position: fixed; z-index: 68; display: none;
+    width: 340px; max-width: 94vw; max-height: 41vh;
+    padding: 10px; background: #151814; border: 1px solid #39402f;
+    border-radius: 6px; box-shadow: 0 16px 38px rgba(0, 0, 0, 0.66);
+    color: var(--text); font-size: 11px;
   }
-  #timeline .tl-row input[type="text"] { flex: 1; }
-  #timeline .tl-row input[type="number"] { width: 62px; }
-  #timeline .tl-vals { border-top: 1px solid var(--line); margin-top: 5px; padding-top: 5px; }
-  #timeline .tl-val { display: grid; grid-template-columns: 1fr 64px 22px; gap: 4px; align-items: center; margin-bottom: 3px; }
-  #timeline .tl-val span { color: var(--dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 9px; }
-  #timeline .tl-val input { width: 100%; }
-  #timeline .tl-val button { padding: 1px 5px; font-size: 10px; }
-  #timeline .tl-add { display: grid; grid-template-columns: 1fr 64px 22px; gap: 4px; margin-top: 5px; }
-  #timeline .tl-empty { color: var(--dim); padding: 6px; font-size: 10px; }
+  #sectionPop.open { display: block; }
+  #sectionPop .sp-head { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+  #sectionPop .sp-title { flex: 1; color: var(--warn); font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  #sectionPop #spClose { padding: 0 6px; font-size: 13px; line-height: 18px; }
+  #sectionPop .sp-body { max-height: calc(41vh - 46px); overflow-y: auto; overflow-x: hidden; }
+  #sectionPop .sp-summary { border: 1px solid #262b22; background: #11140f; border-radius: 4px; padding: 6px 7px; margin-bottom: 8px; }
+  #sectionPop .sp-playing .sp-line { display: flex; gap: 8px; font-size: 10px; line-height: 1.5; }
+  #sectionPop .sp-playing b { color: var(--accent); font-weight: 700; min-width: 52px; text-transform: uppercase; font-size: 9px; letter-spacing: 0.06em; }
+  #sectionPop .sp-playing span { color: var(--text); }
+  #sectionPop .sp-row { display: flex; align-items: center; gap: 5px; margin-bottom: 5px; }
+  #sectionPop .sp-row label { color: var(--dim); min-width: 58px; font-size: 9px; text-transform: uppercase; letter-spacing: 0.06em; }
+  #sectionPop input[type="text"], #sectionPop input[type="number"], #sectionPop select {
+    background: #11140f; color: var(--text); border: 1px solid var(--line);
+    padding: 2px 4px; font-size: 10px; min-width: 0;
+  }
+  #sectionPop .sp-row input[type="text"] { flex: 1; }
+  #sectionPop .sp-row input[type="number"] { width: 62px; }
+  #sectionPop .sp-row button { padding: 1px 8px; font-size: 11px; }
+  #sectionPop .sp-vals { border-top: 1px solid var(--line); margin-top: 5px; padding-top: 5px; }
+  #sectionPop .sp-val { display: grid; grid-template-columns: minmax(0, 1fr) 56px 24px; gap: 4px; align-items: center; margin-bottom: 3px; }
+  #sectionPop .sp-val span { color: var(--dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 9px; }
+  #sectionPop .sp-val input { width: 100%; }
+  #sectionPop .sp-val button { width: 100%; padding: 0; font-size: 11px; line-height: 16px; }
+  #sectionPop .sp-add { display: grid; grid-template-columns: minmax(0, 1fr) 56px 24px; gap: 4px; margin-top: 5px; }
+  #sectionPop .sp-add select, #sectionPop .sp-add input { width: 100%; }
+  #sectionPop .sp-add button { width: 100%; padding: 0; font-size: 12px; line-height: 16px; }
+  #sectionPop .sp-del { margin-top: 6px; }
   @media (max-width: 900px) {
     #timeline .tl-body { flex-direction: column; }
-    #timeline .tl-inspector { width: auto; max-height: 180px; }
   }
   /* ── header tools: Sliders / Code export-import (arrow buttons) ── */
   #tools { display: flex; align-items: center; gap: 6px; }
@@ -756,16 +773,21 @@
   .phrase-btn.on { border-color: var(--accent); color: var(--accent); }
   #phrasePop {
     position: fixed; z-index: 70; display: none;
-    width: min(720px, 94vw); max-height: min(78vh, 760px);
+    width: 504px; max-width: 94vw; max-height: min(78vh, 760px);
     padding: 10px; background: #151814; border: 1px solid #39402f;
     border-radius: 6px; box-shadow: 0 18px 44px rgba(0, 0, 0, 0.7);
     color: var(--text); font-size: 11px;
     flex-direction: column; gap: 8px;
   }
   #phrasePop.open { display: flex; }
-  #phrasePop .ph-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; flex: none; }
+  #phrasePop .ph-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; flex: none; }
   #phrasePop .ph-head label { display: flex; align-items: center; gap: 5px; color: var(--dim); }
-  #phrasePop .ph-hint { color: var(--dim); font-size: 10px; }
+  #phrasePop .ph-head select { max-width: 140px; }
+  #phrasePop .ph-oct { display: flex; align-items: center; gap: 4px; color: var(--dim); }
+  #phrasePop .ph-oct button { padding: 2px 7px; font-size: 11px; line-height: 1.35; }
+  #phrasePop #phRange { min-width: 58px; text-align: center; font-size: 10px; }
+  #phrasePop #phRange.off-screen { color: var(--warn); }
+  #phrasePop .ph-hint { flex: 1 1 100%; color: var(--dim); font-size: 10px; }
   #phrasePop .ph-body {
     flex: 1; min-height: 0; overflow: auto;
     border: 1px solid var(--line); border-radius: 4px; background: #0a0c09;
@@ -773,20 +795,29 @@
   #phrasePop .ph-empty { padding: 14px; color: var(--dim); }
   #phrasePop table.ph { border-collapse: separate; border-spacing: 0; table-layout: fixed; }
   #phrasePop th.ph-corner {
-    width: 64px; min-width: 64px; height: 18px; background: #12150f;
+    width: 60px; min-width: 60px; height: 36px; background: #12150f;
     border-bottom: 1px solid var(--line); border-right: 1px solid var(--line);
     position: sticky; left: 0; top: 0; z-index: 3;
-  }
-  #phrasePop th.ph-step {
-    width: 26px; min-width: 26px; height: 18px; padding: 0;
     font-size: 9px; font-weight: normal; color: var(--dim);
+  }
+  #phrasePop th.ph-barhead {
+    height: 18px; padding: 0; font-size: 9px; font-weight: 700;
+    color: var(--warn); background: #12150f;
+    border-bottom: 1px solid var(--line); border-left: 2px solid #3a4231;
+    position: sticky; top: 0; z-index: 2;
+  }
+  #phrasePop th.ph-barhead:first-of-type { border-left: 1px solid #1d211a; }
+  #phrasePop th.ph-step {
+    width: 18px; min-width: 18px; height: 18px; padding: 0;
+    font-size: 8px; font-weight: normal; color: var(--dim);
     background: #12150f; border-bottom: 1px solid var(--line);
-    border-left: 1px solid #1d211a; position: sticky; top: 0; z-index: 2;
+    border-left: 1px solid #1d211a; position: sticky; top: 18px; z-index: 2;
   }
   #phrasePop th.ph-step.ph-4 { border-left: 2px solid #3a4231; color: #9aa58c; }
+  #phrasePop th.ph-step.ph-bar { border-left: 2px solid #566044; }
   #phrasePop td.ph-key {
-    width: 64px; min-width: 64px; height: 18px; padding: 0 6px;
-    font-size: 10px; text-align: right; white-space: nowrap;
+    width: 60px; min-width: 60px; height: 18px; padding: 0 5px;
+    font-size: 9px; text-align: right; white-space: nowrap;
     border-bottom: 1px solid #1d211a; border-right: 1px solid var(--line);
     position: sticky; left: 0; z-index: 1;
   }
@@ -794,10 +825,11 @@
   #phrasePop td.ph-key.black { background: #0f120d; color: #a6af99; }
   #phrasePop td.ph-key.ph-c { font-weight: 700; }
   #phrasePop td.ph-slot {
-    width: 26px; min-width: 26px; height: 18px; padding: 0;
+    width: 18px; min-width: 18px; height: 18px; padding: 0;
     border-bottom: 1px solid #1d211a; border-left: 1px solid #1d211a;
   }
   #phrasePop td.ph-slot.ph-4 { border-left: 2px solid #3a4231; }
+  #phrasePop td.ph-slot.ph-bar { border-left: 2px solid #566044; }
   #phrasePop td.ph-slot.ph-c { border-bottom: 2px solid #4d573f; }
   #phrasePop button.ph-cell {
     display: block; width: 100%; height: 100%; padding: 0; margin: 0;
@@ -806,8 +838,8 @@
   #phrasePop button.ph-cell:hover { background: #2a3024; }
   #phrasePop button.ph-cell.on { background: var(--accent); box-shadow: inset 0 0 0 1px #e4ff4f; }
   #phrasePop button.ph-cell.on:hover { background: #c9ef25; }
-  #phrasePop .ph-foot { display: flex; align-items: center; gap: 8px; flex: none; }
-  #phrasePop .ph-status { flex: 1; color: var(--dim); font-size: 10px; }
+  #phrasePop .ph-foot { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; flex: none; }
+  #phrasePop .ph-status { flex: 1 1 0; min-width: 0; color: var(--dim); font-size: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   #phrasePop .ph-status.err { color: #ff8a7a; }
   #phrasePop .ph-foot button { padding: 5px 10px; font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; }
   #phrasePop .ph-foot button.save { background: var(--accent); border-color: var(--accent); color: #0d0f0c; font-weight: 700; }
@@ -891,8 +923,6 @@
       <div class="tl-sections" id="tlSections"></div>
       <div class="tl-playhead" id="tlPlayhead"></div>
     </div>
-    <!-- section inspector hidden for now; element kept for later edits -->
-    <div class="tl-inspector" id="tlInspector"></div>
   </div>
 </details>
 
