@@ -331,9 +331,16 @@ bindUnsaved();
 
 // ── 1. bridge between knobs and widgets ───────────────────────────
 const values = {}; // id → value, the pattern signal reads from here
+// Mute/solo are panel state, not document state. Without this map a re-eval
+// (PLAY / Ctrl+Enter) starts every layer from the document's base volume and
+// the first scheduled events burst before applyMixerState posts zeros. We
+// pre-compute effective vols for the code about to be evaluated, so the very
+// first hap is already silent.
+let initOverrides = new Map(); // 'slider_<offset>' → value used on next eval
 
 const sliderWithID = (id, value) => {
-  values[id] = value;
+  const initial = initOverrides.get(id);
+  values[id] = initial === undefined ? value : initial;
   if (cm.sliderValues) cm.sliderValues[id] = value; // чтобы чужой слушатель не ругался
   return core.ref(() => values[id]);
 };
@@ -568,6 +575,35 @@ function scanSliders(src) {
   return { sites, names };
 }
 
+// id слайдера = 'slider_' + смещение первого аргумента (так его печёт
+// транспилятор). scanSliders даёт смещение слова `slider`, поэтому идём до
+// первой скобки и первого непустого символа.
+function sliderArgStart(src, pos) {
+  let i = src.indexOf('(', pos);
+  if (i < 0) return -1;
+  i++;
+  while (i < src.length && /\s/.test(src[i])) i++;
+  return i;
+}
+
+// Effective volumes for the eval that is about to start: muted / non-soloed
+// instruments begin at 0 instead of the document's base value.
+function computeInitOverrides(src) {
+  const map = new Map();
+  if (!muted.size && !soloed.size) return map;
+  const { sites } = scanSliders(src);
+  for (const s of sites) {
+    const p = s.path;
+    if (p.length < 3 || p[p.length - 1] !== 'vol') continue;
+    const id = `${p[0]}.${p[1]}`;
+    if (muted.has(id) || (soloed.size && !soloed.has(id))) {
+      const start = sliderArgStart(src, s.pos);
+      if (start >= 0) map.set('slider_' + start, 0);
+    }
+  }
+  return map;
+}
+
 // `$:`-блоки по порядку. Для каждого собираем: group.inst, которые он
 // упоминает; сэмплы `s('…')` (база + индекс `:N`); и vol-пути — по текущему
 // значению gain в hap'е понимаем, чей это звук (gain в hap уже число).
@@ -582,6 +618,22 @@ function laneSamples(text) {
   let m;
   while ((m = re.exec(text))) out.push(sampleParts(m[1]));
   return out;
+}
+// `$: rhodes(PAD, …)` has no literal s('…') on the lane itself — the sound
+// source lives inside the helper. Pull it from the helper definition so the
+// activity dot still lights for lanes built by a voice function.
+function helperSamples(src, name) {
+  if (!/^[A-Za-z_$][\w$]*$/.test(name)) return [];
+  const lines = src.split('\n');
+  const head = new RegExp(`^(?:const|let|var)\\s+${name}\\s*=`);
+  const start = lines.findIndex((l) => head.test(l));
+  if (start < 0) return [];
+  let text = '';
+  for (let i = start; i < lines.length; i++) {
+    if (i > start && /^(?:const|let|var|\$:|samples\s*\()/.test(lines[i])) break;
+    text += lines[i] + '\n';
+  }
+  return laneSamples(text);
 }
 function scanLanes(src, sites) {
   const instruments = new Set();
@@ -608,11 +660,18 @@ function scanLanes(src, sites) {
       if (new RegExp(`\\b${g}\\.${name}\\b`).test(text)) insts.add(inst);
     }
     const samples = laneSamples(text);
+    if (!samples.length) {
+      const calls = [...text.matchAll(/\b([A-Za-z_$][\w$]*)\s*\(/g)].map((m) => m[1]);
+      for (const name of new Set(calls)) {
+        samples.push(...helperSamples(src, name));
+      }
+    }
     if (/grainChain\b/.test(text)) {
       for (const inst of known) if (inst.endsWith('.grain')) insts.add(inst);
       samples.push({ base: 'funkydrummer', n: null });
     }
-    lanes.push({ insts, samples, vols: [...insts].map((x) => `${x}.vol`) });
+    const orbits = [...text.matchAll(/\.orbit\(\s*(\d+)\s*\)/g)].map((m) => Number(m[1]));
+    lanes.push({ insts, samples, orbits, vols: [...insts].map((x) => `${x}.vol`) });
   }
   return lanes;
 }
@@ -1142,6 +1201,21 @@ function renderSwitches(list) {
   }
   if (modeGroup) modeGroup.style.display = modeRoot && modeRoot.childElementCount ? '' : 'none';
   root.hidden = root.childElementCount === 0;
+  syncSwitchPanel();
+}
+
+// #switchPanel hides itself when there is nothing to switch: no switches and
+// no scenes. The summary keeps the count so a collapsed panel still reports.
+function syncSwitchPanel() {
+  const panel = $('switchPanel');
+  if (!panel) return;
+  const sw = $('switches');
+  const sc = $('scenes');
+  const scenes = sc && !sc.hidden ? sc.querySelectorAll('button.scene').length : 0;
+  const n = (sw?.childElementCount || 0) + scenes;
+  panel.hidden = n === 0;
+  const count = $('switchCount');
+  if (count) count.textContent = n ? `(${n})` : '';
 }
 
 // ПЭДЫ: кнопка = мгновенное значение. pointerdown → max, pointerup/cancel/
@@ -2079,7 +2153,32 @@ function activityTick() {
   }
   const t = performance.now();
   for (const h of haps) {
-    const bySample = activityLanes.filter((l) => laneHasSample(l, h));
+    // muted / gated-to-zero events do not sound — keep the lamp dark
+    if (typeof h.value?.gain === 'number' && h.value.gain <= 0.0005) continue;
+    // Exact match: `$: … .label('drums.kick')` carries the instrument through
+    // the engine, so shared samples / scaled gains cannot confuse the lamp.
+    const label = h.value?.label;
+    if (typeof label === 'string' && label) {
+      const hits = activityLanes.filter((l) =>
+        [...l.insts].some((id) => id === label || id.endsWith('.' + label)),
+      );
+      if (hits.length) {
+        for (const lane of hits) for (const inst of lane.insts) actSeen.set(inst, t);
+        continue;
+      }
+    }
+    let bySample = activityLanes.filter((l) => laneHasSample(l, h));
+    const orbit = h.value?.orbit;
+    // Lanes built through a helper (rhodes(), upright(), …) may still have an
+    // empty sample list; the lane's .orbit(n) is a reliable second key.
+    if (typeof orbit === 'number') {
+      if (!bySample.length) {
+        bySample = activityLanes.filter((l) => (l.orbits || []).includes(orbit));
+      } else if (bySample.length > 1) {
+        const sameOrbit = bySample.filter((l) => (l.orbits || []).includes(orbit));
+        if (sameOrbit.length) bySample = sameOrbit;
+      }
+    }
     if (!bySample.length) continue;
     let chosen = bySample.filter((l) => laneHasGain(l, h));
     // акценты (хэты) — gain = vol × accent, поэтому сверка по громкости мимо;
@@ -2092,6 +2191,31 @@ function activityTick() {
       const key = (l) => [...l.insts].sort().join(',');
       const only = key(bySample[0]);
       if (only && bySample.every((l) => key(l) === only)) chosen = bySample;
+    }
+    // Секции масштабируют gain (gain = vol × tlOr), поэтому точное равенство
+    // ручке не работает. Берём дорожку, у которой hap/vol ближе всего к 1,
+    // и только если она явно впереди — иначе оставляем лампу потухшей.
+    if (!chosen.length && bySample.length) {
+      const g = h.value?.gain;
+      if (typeof g === 'number') {
+        const closeness = (l) => {
+          let best = Infinity;
+          for (const vp of l.vols) {
+            const k = knobByPath(vp);
+            const kv = Number(k?.value);
+            if (!(kv > 0.001)) continue;
+            const r = g / kv;
+            if (r > 0.02 && r <= 1.35) best = Math.min(best, Math.abs(Math.log(r)));
+          }
+          return best;
+        };
+        const scored = bySample
+          .map((l) => [l, closeness(l)])
+          .filter(([, d]) => Number.isFinite(d))
+          .sort((a, b) => a[1] - b[1]);
+        if (scored.length && (scored.length === 1 || scored[1][1] > scored[0][1] + 0.15))
+          chosen = [scored[0][0]];
+      }
     }
     for (const lane of chosen) for (const inst of lane.insts) actSeen.set(inst, t);
   }
@@ -2216,6 +2340,7 @@ function renderScenes() {
   const entries = Object.entries(scenes || {}).filter(([, v]) => v && typeof v === 'object');
   if (!entries.length) {
     root.hidden = true;
+    syncSwitchPanel();
     return;
   }
   root.hidden = false;
@@ -2232,6 +2357,7 @@ function renderScenes() {
     b.addEventListener('click', () => applyValues(values, name));
     root.appendChild(b);
   }
+  syncSwitchPanel();
 }
 
 // Apply values by knob paths, right-to-left so edits do not shift positions.
@@ -2909,6 +3035,24 @@ async function boot() {
       ]);
       await wa.aliasBank(`${CDN}/tidal-drum-machines-alias.json`);
     },
+    // Ctrl+Enter / Ctrl+. are handled by @strudel/codemirror itself and never
+    // go through our play()/stop(). Without this the sound starts but the
+    // panel stays frozen: no playhead, no automation, no activity lamps.
+    onToggle: (on) => {
+      playing = !!on;
+      $('play')?.classList.toggle('on', playing);
+      if (playing) {
+        startTimeline();
+        startActivity();
+      } else {
+        stopTimeline();
+        stopActivity();
+      }
+    },
+    beforeEval: () => {
+      const src = mirror?.editor?.state?.doc?.toString();
+      initOverrides = src ? computeInitOverrides(src) : new Map();
+    },
     onUpdateState: (s) => {
       if (s?.evalError) setStatus(s.evalError.message, true);
     },
@@ -3097,6 +3241,20 @@ function bindHeaderMenu() {
   });
 }
 
+// Switches/scenes panel: collapsed by default (they used to eat the middle of
+// the mixer), remembers the user's choice.
+function bindSwitchPanel() {
+  const d = $('switchPanel');
+  if (!d) return;
+  try {
+    const saved = localStorage.getItem('strudex:switches');
+    if (saved !== null) d.open = saved === '1';
+  } catch {}
+  d.addEventListener('toggle', () => {
+    try { localStorage.setItem('strudex:switches', d.open ? '1' : '0'); } catch {}
+  });
+}
+
 function bindCopyCode() {
   const btn = $('copyCode');
   if (!btn) return;
@@ -3128,11 +3286,468 @@ function bindNewTrack() {
   });
 }
 
+// ── PHRASE EDITOR: piano-roll for note phrases ──────────────────
+// Reads every `const NAME = phrase([...])` / `solos([...])` from the document,
+// draws one bar as a monophonic piano roll and writes the edited bar back into
+// that string literal. Nothing is auto-evaluated: Apply only edits the code.
+const PH_GROUP_DEFS = [
+  { id: 'riff', title: 'Riff lead', re: /^ACID/ },
+  { id: 'echo', title: 'Pulse echo', re: /^MEL/ },
+  { id: 'bass', title: 'Bass', re: /^BASS/ },
+  { id: 'stab', title: 'Stabs', re: /^STAB/ },
+  { id: 'pad', title: 'Pad', re: /^PAD/ },
+  { id: 'solo', title: 'Solo', re: /^SOLO/ },
+];
+const PH_GROUP_OTHER = { id: 'other', title: 'Other' };
+const PH_PC = { c: 0, d: 2, e: 4, f: 5, g: 7, a: 9, b: 11 };
+const PH_FLAT = ['c', 'db', 'd', 'eb', 'e', 'f', 'gb', 'g', 'ab', 'a', 'bb', 'b'];
+const PH_BLACK = new Set([1, 3, 6, 8, 10]);
+const PH_ACCENT = /[*\/,<>()[\]{}]/;
+const PH_STORE_KEY = 'strudex:phraseSel';
+
+let phList = [];
+let phSel = null;
+let phBar = 0;
+let phSteps = 16;
+let phWorking = [];
+let phKey = '';
+let phAnchor = null;
+const phEdits = new Map();
+
+function phNoteMidi(tok) {
+  const m = /^([a-g])([bs]?)(-?\d+)$/.exec(String(tok).toLowerCase());
+  if (!m) return null;
+  let pc = PH_PC[m[1]];
+  if (m[2] === 's') pc = (pc + 1) % 12;
+  if (m[2] === 'b') pc = (pc + 11) % 12;
+  return (Number(m[3]) + 1) * 12 + pc;
+}
+
+function phMidiLabel(midi) {
+  const pc = ((midi % 12) + 12) % 12;
+  return PH_FLAT[pc] + (Math.floor(midi / 12) - 1);
+}
+
+function phArrayEnd(src, start) {
+  let depth = 0;
+  let inStr = false;
+  let quote = '';
+  let esc = false;
+  for (let i = start; i < src.length; i++) {
+    const c = src[i];
+    if (inStr) {
+      if (esc) esc = false;
+      else if (c === '\\') esc = true;
+      else if (c === quote) inStr = false;
+      continue;
+    }
+    if (c === '"' || c === "'" || c === '`') { inStr = true; quote = c; continue; }
+    if (c === '[') depth++;
+    else if (c === ']') {
+      depth--;
+      if (depth === 0) return i;
+    }
+  }
+  return -1;
+}
+
+function phStringLiterals(src, from, to) {
+  const out = [];
+  let i = from;
+  while (i <= to) {
+    const c = src[i];
+    if (c === '"' || c === "'" || c === '`') {
+      const q = c;
+      let j = i + 1;
+      let esc = false;
+      let value = '';
+      while (j < src.length) {
+        const d = src[j];
+        if (esc) { value += d; esc = false; }
+        else if (d === '\\') esc = true;
+        else if (d === q) break;
+        else value += d;
+        j++;
+      }
+      out.push({ start: i, end: j + 1, value, quote: q });
+      i = j + 1;
+    } else i++;
+  }
+  return out;
+}
+
+function phBarTokens(text) {
+  const t = String(text).trim();
+  if (!t) return [];
+  if (PH_ACCENT.test(t)) return null;
+  const toks = t.split(/\s+/);
+  return toks.every((tok) => tok === '~' || phNoteMidi(tok) !== null) ? toks : null;
+}
+
+function phScanPhrases(src) {
+  const list = [];
+  const re = /const\s+([A-Za-z_$][\w$]*)\s*=\s*(phrase|solos)\s*\(\s*\[/g;
+  let m;
+  while ((m = re.exec(src))) {
+    const arrStart = m.index + m[0].length - 1;
+    const arrEnd = phArrayEnd(src, arrStart);
+    if (arrEnd < 0) continue;
+    const strings = phStringLiterals(src, arrStart + 1, arrEnd - 1);
+    if (!strings.length) continue;
+    const bars = strings.map((s) => s.value.trim());
+    const tokens = bars.map(phBarTokens);
+    list.push({
+      name: m[1],
+      kind: m[2],
+      bars,
+      strings,
+      tokens,
+      unsupported: tokens.some((t) => t === null),
+    });
+  }
+  return list;
+}
+
+const phGroupOf = (name) => PH_GROUP_DEFS.find((g) => g.re.test(name)) || PH_GROUP_OTHER;
+
+// Re-map a bar to the chosen grid: downsample keeps the first hit of each span,
+// upsample places the original notes on the even steps and leaves the rest empty.
+function phResample(tokens, steps) {
+  const len = tokens ? tokens.length : 0;
+  if (!len) return new Array(steps).fill('~');
+  if (len === steps) return tokens.slice();
+  const out = [];
+  if (steps < len) {
+    for (let i = 0; i < steps; i++) {
+      const a = Math.floor((i * len) / steps);
+      const b = Math.max(a + 1, Math.floor(((i + 1) * len) / steps));
+      let pick = '~';
+      for (let j = a; j < b; j++) {
+        if (tokens[j] && tokens[j] !== '~') { pick = tokens[j]; break; }
+      }
+      out.push(pick);
+    }
+  } else {
+    const f = steps / len;
+    for (let i = 0; i < steps; i++) {
+      const aligned = Number.isInteger(f) ? i % f === 0 : Math.abs(i - Math.round(i / f) * f) < 0.5;
+      out.push(aligned ? tokens[Math.min(len - 1, Math.floor(i / f))] : '~');
+    }
+  }
+  return out;
+}
+
+function phSetStatus(text, err = false) {
+  const el = $('phStatus');
+  if (!el) return;
+  el.textContent = text || '';
+  el.classList.toggle('err', !!err);
+}
+
+function phEnsureWorking() {
+  if (!phSel) { phWorking = []; phKey = ''; return; }
+  phKey = `${phSel.name}#${phBar}#${phSteps}`;
+  if (phEdits.has(phKey) && phEdits.get(phKey).length === phSteps) {
+    phWorking = phEdits.get(phKey).slice();
+    return;
+  }
+  phWorking = phResample(phSel.tokens[phBar], phSteps);
+}
+
+function phSyncBarSelect() {
+  const sel = $('phBar');
+  if (!sel || !phSel) return;
+  sel.innerHTML = '';
+  for (let i = 0; i < phSel.bars.length; i++) {
+    const o = document.createElement('option');
+    o.value = String(i);
+    o.textContent = String(i + 1);
+    sel.appendChild(o);
+  }
+  sel.value = String(phBar);
+}
+
+function phLoad(name) {
+  phSel = phList.find((p) => p.name === name) || phSel;
+  if (!phSel) { phWorking = []; phRenderGrid(); return; }
+  try { localStorage.setItem(PH_STORE_KEY, phSel.name); } catch {}
+  if (phBar >= phSel.bars.length) phBar = 0;
+  const toks = phSel.tokens[phBar];
+  if (Array.isArray(toks) && (toks.length === 8 || toks.length === 16)) phSteps = toks.length;
+  const stepsSel = $('phSteps');
+  if (stepsSel) stepsSel.value = String(phSteps);
+  phSyncBarSelect();
+  phEnsureWorking();
+  phRenderGrid();
+}
+
+function phRebuildSelect() {
+  const sel = $('phName');
+  if (!sel) return;
+  const groups = new Map();
+  for (const p of phList) {
+    const g = phGroupOf(p.name);
+    if (!groups.has(g.id)) groups.set(g.id, { g, items: [] });
+    groups.get(g.id).items.push(p);
+  }
+  sel.innerHTML = '';
+  const groupOrder = new Map(PH_GROUP_DEFS.map((g, i) => [g.id, i]));
+  const ordered = [...groups.values()].sort(
+    (a, b) => (groupOrder.get(a.g.id) ?? 99) - (groupOrder.get(b.g.id) ?? 99),
+  );
+  for (const { g, items } of ordered) {
+    const og = document.createElement('optgroup');
+    og.label = g.title;
+    for (const p of items) {
+      const o = document.createElement('option');
+      o.value = p.name;
+      o.textContent = p.unsupported ? `${p.name} (unsupported)` : p.name;
+      o.disabled = p.unsupported;
+      og.appendChild(o);
+    }
+    sel.appendChild(og);
+  }
+  let want = '';
+  try { want = localStorage.getItem(PH_STORE_KEY) || ''; } catch {}
+  const pick = phList.find((p) => p.name === want && !p.unsupported)
+    || phList.find((p) => !p.unsupported && phGroupOf(p.name).id === 'riff')
+    || phList.find((p) => !p.unsupported)
+    || phList[0];
+  if (pick) {
+    sel.value = pick.name;
+    phLoad(pick.name);
+  }
+}
+
+function phPitchRows() {
+  const set = new Set();
+  if (phSel) {
+    for (const toks of phSel.tokens) {
+      for (const t of toks || []) {
+        const midi = phNoteMidi(t);
+        if (midi !== null) set.add(midi);
+      }
+    }
+  }
+  for (const t of phWorking) {
+    const midi = phNoteMidi(t);
+    if (midi !== null) set.add(midi);
+  }
+  if (!set.size) return [];
+  const lo = Math.floor(Math.min(...set) / 12) * 12;
+  const hi = Math.floor(Math.max(...set) / 12) * 12 + 11;
+  const rows = [];
+  for (let midi = hi; midi >= lo; midi--) rows.push(midi);
+  return rows;
+}
+
+function phToggleStep(step, midi) {
+  if (!phWorking.length) return;
+  const cur = phWorking[step];
+  const curMidi = cur && cur !== '~' ? phNoteMidi(cur) : null;
+  phWorking[step] = curMidi === midi ? '~' : phMidiLabel(midi);
+  if (phKey) phEdits.set(phKey, phWorking.slice());
+  phRenderGrid();
+  phSetStatus('unsaved — Apply to code');
+}
+
+function phRenderGrid() {
+  const body = $('phBody');
+  if (!body) return;
+  if (!phSel) {
+    body.innerHTML = '<div class="ph-empty">no phrase constants found in this track</div>';
+    $('phApply').disabled = true;
+    return;
+  }
+  if (phSel.unsupported) {
+    body.innerHTML = '<div class="ph-empty">this phrase uses mini-notation accents (* / , &lt;…&gt;) or non-note tokens — piano editing is off for it</div>';
+    $('phApply').disabled = true;
+    $('phHint').textContent = phSel.name;
+    return;
+  }
+  if (!phWorking.length || phWorking.length !== phSteps) phEnsureWorking();
+  const rows = phPitchRows();
+  if (!rows.length) {
+    body.innerHTML = '<div class="ph-empty">this phrase has no pitched notes</div>';
+    $('phApply').disabled = true;
+    return;
+  }
+  const table = document.createElement('table');
+  table.className = 'ph';
+  const thead = document.createElement('thead');
+  const hr = document.createElement('tr');
+  const corner = document.createElement('th');
+  corner.className = 'ph-corner';
+  hr.appendChild(corner);
+  for (let s = 0; s < phSteps; s++) {
+    const th = document.createElement('th');
+    th.className = 'ph-step' + (s % 4 === 0 ? ' ph-4' : '');
+    th.textContent = String(s + 1);
+    hr.appendChild(th);
+  }
+  thead.appendChild(hr);
+  table.appendChild(thead);
+  const tb = document.createElement('tbody');
+  for (const midi of rows) {
+    const pc = ((midi % 12) + 12) % 12;
+    const tr = document.createElement('tr');
+    const key = document.createElement('td');
+    key.className = 'ph-key ' + (PH_BLACK.has(pc) ? 'black' : 'white') + (pc === 0 ? ' ph-c' : '');
+    key.textContent = phMidiLabel(midi);
+    tr.appendChild(key);
+    for (let s = 0; s < phSteps; s++) {
+      const td = document.createElement('td');
+      td.className = 'ph-slot' + (s % 4 === 0 ? ' ph-4' : '') + (pc === 0 ? ' ph-c' : '');
+      const tok = phWorking[s];
+      const on = !!tok && tok !== '~' && phNoteMidi(tok) === midi;
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'ph-cell' + (on ? ' on' : '');
+      b.title = `${phMidiLabel(midi)} · step ${s + 1}`;
+      b.setAttribute('aria-label', `${on ? 'clear' : 'place'} ${phMidiLabel(midi)} on step ${s + 1}`);
+      b.addEventListener('click', () => phToggleStep(s, midi));
+      td.appendChild(b);
+      tr.appendChild(td);
+    }
+    tb.appendChild(tr);
+  }
+  table.appendChild(tb);
+  body.innerHTML = '';
+  body.appendChild(table);
+  $('phHint').textContent = `${phSel.name} · bar ${phBar + 1}/${phSel.bars.length} · ${phSteps} steps`;
+  $('phApply').disabled = false;
+}
+
+function phApply() {
+  if (!mirror?.editor || !phSel || phSel.unsupported) return;
+  const text = phWorking.join(' ');
+  const src = mirror.editor.state.doc.toString();
+  const info = phScanPhrases(src).find((p) => p.name === phSel.name);
+  const s = info?.strings?.[phBar];
+  if (!s) {
+    phSetStatus('phrase moved in code — reopen the editor', true);
+    return;
+  }
+  const q = s.quote || "'";
+  const esc = text.replace(/\\/g, '\\\\').split(q).join('\\' + q);
+  mirror.editor.dispatch({ changes: { from: s.start + 1, to: s.end - 1, insert: esc } });
+  if (phKey) phEdits.delete(phKey);
+  phList = phScanPhrases(mirror.editor.state.doc.toString());
+  phSel = phList.find((p) => p.name === phSel.name) || phSel;
+  phEnsureWorking();
+  phRenderGrid();
+  phSetStatus('saved to code — Ctrl+Enter to hear it');
+  setStatus('phrase saved — Ctrl+Enter or APPLY');
+}
+
+function ensurePhrasePop() {
+  let el = $('phrasePop');
+  if (el) return el;
+  el = document.createElement('div');
+  el.id = 'phrasePop';
+  el.setAttribute('role', 'dialog');
+  el.setAttribute('aria-label', 'phrase editor');
+  el.innerHTML = `
+    <div class="ph-head">
+      <label>phrase <select id="phName"></select></label>
+      <label>bar <select id="phBar"></select></label>
+      <label>steps <select id="phSteps"><option value="8">8</option><option value="16" selected>16</option></select></label>
+      <span class="ph-hint" id="phHint"></span>
+    </div>
+    <div class="ph-body" id="phBody"></div>
+    <div class="ph-foot">
+      <span class="ph-status" id="phStatus"></span>
+      <button type="button" class="save" id="phApply">Apply to code</button>
+      <button type="button" id="phClose">Close</button>
+    </div>`;
+  document.body.appendChild(el);
+  $('phName').addEventListener('change', () => {
+    phBar = 0;
+    phLoad($('phName').value);
+  });
+  $('phBar').addEventListener('change', () => {
+    phBar = Number($('phBar').value) || 0;
+    phLoad(phSel?.name);
+  });
+  $('phSteps').addEventListener('change', () => {
+    phSteps = Number($('phSteps').value) === 8 ? 8 : 16;
+    phEnsureWorking();
+    phRenderGrid();
+  });
+  $('phApply').addEventListener('click', phApply);
+  $('phClose').addEventListener('click', closePhraseEditor);
+  document.addEventListener('pointerdown', (e) => {
+    if (!el.classList.contains('open')) return;
+    if (el.contains(e.target)) return;
+    if (phAnchor && (e.target === phAnchor || phAnchor.contains(e.target))) return;
+    closePhraseEditor();
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && el.classList.contains('open')) {
+      e.preventDefault();
+      closePhraseEditor();
+    }
+  });
+  return el;
+}
+
+function openPhraseEditor(btn) {
+  const el = ensurePhrasePop();
+  phAnchor = btn || null;
+  const src = mirror?.editor?.state?.doc?.toString?.() ?? '';
+  phList = src ? phScanPhrases(src) : [];
+  el.classList.add('open');
+  btn?.classList.add('on');
+  phSetStatus('');
+  if (!phList.length) {
+    $('phName').innerHTML = '';
+    $('phBar').innerHTML = '';
+    $('phHint').textContent = '';
+    phSel = null;
+    phWorking = [];
+    phRenderGrid();
+    phSetStatus('nothing to edit in this track', true);
+  } else {
+    phRebuildSelect();
+  }
+  const r = btn.getBoundingClientRect();
+  const w = el.offsetWidth || 640;
+  const h = el.offsetHeight || 480;
+  let left = r.left - w - 8;
+  if (left < 8) left = Math.max(8, r.right - w);
+  let top = r.bottom + 6;
+  if (top + h > window.innerHeight - 8) top = Math.max(8, window.innerHeight - h - 8);
+  el.style.left = `${Math.round(left)}px`;
+  el.style.top = `${Math.round(top)}px`;
+  $('phName')?.focus();
+}
+
+function closePhraseEditor() {
+  const el = $('phrasePop');
+  if (!el) return;
+  el.classList.remove('open');
+  phAnchor?.classList.remove('on');
+}
+
+function bindPhraseEditor() {
+  const btn = $('phraseBtn');
+  if (!btn) return;
+  btn.addEventListener('click', () => {
+    if ($('phrasePop')?.classList.contains('open')) {
+      closePhraseEditor();
+      return;
+    }
+    openPhraseEditor(btn);
+  });
+}
+
 bindPadKeys();
+bindSwitchPanel();
 bindVizToggle();
 bindHeaderMenu();
 bindCopyCode();
 bindNewTrack();
+bindPhraseEditor();
 audioReady = boot().catch((e) => {
   console.error(e);
   setStatus(e.message, true);

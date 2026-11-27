@@ -20,7 +20,8 @@ always `STRUDEL EXTENSION`.
 - a mixer built from the track's `instruments` tree;
 - a two-column sidebar: volumes on the left, per-instrument tone controls on
   the right;
-- switches, scenes, mutes and pads when the track declares them;
+- switches and scenes in a collapsible panel above the mixer, plus mutes and
+  pads when the track declares them;
 - a horizontal timeline with sections, automation and LOOP / SONG / HOLD;
 - a small spectrum analyzer.
 
@@ -104,6 +105,35 @@ use `UI` plus `const TIMELINE` / `const AUTOMATION`.
 The panel only renders the data; the sound is produced by the track code
 (`tlCurve` / `tlOr` / `gateOf` / `autoAt`).
 
+### Phrase editor (piano roll)
+
+The small piano button in the code toolbar opens a piano-roll popup to its
+left. It edits the plain note phrases a track already declares:
+
+```js
+const ACID_C = phrase([ 'c3 c3 c3 db3 …', … ])
+const SOLO_A = solos([ 'c4 ~ ~ c4 …', … ])
+```
+
+- **Phrase select** — one `<select>` with an `<optgroup>` per instrument
+  (Riff lead / Pulse echo / Bass / Stabs / Pad / Solo). One grouped select was
+  chosen over "instrument first, then phrase": a single action, no half-filled
+  state, and the instrument stays visible in the list. The choice is remembered
+  in `localStorage` (`strudex:phraseSel`).
+- **bar** — one bar of the phrase at a time.
+- **steps** — 8 or 16 columns. Changing the grid re-maps the bar: downsampling
+  keeps the first hit of each span, upsampling puts the original notes on the
+  even steps and leaves the rest empty.
+- **Grid** — rows are semitones from C to B across the phrase range; white and
+  black keys are shaded, C rows get a heavier bottom line and every 4th column
+  a heavier left line. A step holds one note: clicking a cell places that row's
+  pitch (replacing whatever was there), clicking the filled cell clears it.
+- **Apply to code** rewrites only the selected bar's string literal in the
+  document; nothing is evaluated — press Ctrl/Cmd+Enter to hear it. The editor
+  works on plain whitespace-separated bars; a phrase that uses mini-notation
+  accents (`* / , <…>`) or non-note tokens is listed as `(unsupported)` and
+  stays read-only.
+
 ### Scenes, mutes, pads
 
 - `// @scenes {"intro":{…},"theme":{…}}` — Intro/Theme presets. Export/Import
@@ -120,9 +150,19 @@ The panel only renders the data; the sound is produced by the track code
 - `Global` holds `verb`, `duck`, the panel master gain and the instrument
   volumes.
 - Every mixer channel has M/S (panel-only mute/solo, code untouched) and G
-  (group mute from `mute:`).
+  (group mute from `mute:`). M/S stay panel state: the document keeps the base
+  `vol`, and the effective value is pushed before the next eval starts, so
+  PLAY / Ctrl+Enter does not begin with one unmuted burst.
+- Switches and scenes live in a collapsible **Switches** panel above the mixer
+  (collapsed by default, the open state is remembered). They used to sit in the
+  middle of the mixer and eat several rows.
 - The activity square next to the instrument name lights while that instrument
-  has haps in the current bar.
+  has haps in the current bar. The engine only reports the hap
+  (sample/`n`/`gain`/`orbit`), not the `$:` block it came from, so the panel
+  matches lanes heuristically: sample, then orbit, then gain closeness. Shared
+  samples or scaled gains can make the guess ambiguous. For an exact lamp add
+  `.label('group.inst')` to a `$:` block — the label travels with the hap and
+  wins over the heuristics.
 
 ### Slider widgets
 

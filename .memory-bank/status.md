@@ -36,9 +36,24 @@ click ruler to seek, no melodic Khmer lines.
 experimental/01-complex-bass is 160 BPM Buchla-style complex bass: 5 WT+FM
 pairs (10 oscillators), 5 LFOs, hardcore kick, drone/dirt, 12 riffs, per-bass oct/pace, 18 tracks, 206 sliders, dark
 wavetables, FM/AM/waveshaping/ducking, modes clean/grit/fold/scream.
+Cross-genre: `docs/practice-atlas.en.md` — 15 style cards (BPM/scale/16-step
+grids/note lines/Strudel snippets), ten Strudel rules, depth matrix; plus
+`docs/techno/02-practice.en.md`, `docs/minimal-techno/02-practice.en.md`,
+`docs/coldwave/02-practice.en.md`, `docs/darkwave/02-practice.en.md`,
+`docs/shoegaze/02-practice.en.md` and `docs/new-tricks.en.md` (11 Strudel
+features absent from every track, with official syntax). Linked from thin genre
+READMEs and `llms.txt`. No code/tracks changed.
 Reference: `docs/breakcore/`, `docs/idm/` and `docs/khmer/` (RU + EN);
 play guides in `docs/breakcore/10-panel.md`, `docs/idm/README.md` and
 `docs/khmer/README.md`.
+Big beat: `docs/bigbeat/` (EN: README + techniques + examples + arrangement +
+Strudel + 06 practice [16-step grids, scales, note/rhythm riffs] + 07 variants
+[10 characters + N+1 selection rule] + sources), researched 2026-11-24; sources
+also in `docs/references.en.md`. No audio audition possible here — practice
+claims tagged [D]/[T]/[B]/[R]. Tracks built: `tracks/bigbeat/01-acid-breaks.js` (v1, kept as reference) and
+`02-acid-breaks-v2.js` (listening fix: crush 12 bits, louder synth, STOP cue;
+17 lanes, 28 sliders), 125 BPM, C minor, 72 bars, 8 sections + 1-bar STOP.
+H-013 confirmed, gates green; `modes`/`latch` limitations noted in research.md.
 
 ## Key Metrics
 - `npm run verify` — 35 tracks load and run, 0 errors.
@@ -103,6 +118,9 @@ play guides in `docs/breakcore/10-panel.md`, `docs/idm/README.md` and
   Fm9→Abmaj9→Dbmaj9→Gbmaj9, full dub set + Moog lead/arp, shared delay/reverb, docs/dub-techno).
 - Web panel: momentary pads (`// @pads`, keys 1–9), mute buttons (`// @mutes`),
   docs/breakcore + docs/idm + docs/khmer (RU + EN).
+- `docs/bigbeat/` — Big Beat playbook, techniques, annotated examples,
+  arrangement, Strudel mapping and sources (EN); Big Beat section in
+  `docs/references.en.md`.
 - README index and per-track notes.
 
 ### 🔄 In Progress

@@ -1,5 +1,8 @@
 # Shoegaze — playbook
 
+Strudel practice card (synth-only adaptation): `docs/practice-atlas.en.md` §14.
+Full chord/grid/arrangement material: `docs/shoegaze/02-practice.en.md`.
+
 A British indie/alternative genre of the late 80s–90s: a wall of guitar noise,
 effects more important than the riff, vocals drowned in the mix, a "dreamy"
 atmosphere. The name comes from guitarists looking down at their pedalboards.

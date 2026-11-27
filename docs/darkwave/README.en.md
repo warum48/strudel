@@ -1,5 +1,8 @@
 # Darkwave / New wave — playbook
 
+Strudel practice card: `docs/practice-atlas.en.md` §13. Full grid, tabbed
+bass and chord/ornament recipes: `docs/darkwave/02-practice.en.md`.
+
 The dark side of new wave: post-punk + synthesizers + drum machines; minor,
 low timbres, melancholy, yet a **song**, not ambient. The reference is
 mid-period Depeche Mode (`Black Celebration` → `Violator`): synths,

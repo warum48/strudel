@@ -1,5 +1,7 @@
 # Trip-hop / acid jazz — playbook
 
+Strudel practice card: `docs/practice-atlas.en.md` §4.
+
 Track: `tracks/trip-hop/01-acid-jazz.js` — 84 BPM, 17 tracks, 73 sliders.
 This is not "gloomy café downtempo" and not retro noir: a muffled low end,
 broken drums, Rhodes, quartal pads, vinyl and two Moog voices. Jazz is in the

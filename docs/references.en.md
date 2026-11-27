@@ -337,3 +337,114 @@ Dark hip-hop:
   https://www.attackmagazine.com/technique/passing-notes/choosing-keys-for-bass-weight/
 - Real World Music Theory — Phrygian for dark/eerie moods:
   https://realworldmusictheory.com/how-to-create-dark-eerie-and-foreboding-moods-with-the-phrygian-mode/
+
+## Big beat
+
+Full digest + reading order: `docs/bigbeat/` (`README.en.md` → `01`…`05`).
+
+Definition / history:
+
+- Wikipedia — Big beat (100–140 BPM, breakbeats + 303 + 60s/70s samples,
+  1989 term, Big Beat Boutique, 1995–99 peak): https://en.wikipedia.org/wiki/Big_beat
+- AllMusic — Big Beat genre (Skint / Wall of Sound / City of Angels labels):
+  https://www.allmusic.com/genre/big-beat-ma0000004997
+- Vice — In Defense of Big Beat (six-step formula, 90–120 BPM mid-tempo):
+  https://www.vice.com/en/article/big-beat-history-influence-prodigy-fatboy-slim/
+- EDM Bible — glossary: https://edmbible.com/glossary/big-beat/
+- Classic Pop — Popscene: Big Beat (Propellerheads, film/ad placements):
+  https://www.classicpopmag.com/features/popscene-big-beat/
+
+Tutorials:
+
+- MusicRadar — Beat Building: how to make a Big Beat beat (slice the break in
+  a sampler, 135 BPM, 909 over it, acid bass, tape sim):
+  https://www.musicradar.com/news/beat-building-how-to-build-a-big-beat-beat
+- MusicRadar — classic breakbeat sound (slice by transients, resequence,
+  extract groove vs quantise): https://www.musicradar.com/how-to/classic-breakbeat-sound
+- MusicRadar — layering phat breakbeats (no two layers on one frequency):
+  https://www.musicradar.com/tuition/tech/how-to-layer-monstrously-phat-breakbeats-210120
+- MusicRadar — '90s rave breakbeat (layered breaks, bitcrush, 808 sub):
+  https://www.musicradar.com/tuition/tech/how-to-build-a-layered-90s-style-rave-breakbeat-636596
+- Attack — Big Beat Techno, Beat Dissected (130 BPM, pushed-low kick, late
+  16th kicks, rim, off-beat hat): https://www.attackmagazine.com/technique/beat-dissected/big-beat-techno/
+- Attack — Mixing Breakbeats: https://www.attackmagazine.com/technique/tutorials/mixing-breakbeats/
+
+Examples / scene:
+
+- NPR/KEXP — 11 Essential Songs (picked by the original scene):
+  https://www.npr.org/2011/08/19/139754112/the-big-beat-revolution-11-essential-songs
+- Mixmag — 10 best big beat tracks released pre-'98:
+  https://mixmag.net/feature/the-10-best-big-beat-tracks-released-pre-98
+- RTÉ — Top 100 90s Dance Anthems:
+  https://www.rte.ie/radio/gold/stories/1477879-top-100-90s-dance-anthems/
+- AllMusic — Big Beat Song Highlights:
+  https://www.allmusic.com/style/big-beat-ma0000004997/songs
+- Sonaa — Big Beat: key tracks and production guide:
+  https://sonaa.ca/en/styles/breaks/big-beat/
+
+Note-level material (steps / notes / tabs; see `docs/bigbeat/06-practice.en.md`):
+
+- Mind Flux — Sample Hacker: Block Rockin' Beats (109.5 BPM, E1–A#1–C2 bass,
+  Purdie break construction):
+  https://www.mind-flux.com/news-1/2023/1/27/sample-hacker-block-rockin-beats
+- Ableton 12 Sound Design Atlas — Big Beat Track (132 BPM, E minor blues,
+  16 slices / 2 bars, build and breakdown step maps):
+  https://ableton.onefootstep.us/deconstructions/big-beat-track.html
+- Ableton 12 Sound Design Atlas — Famous Big Beat & Breakbeat Records
+  (documented gear vs by-ear claims, labelled):
+  https://ableton.onefootstep.us/deconstructions/famous-big-beat-breakbeat-tracks.html
+- theprodigy.info / dbanz — Firestarter guitar tabs:
+  https://theprodigy.info/tabs/firestarter.html ,
+  https://dbanz.tripod.com/prodigy/firestarter_guitar.html
+- azchords / gotabs — Rockafeller Skank riff + Gm/Bb/C chords:
+  https://www.azchords.com/f/fatboyslim-tabs-1440/therockafellerskank1-tabs-178519.html ,
+  https://www.guitartabs.cc/tabs/f/fatboy_slim/the_rockafeller_skank_crd.html
+- TempoPeek — F# major / 141.5 BPM (Firestarter), E♭ major / 125 BPM
+  (Busy Child): https://tempopeek.com/song/prodigy-firestarter ,
+  https://tempopeek.com/song/the-crystal-method-busy-child
+- BeatTab — Busy Child step grid: https://beattab.com/tab/studio-t6twhxa1gyw
+
+Characters for successive tracks (`docs/bigbeat/07-variants.en.md`):
+
+- BeatTab — Setting Sun grid (135 BPM): https://beattab.com/tab/studio-p5nx1fc-7-w
+- Tunebat / ChordU — Setting Sun key + chord cycle:
+  https://tunebat.com/Info/Setting-Sun-The-Chemical-Brothers-Noel-Gallagher/5JBGbFdBtLcCCygw8rtjli ,
+  https://chordu.com/chords-tabs-the-chemical-brothers-setting-sun-instrumental--id_UiFjo_0Fflg
+- Hooktheory / Songparts / Discogs — Spybreak! 128 BPM, F# minor/Locrian,
+  ESG-like bass, original instruments:
+  https://www.hooktheory.com/theorytab/view/propellerheads/spybreak ,
+  https://songparts.com/songs/propellerheads/spybreak ,
+  https://www.discogs.com/master/132208
+- Sound On Sound — Classic Tracks: Fatboy Slim "Praise You" (two-kit trigger,
+  HPF piano, SE-1 bass, 303):
+  https://www.soundonsound.com/techniques/classic-tracks-fatboy-slim-praise-you
+- Sonaa — 16 reference tracks / genre production:
+  https://sonaa.ca/en/styles/breaks/big-beat/
+
+## Strudel API (syntax for tricks we have not used)
+
+- Strudel reference (full function list): https://strudel.cc/reference/
+- Audio effects and single-use effect chain (compressor, tremolo, stretch,
+  filter envelopes): https://strudel.cc/learn/effects/
+- Time modifiers (`early`, `late`, `compress`): https://strudel.cc/learn/time-modifiers/
+- `shrink` (progressive subtraction): https://strudel.cc/learn/stepwise/
+- `stretch` pitch semantics and examples:
+  https://github.com/tidalcycles/strudel/pull/1130 ,
+  https://gitea.laenre.net/hacklab/strudel/commit/0e4d0484a35afee847462c566869029c358ca422
+- `scramble` / `shuffle` / `xfade` / `focus` definitions:
+  https://github.com/calvinw/strudel-llm-docs/blob/302311d9/docs/ref/strudel_reference_S-Z.txt
+
+## Note-level material for techno / minimal / coldwave / darkwave / shoegaze
+
+- Hooktheory — "Enjoy the Silence": C minor, F Dorian chorus, 113–114 BPM:
+  https://www.hooktheory.com/theorytab/view/depeche-mode/enjoy-the-silence
+- BigBassTabs — "Personal Jesus" bass tab:
+  https://www.bigbasstabs.com/depeche_mode_bass_tabs/personal_jesus_ver_2.html
+- tohereknowswhen — "Only Shallow" guitar tab (E–F♯–A–B):
+  http://tohereknowswhen.org/tabs/only-shallow.html
+- GuitarTuna — "Only Shallow" chords/tabs:
+  https://guitartuna.com/tabs/only-shallow-my-bloody-valentine-tab-6217b3327d0e3fa4285c302f
+- Chordify — "When the Sun Hits": D major, 115 BPM:
+  https://chordify.net/chords/when-the-sun-hits-slowdive-piano-cover-souvlakisynthstatic
+- ChordU — "Alison": ~100.5 BPM, A major:
+  https://chordu.com/tabs/alison-chords-by-slowdive-id_0x1b2dc

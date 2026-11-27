@@ -1,5 +1,8 @@
 # Berlin techno — production playbook
 
+Strudel practice card: `docs/practice-atlas.en.md` §6. Full grids, low-end
+recipes and bar map: `docs/techno/02-practice.en.md`.
+
 "Serious" Berlin techno is not a set of sounds but **pressure, repetition
 and a few sounds that do all the work**. No pop dramaturgy:
 not "verse-chorus", but a long groove where filters, density and

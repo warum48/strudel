@@ -34,6 +34,28 @@ of the argument, and `-2` is a unary minus → the value becomes `NaN`, the slid
 shows `NaN`, and the instrument goes silent. Keep `0…N`, and do the sign/shift in
 code (`.mul(-12)`, `.sub(4)`).
 
+## Slider ranges
+
+**Every cutoff slider's lower bound is 50, never higher** — `slider(160, 50, 400, 5)`.
+A min of 60/100/200/800 leaves the filter half-open and there is no way to close
+the layer in the panel. `min` below 50 (bass `40`) is fine. Applies to `cut` /
+`lpf` knobs of every layer, in every new track, without a separate request.
+
+## 303 cutoff automation
+
+A **recommendation, not a requirement.** Applies to 303-style basses and leads.
+
+- Acid lives in phrasing first (rests, repeats, accents). A static `cut` knob is
+  fine when the line already carries it.
+- Starting already open — full acid from bar 1 — or from about **100** is normal
+  and good.
+- A low-start sweep (from ~80 upward) is an ornament for a genuine acid moment,
+  at most ~4 bars. Do not stretch it over the track — and never over half of it:
+  a long climb out of a closed filter sounds like a mute, not acid.
+- When you do automate, tie it to a real section move (build / climax), not to
+  "every 303 must move".
+- `min` still stays 50 (see “Slider ranges”) — that part is hard.
+
 ## LEVELS AND ENERGY
 
 **An instrument plays at one level in all sections.** We change only on/off

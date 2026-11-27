@@ -1,5 +1,25 @@
 # Project agent rules
 
+## Slider lower bounds — cutoff must reach 50
+
+**Every cutoff slider's lower bound (`min`) is 50, never higher.**
+`cut: slider(160, 50, 400, 5)` — good; `slider(160, 60, …)`,
+`slider(1200, 200, …)`, `slider(6500, 800, …)` — wrong: the filter cannot be
+closed and the user cannot tame the layer. `min` below 50 (e.g. bass `40`) is
+fine. This is a standing request, not a per-track nicety — apply it when writing
+any track without being asked. Details: `docs/rules.en.md` → “Slider ranges”.
+
+## 303 cutoff automation — an ornament, not a law
+
+**Cutoff automation on a 303 is a recommendation, not a standing requirement.**
+Many tracks should open already acid from bar 1, or start the knob around 100.
+A low sweep from ~80 upward belongs only to a genuine acid moment and only for a
+short stretch — at most ~4 bars. Never let the track (or half of it) spend many
+bars climbing out of a closed filter: that reads as a mute, not as a filter
+move. A static `cut` knob is fine when the phrasing itself carries the acid.
+The slider `min` still stays 50 (hard rule above). Details:
+`docs/rules.en.md` → “303 cutoff automation”.
+
 ## Theory page upkeep
 
 The **running Strudel theory notebook** exists in two files:

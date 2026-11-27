@@ -1,5 +1,8 @@
 # Minimal techno — playbook
 
+Strudel practice card: `docs/practice-atlas.en.md` §8. Full grids, A-modality
+lines and bar map: `docs/minimal-techno/02-practice.en.md`.
+
 Not "techno with everything stripped out", but techno where almost nothing changes — and because of that
 everything changes. Material: kick, bass, rare percussion dots, one drone/pad,
 a short stab or bleep. Development is in filters, density and micro-shifts,

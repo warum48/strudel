@@ -1,5 +1,7 @@
 # Hip-hop — playbook (synth/electronic, instrumental)
 
+Strudel practice cards for boom-bap, trap and dark hip-hop: `docs/practice-atlas.en.md` §1–3.
+
 A practical brief for writing hip-hop in this project: fat, swinging drums with
 sampled character, punchy bass, and a groove people nod to. **We are not SUNO**:
 no vocals, no imitation of acoustic instruments (see `docs/rules.en.md`). We

@@ -49,6 +49,7 @@ and the **code** must stay in sync with its source file. Current mapping:
 | `01-black-ice.js` | 88 | 32 | 10 | 21 | play | Dark boom-bap: D Phrygian + C♯ accent, sliding 808 under a punchy kick, ghost-note snares, swung hats, D+A / D+E♭+A drone (no B♭). |
 | `02-black-ice-v2.js` | 88 | 48 | 18 | 24 | play | Verse/hook form: boom-bap verses, half-time hooks (clap, triplet hats, lead answer), noise-riser break, short Dm7/Bb/Gm/A7 stabs, no drone; sliding 808 under a punchy kick. |
 | `03-black-ice-v3.js` | 88 | 40 | 15 | 23 | play | V2 break (riff + riser + roll + MLK-speech scratch) → intro 8 → verse 8 → intro copy 8 → verse 8 → outro 4 (drone + MLK applause). |
+| `04-black-ice-v4.js` | 88 | 38 | 16 | 25 | play | Prelude 2 (riff + riser + roll) → intro 8 with the MLK-speech scratch (mono sample, ±10% slice spread, 2 bars on / 2 off) → verse 8 (siren chord `a1 c2 e3` gliding up a bar, bar on / bar off; cutoff automated up to ~7 kHz mid-verse and back) → intro copy 8 → verse 8 → outro 4 (drone + MLK applause). |
 
 Style notes: `docs/hip-hop/README.en.md`.
 
@@ -68,6 +69,9 @@ Style notes: `docs/breakcore/README.en.md`.
 |---|---:|---:|---:|---:|---|---|
 | `01-acid-breaks.js` | 125 | 72 | 16 | 28 | play | Acid breaks / two-drummer big beat in C minor: sliced Amen + 909-style kit, one 303 line, fuzz bass, chord stabs, spy-jazz colour, siren bed, eight sections with a one-bar STOP before the drop. Kept as the pre-listening version (Amen crush was 0.2 bits). |
 | `02-acid-breaks-v2.js` | 125 | 72 | 17 | 28 | play | Listening fix: Amen crush 12 bits, intro filter opens earlier, stab/acid/spy raised, one filtered chord cue on the last 16th of STOP; DROP enters audibly. |
+| `05-dissonant-hang.js` | 128 | 128 | 19 | 50 | play | Chemical-Brothers-style acid big beat in C minor: 909 kit + Apache/Amen/chops, 303 bass and lead, pulse echo, stabs, drone, siren/riser. Riffs alternate hang (db/gb) and return to c. |
+| `06-dissonant-hang-v2.js` | 128 | 128 | 19 | 51 | play | V2: different breaks behind a TEMPORARY `breakSel` audition switch (think / movement / eeloil / neworleans / squib / breaks125 / apache / amen). New minimal top riff — fewer notes, rhythmic repeats, b2/tritone/maj7 accents; the original dense riff returns only for the mid ACID BREAK. |
+| `07-dissonant-hang-v3.js` | 128 | 128 | 19 | 51 | play | V3: same temporary break switch, default break `movement`. Three riff stages — minimal intro, continuous driving 16th line for the body, original dense riff only on the mid ACID BREAK. |
 
 Style notes: `docs/bigbeat/README.en.md` → `06-practice.en.md` → `07-variants.en.md`.
 

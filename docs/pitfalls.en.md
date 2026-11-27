@@ -52,6 +52,9 @@ writing a track. Every item is a real breakage, not theory.
   **AudioWorklet per event**, the engine does not reuse them. On dense parts
   (16ths, `seg`) these are guaranteed dropouts. If you really need distortion —
   put it on rare long events, not on every step.
+- `crush(n)` is **bit depth (1–16)**, not a 0–1 "amount". `crush(0.2)` crushes a
+  break into near-silence; use 8–14 for audible grit. Hit this in
+  `bigbeat/01-acid-breaks.js`; fixed in `02` (`crush: slider(12, 1, 16, 0.5)`).
 - `npm run cpu -- tracks/<...>.js` counts worklets from the actual output.
   Budget: **up to ~150/s** is comfortable; 300+ breaks the sound on weak
   machines.
@@ -138,6 +141,28 @@ writing a track. Every item is a real breakage, not theory.
 - Volume after effects is `postgain`, but `npm run gains` looks at
   `gain` and complains “sounds at zero”. If a layer must be muted — put
   `gain` after `dist`/the filter, not only `postgain`.
+
+## Pitch envelope (risers)
+
+- `penv` is a pitch envelope in **semitones**, anchored by `panchor` (`0` =
+  `[note, note+penv]`), shaped by `pattack` / `pdecay` / `psustain` /
+  `prelease` **in seconds**. It moves *inside* one event, so a rising siren is
+  one long note: `pattack` ≈ the event length. A `saw.range()` added to
+  `note()` does **not** glide — a discrete event samples its value once at
+  onset.
+- Timeline values carry over: `tlCurve` keeps the previous section's value for
+  any key a section omits, so a new layer must be listed in **every** section
+  (`siren: 0`), or it stays on into the next part.
+
+## Panning
+
+- **`pan` is `0..1`, center is `0.5`**, not `-1..1`. So `.pan(-0.5)` clamps to
+  `0` — hard left; `.pan(0.1)` is still left (`-0.8`). For “slightly left /
+  slightly right” use `0.4` / `0.6`.
+- **`<a b>` alternates per cycle, not per event.** With 8 slices and
+  `.pan(m('<-0.1 0.1>'))` all 8 slices share one pan for the whole bar. For
+  per-slice movement the pattern must list every slice:
+  `.pan(m('0.4 0.6 0.4 0.6 0.4 0.6 0.4 0.6'))`.
 
 ## Samples and noise
 

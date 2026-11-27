@@ -250,15 +250,38 @@
   #unsaved #uDiscard { border-color: var(--warn); color: var(--warn); }
   #unsaved #uCancel { border-color: var(--line); color: var(--dim); }
   #samples:disabled { opacity: 0.55; cursor: progress; }
-  /* панелька переключателей — отдельным блоком между Global и микшером */
+  /* свитчи/сцены — сворачиваемая панелька над микшером, чтобы не занимать
+     середину микшера длинными рядами кнопок */
+  #switchPanel {
+    flex: none;
+    border-bottom: 1px solid var(--line);
+    background: #11140f;
+  }
+  #switchPanel[hidden] { display: none; }
+  #switchPanel > summary {
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 12px;
+    cursor: pointer;
+    color: var(--dim);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    user-select: none;
+  }
+  #switchPanel > summary::-webkit-details-marker { display: none; }
+  #switchPanel > summary::before { content: '▸'; color: var(--accent); font-size: 11px; }
+  #switchPanel[open] > summary::before { content: '▾'; }
+  #switchPanel > summary .scap { color: var(--text); }
+  #switchPanel > summary .n { color: var(--dim); font-weight: 400; }
   #switches {
     flex: none;
     display: flex;
     flex-direction: column;
     gap: 4px;
-    padding: 8px 12px;
-    border-bottom: 1px solid var(--line);
-    background: #11140f;
+    padding: 0 12px 8px;
   }
   /* ── SCENES — @scenes presets (any key names) ── */
   #scenes {
@@ -721,6 +744,74 @@
     /* visualizer becomes a short full-width strip at the very bottom */
     #scope { position: static; right: auto; bottom: auto; z-index: auto; width: 100%; height: 26px; flex: none; border-left: 0; border-right: 0; border-radius: 0; }
   }
+
+  /* ── PHRASE EDITOR (piano roll) ─────────────────────────────────── */
+  .phrase-btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 30px; height: 24px; padding: 0; margin: 0; flex: none;
+    background: #1d211a; color: var(--text);
+    border: 1px solid var(--line); border-radius: 4px; cursor: pointer;
+  }
+  .phrase-btn:hover { border-color: #4a5340; color: var(--accent); }
+  .phrase-btn.on { border-color: var(--accent); color: var(--accent); }
+  #phrasePop {
+    position: fixed; z-index: 70; display: none;
+    width: min(720px, 94vw); max-height: min(78vh, 760px);
+    padding: 10px; background: #151814; border: 1px solid #39402f;
+    border-radius: 6px; box-shadow: 0 18px 44px rgba(0, 0, 0, 0.7);
+    color: var(--text); font-size: 11px;
+    flex-direction: column; gap: 8px;
+  }
+  #phrasePop.open { display: flex; }
+  #phrasePop .ph-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; flex: none; }
+  #phrasePop .ph-head label { display: flex; align-items: center; gap: 5px; color: var(--dim); }
+  #phrasePop .ph-hint { color: var(--dim); font-size: 10px; }
+  #phrasePop .ph-body {
+    flex: 1; min-height: 0; overflow: auto;
+    border: 1px solid var(--line); border-radius: 4px; background: #0a0c09;
+  }
+  #phrasePop .ph-empty { padding: 14px; color: var(--dim); }
+  #phrasePop table.ph { border-collapse: separate; border-spacing: 0; table-layout: fixed; }
+  #phrasePop th.ph-corner {
+    width: 64px; min-width: 64px; height: 18px; background: #12150f;
+    border-bottom: 1px solid var(--line); border-right: 1px solid var(--line);
+    position: sticky; left: 0; top: 0; z-index: 3;
+  }
+  #phrasePop th.ph-step {
+    width: 26px; min-width: 26px; height: 18px; padding: 0;
+    font-size: 9px; font-weight: normal; color: var(--dim);
+    background: #12150f; border-bottom: 1px solid var(--line);
+    border-left: 1px solid #1d211a; position: sticky; top: 0; z-index: 2;
+  }
+  #phrasePop th.ph-step.ph-4 { border-left: 2px solid #3a4231; color: #9aa58c; }
+  #phrasePop td.ph-key {
+    width: 64px; min-width: 64px; height: 18px; padding: 0 6px;
+    font-size: 10px; text-align: right; white-space: nowrap;
+    border-bottom: 1px solid #1d211a; border-right: 1px solid var(--line);
+    position: sticky; left: 0; z-index: 1;
+  }
+  #phrasePop td.ph-key.white { background: #cbd1c1; color: #191c15; }
+  #phrasePop td.ph-key.black { background: #0f120d; color: #a6af99; }
+  #phrasePop td.ph-key.ph-c { font-weight: 700; }
+  #phrasePop td.ph-slot {
+    width: 26px; min-width: 26px; height: 18px; padding: 0;
+    border-bottom: 1px solid #1d211a; border-left: 1px solid #1d211a;
+  }
+  #phrasePop td.ph-slot.ph-4 { border-left: 2px solid #3a4231; }
+  #phrasePop td.ph-slot.ph-c { border-bottom: 2px solid #4d573f; }
+  #phrasePop button.ph-cell {
+    display: block; width: 100%; height: 100%; padding: 0; margin: 0;
+    background: transparent; border: 0; border-radius: 0; cursor: pointer;
+  }
+  #phrasePop button.ph-cell:hover { background: #2a3024; }
+  #phrasePop button.ph-cell.on { background: var(--accent); box-shadow: inset 0 0 0 1px #e4ff4f; }
+  #phrasePop button.ph-cell.on:hover { background: #c9ef25; }
+  #phrasePop .ph-foot { display: flex; align-items: center; gap: 8px; flex: none; }
+  #phrasePop .ph-status { flex: 1; color: var(--dim); font-size: 10px; }
+  #phrasePop .ph-status.err { color: #ff8a7a; }
+  #phrasePop .ph-foot button { padding: 5px 10px; font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; }
+  #phrasePop .ph-foot button.save { background: var(--accent); border-color: var(--accent); color: #0d0f0c; font-weight: 700; }
+  #phrasePop .ph-foot button:disabled { opacity: 0.4; cursor: default; }
 </style>
 
 <script type="importmap">
@@ -830,8 +921,14 @@
       </div>
       <div class="rows" id="globalRows"></div>
     </div>
-    <div id="switches"></div>
-    <div id="scenes" hidden></div>
+    <details id="switchPanel">
+      <summary>
+        <span class="scap">Switches</span>
+        <span class="n" id="switchCount"></span>
+      </summary>
+      <div id="switches"></div>
+      <div id="scenes" hidden></div>
+    </details>
     <div id="pads"></div>
     <div id="mixlist"></div>
   </aside>
@@ -848,6 +945,16 @@
       <span class="spacer"></span>
       <label class="viz-toggle"><input type="checkbox" id="vizToggle" checked /> visualizations</label>
       <span>Ctrl+Enter — run · Ctrl+. — stop</span>
+      <button id="phraseBtn" type="button" class="phrase-btn" title="phrase editor — piano roll" aria-label="phrase editor" aria-haspopup="dialog">
+        <svg viewBox="0 0 26 18" width="20" height="14" aria-hidden="true" shape-rendering="crispEdges">
+          <rect x="0.5" y="0.5" width="25" height="17" rx="2" fill="#1d211a" stroke="currentColor"></rect>
+          <rect x="2" y="2" width="6.4" height="14" fill="currentColor"></rect>
+          <rect x="9.8" y="2" width="6.4" height="14" fill="currentColor"></rect>
+          <rect x="17.6" y="2" width="6.4" height="14" fill="currentColor"></rect>
+          <rect x="6.1" y="2" width="3.4" height="8.4" fill="#0d0f0c"></rect>
+          <rect x="13.9" y="2" width="3.4" height="8.4" fill="#0d0f0c"></rect>
+        </svg>
+      </button>
       <button id="copyCode" type="button" class="copy-code" aria-label="copy track code" title="copy track code">
         <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <rect x="9" y="9" width="11" height="11" rx="2"></rect>

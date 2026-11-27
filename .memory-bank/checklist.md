@@ -19,6 +19,11 @@
 - [x] tracks/techno/18-khmer-dub.js — 122 BPM dub techno + Khmer percussion: 19 tracks (18 perc channels in one bus), 149 sliders, Fm9→Abmaj9→Dbmaj9→Gbmaj9, full dub set + Moog lead/arp, all 18 Khmer drums through shared delay/reverb, native `TIMELINE` 5 sections/64 bars (Ctrl+Enter or APPLY, LOOP/STOP, contiguous + seek), mix M/S + G (color-coded group mutes), no pads
 - [x] tracks/experimental/01-complex-bass.js — 160 BPM Buchla-style complex bass: 5 WT+FM pairs, 10 oscillators, 5 LFOs, drone/dirt, dark wavetables (wt_dbass/distorted/ebass/raw/bitreduced), FM/AM/waveshaping/ducking, 12 switchable riffs, per-bass oct 0…4 and pace 4…32, hardcore bd*4 kick + sub + hats + true sidechain (duckorbit 7), 18 tracks, 206 sliders, modes clean/grit/fold/scream
 - [x] docs/experimental/ — README + Buchla + track + Strudel + sources (RU + EN)
+- [x] docs/bigbeat/ — README + techniques + examples + arrangement + Strudel + 06 practice (16-step grids, scales, note/rhythm riffs) + 07 variants (10 characters, N+1 rule) + sources (EN)
+- [x] docs/references.en.md — Big Beat source section (Wikipedia/AllMusic/Vice/NPR/MusicRadar/Attack/Mixmag/RTÉ/AllMusic/Sonaa)
+- [x] docs/practice-atlas.en.md — 15 Strudel style cards + 10 rules + depth matrix; cross-linked from hip-hop/trip-hop/techno/minimal-techno/coldwave/darkwave/shoegaze READMEs and llms.txt
+- [x] docs/{techno,minimal-techno,coldwave,darkwave,shoegaze}/02-practice.en.md — grids, scales, note/rhythm riffs, sources
+- [x] docs/new-tricks.en.md — 11 Strudel features absent from tracks (early/scramble/shuffle/compressor/xfade/velocity/bpenv/rsize/fanchor/shrink/stretch), syntax verified against strudel.cc
 - [x] Web panel: `// @mutes` row (ordinary 0/1 buttons under scenes, not momentary)
 - [x] docs/khmer/ — README + instruments + tuning/rhythm + Strudel + sources + samples (RU + EN)
 - [x] README index + per-track notes for khmer/01
@@ -40,3 +45,6 @@
 - [x] `tracks/breakcore/02-stems-hardcore.js` — 200 BPM stems/gabber, 3-layer kick, kick clean/dist/hard, 5 modes, 4 pads
 - [x] `tracks/breakcore/01-rinse-slices.js` — second rinse version (16th fragments, no pitch shift); 01-rinse.js kept
 - [x] docs/breakcore/04 §12 — fat gabber kick research (clean sub + band-limited saturation)
+- [x] `tracks/bigbeat/01-acid-breaks.js` — first synth-only big beat track (H-013; 125 BPM, C minor, 72 bars; verify/gains/doubles/cpu/levels green; docs/TRACKS.md updated)
+- [x] `tracks/bigbeat/02-acid-breaks-v2.js` — listening fix (crush is bits 1–16, not 0–1; 12 bits; intro filter/levels raised; STOP cue chord); lesson added to docs/pitfalls.en.md
+- [x] Web panel: Ctrl+Enter/Ctrl+. now start/stop the timeline + activity lamps (onToggle); mute/solo pre-applied to init slider values so PLAY after mute has no burst; switches+scenes moved into a collapsible Switches panel; exact activity via `.label('group.inst')`

@@ -16,6 +16,10 @@ None.
 - techno/18-khmer-dub — 122 BPM dub techno + 18 Khmer percussion channels, Fm9→Abmaj9→Dbmaj9→Gbmaj9, full dub set + Moog lead/arp, native `TIMELINE`, shared delay/reverb, docs/dub-techno.
 - experimental/01-complex-bass — 160 BPM Buchla-style complex bass, 5 WT+FM pairs, 10 oscillators, 12 riffs, hardcore kick, dark wavetables, docs/experimental.
 - Web panel: `// @mutes` row under scenes.
+- Big beat research: `docs/bigbeat/` (EN playbook + techniques + examples + arrangement + Strudel + 06 practice with step grids/scales/riffs + 07 variants with 10 characters/N+1 rule + sources), Big Beat section in `docs/references.en.md`.
+- Cross-genre practice atlas: 15 playable Strudel style cards, ten hard rules, depth matrix; thin genre READMEs link to it.
+- Five thin genres upgraded to full practice docs (grids/notes/sources); `docs/new-tricks.en.md` lists 11 unused Strudel features with verified syntax.
+- First big beat track `tracks/bigbeat/01-acid-breaks.js` (H-013 confirmed): 125 BPM, C minor, 72 bars, 8 sections + STOP, 16 lanes, 28 sliders, audit gates green. Next big beat = next unused character from `07-variants.en.md` (new file, never a rewrite).
 - Audit tooling and web panel.
 
 ## Next

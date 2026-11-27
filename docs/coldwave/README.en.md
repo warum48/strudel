@@ -1,5 +1,8 @@
 # Coldwave — playbook
 
+Strudel practice card: `docs/practice-atlas.en.md` §13. Full grid, Dm bass
+and delay values: `docs/coldwave/02-practice.en.md`.
+
 Cold post-punk/minimal wave of the late 70s–80s (France, Belgium, Poland):
 Kraftwerk + Joy Division + cheap synthesizers. Not "gloomy synthwave" and not
 goth: **sparseness, mechanical rhythm, icy timbre, space**.
