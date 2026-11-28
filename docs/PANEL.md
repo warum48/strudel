@@ -92,14 +92,22 @@ use `UI` plus `const TIMELINE` / `const AUTOMATION`.
   would overlap or shift it). Long looping-sample lanes carry `cut` so the old
   tail stops on retrigger.
 - Clicking a section block opens its **details popup** right under that block
-  (`web/section.js`). The read-only summary answers "which phrase line plays
-  here": it lists only lanes with a resolved phrase, as
-  `Group  Instrument PHRASE` (e.g. `Synths Riff lead ACID_C`);
-  drum lanes and other phrase-less lanes are omitted, as are multipliers —
-  those live only in the editable target list below. Phrase resolution reads
-  `const X = note(PHRASE)`, `pickVar.pick([PHRASE_A, …])` (with `pickVar` from
-  `tlOr('key', …)` / `tlCurve('key')`) and derived lines such as
+  (`web/section.js`). The summary answers "which phrase line plays here": it
+  lists only lanes with a resolved phrase, as `Group  Instrument PHRASE`
+  (e.g. `Synths Riff lead ACID_C`); drum lanes and other phrase-less lanes are
+  omitted, as are multipliers — those live only in the editable target list
+  below. Phrase resolution reads `const X = note(PHRASE)`,
+  `pickVar.pick([PHRASE_A, …])` (with `pickVar` from `tlOr('key', …)` /
+  `tlCurve('key')`) and derived lines such as
   `const SUB = BASS.ctranspose(-12)`.
+  Lanes driven by a section selector (`riffStage`, `soloPart`) get a phrase
+  `<select>` right in the summary; changing it writes that section value,
+  re-evaluates, and re-renders the popup. One selector can drive several lanes
+  (`riffStage` moves both Acid bass and Riff lead), so those selects stay
+  coupled by design; a track that splits them (`bassStage` / `acidStage`)
+  gets independent selects. The numeric row for a selector is hidden from the target
+  list while its select is visible. Static phrases (`MEL_A`, `STAB_A`) remain
+  read-only because no section value selects them.
   The popup also edits `name`, `length`, `order`, per-target `values`
   (change / delete / add) and can remove the section; zero-valued instrument
   targets are hidden until re-added. `at` is read-only because sections stay

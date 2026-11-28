@@ -73,8 +73,8 @@ function spInfo(key) {
 function spSummary(sec) {
   const wrap = document.createElement('div');
   wrap.className = 'sp-summary';
-  const groups = new Map();
   const phrases = ctx.phrasesFor?.(sec) || {};
+  const groups = new Map();
   for (const [key, raw] of Object.entries(sec.values || {})) {
     const d = spInfo(key);
     if (d.kind !== 'instrument') continue;
@@ -83,7 +83,7 @@ function spSummary(sec) {
     if (!ph) continue;
     const g = d.group || 'Other';
     if (!groups.has(g)) groups.set(g, []);
-    groups.get(g).push(`${d.label} ${ph.name}`);
+    groups.get(g).push({ label: d.label, ph });
   }
   if (!groups.size) return null;
   const playing = document.createElement('div');
@@ -93,13 +93,57 @@ function spSummary(sec) {
     line.className = 'sp-line';
     const b = document.createElement('b');
     b.textContent = g;
-    const s = document.createElement('span');
-    s.textContent = items.join(' · ');
-    line.append(b, s);
+    const span = document.createElement('span');
+    span.className = 'sp-items';
+    items.forEach((it, i) => {
+      if (i) span.append(' · ');
+      const item = document.createElement('span');
+      item.className = 'sp-item';
+      item.append(it.label + ' ');
+      const ph = it.ph;
+      if (ph.key && Array.isArray(ph.names) && ph.names.length) {
+        const sel = document.createElement('select');
+        sel.className = 'sp-phrase';
+        sel.title = `section target: ${ph.key}`;
+        ph.names.forEach((name, idx) => {
+          const o = document.createElement('option');
+          o.value = String(idx);
+          o.textContent = name;
+          sel.appendChild(o);
+        });
+        sel.value = String(Math.max(0, Math.min(ph.names.length - 1, ph.index ?? 0)));
+        sel.addEventListener('change', () => {
+          const idx = Number(sel.value);
+          if (!Number.isFinite(idx)) return;
+          sec.values[ph.key] = idx;
+          ctx.commit();
+          ctx.apply?.();
+        });
+        item.append(sel);
+      } else {
+        const code = document.createElement('span');
+        code.className = 'sp-code';
+        code.textContent = ph.name;
+        item.append(code);
+      }
+      span.append(item);
+    });
+    line.append(b, span);
     playing.appendChild(line);
   }
   wrap.appendChild(playing);
   return wrap;
+}
+
+// Selector keys rendered as phrase selects in the summary are hidden from the
+// numeric target list below (one control, not two).
+function spSelectorKeys(sec) {
+  const out = new Set();
+  const phrases = ctx.phrasesFor?.(sec) || {};
+  for (const [lane, ph] of Object.entries(phrases)) {
+    if (ph.key && Number(sec?.values?.[lane]) > 0.001) out.add(ph.key);
+  }
+  return out;
 }
 
 function spRender() {
@@ -164,7 +208,9 @@ function spRender() {
 
   const vals = document.createElement('div');
   vals.className = 'sp-vals';
+  const selKeys = spSelectorKeys(sec);
   const entries = Object.entries(sec.values || {}).filter(([key, raw]) => {
+    if (selKeys.has(key)) return false;
     const d = spInfo(key);
     return d.kind !== 'instrument' || Number(raw) > 0.001;
   });
@@ -200,7 +246,8 @@ function spRender() {
   const add = document.createElement('div');
   add.className = 'sp-add';
   const sel = document.createElement('select');
-  const lanes = [...new Set([...(ctx.lanes?.() || []), ...Object.keys(sec.values || {})])];
+  const lanes = [...new Set([...(ctx.lanes?.() || []), ...Object.keys(sec.values || {})])]
+    .filter((key) => !selKeys.has(key));
   for (const key of lanes) {
     const o = document.createElement('option');
     o.value = key;

@@ -3203,7 +3203,13 @@ function phraseMapFor(sec) {
     if (!name) continue;
     const bars = phraseBars.get(name) || 1;
     const lane = PHRASE_LANE[pick.varName.toLowerCase()] || pick.varName.toLowerCase();
-    out[lane] = { name, bar: (Math.max(0, sec.at) % bars) + 1 };
+    out[lane] = {
+      name,
+      bar: (Math.max(0, sec.at) % bars) + 1,
+      key: pick.key,
+      names: pick.names,
+      index: idx,
+    };
   }
   for (const [lane, name] of phraseStatics) {
     if (out[lane]) continue;
@@ -3211,7 +3217,9 @@ function phraseMapFor(sec) {
     out[lane] = { name, bar: (Math.max(0, sec.at) % bars) + 1 };
   }
   for (const d of phraseDerived) {
-    if (!out[d.lane] && out[d.from]) out[d.lane] = { ...out[d.from] };
+    if (!out[d.lane] && out[d.from]) {
+      out[d.lane] = { name: out[d.from].name, bar: out[d.from].bar };
+    }
   }
   return out;
 }
@@ -3246,6 +3254,7 @@ initSectionEditor({
   lanes: () => TL_LANES,
   labelFor: sectionValueLabel,
   phrasesFor: phraseMapFor,
+  apply: applyTimeline,
   status: (t, e) => setStatus(t, e),
 });
 audioReady = boot().catch((e) => {

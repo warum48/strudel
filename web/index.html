@@ -436,38 +436,45 @@
   /* ── SECTION DETAILS popup: hangs under the selected timeline block ── */
   #sectionPop {
     position: fixed; z-index: 68; display: none;
-    width: 340px; max-width: 94vw; max-height: 41vh;
-    padding: 10px; background: #151814; border: 1px solid #39402f;
-    border-radius: 6px; box-shadow: 0 16px 38px rgba(0, 0, 0, 0.66);
+    width: 440px; max-width: 94vw; max-height: 41vh;
+    padding: 14px; background: #151814; border: 1px solid #39402f;
+    border-radius: 7px; box-shadow: 0 16px 38px rgba(0, 0, 0, 0.66);
     color: var(--text); font-size: 11px;
   }
   #sectionPop.open { display: block; }
-  #sectionPop .sp-head { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
-  #sectionPop .sp-title { flex: 1; color: var(--warn); font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  #sectionPop #spClose { padding: 0 6px; font-size: 13px; line-height: 18px; }
-  #sectionPop .sp-body { max-height: calc(41vh - 46px); overflow-y: auto; overflow-x: hidden; }
-  #sectionPop .sp-summary { border: 1px solid #262b22; background: #11140f; border-radius: 4px; padding: 6px 7px; margin-bottom: 8px; }
-  #sectionPop .sp-playing .sp-line { display: flex; gap: 8px; font-size: 10px; line-height: 1.5; }
-  #sectionPop .sp-playing b { color: var(--accent); font-weight: 700; min-width: 52px; text-transform: uppercase; font-size: 9px; letter-spacing: 0.06em; }
+  #sectionPop .sp-head { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  #sectionPop .sp-title { flex: 1; color: var(--warn); font-size: 11px; letter-spacing: 0.07em; text-transform: uppercase; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  #sectionPop #spClose { padding: 0 8px; font-size: 14px; line-height: 20px; }
+  #sectionPop .sp-body { max-height: calc(41vh - 62px); overflow-y: auto; overflow-x: hidden; }
+  #sectionPop .sp-summary { border: 1px solid #262b22; background: #11140f; border-radius: 5px; padding: 10px 12px; margin-bottom: 12px; }
+  #sectionPop .sp-playing .sp-line { display: flex; gap: 12px; font-size: 11px; line-height: 1.7; }
+  #sectionPop .sp-playing b { color: var(--accent); font-weight: 700; min-width: 58px; text-transform: uppercase; font-size: 9px; letter-spacing: 0.07em; }
   #sectionPop .sp-playing span { color: var(--text); }
-  #sectionPop .sp-row { display: flex; align-items: center; gap: 5px; margin-bottom: 5px; }
-  #sectionPop .sp-row label { color: var(--dim); min-width: 58px; font-size: 9px; text-transform: uppercase; letter-spacing: 0.06em; }
+  #sectionPop .sp-item { white-space: nowrap; }
+  #sectionPop .sp-code { color: var(--text); }
+  #sectionPop .sp-phrase {
+    font-size: 10px; padding: 1px 4px; max-width: 130px;
+    background: #11140f; color: var(--text);
+    border: 1px solid #39402f; border-radius: 3px;
+  }
+  #sectionPop .sp-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  #sectionPop .sp-row label { color: var(--dim); min-width: 64px; font-size: 9px; text-transform: uppercase; letter-spacing: 0.07em; }
   #sectionPop input[type="text"], #sectionPop input[type="number"], #sectionPop select {
     background: #11140f; color: var(--text); border: 1px solid var(--line);
-    padding: 2px 4px; font-size: 10px; min-width: 0;
+    padding: 4px 6px; font-size: 11px; min-width: 0;
   }
   #sectionPop .sp-row input[type="text"] { flex: 1; }
-  #sectionPop .sp-row input[type="number"] { width: 62px; }
-  #sectionPop .sp-row button { padding: 1px 8px; font-size: 11px; }
-  #sectionPop .sp-vals { border-top: 1px solid var(--line); margin-top: 5px; padding-top: 5px; }
-  #sectionPop .sp-val { display: grid; grid-template-columns: minmax(0, 1fr) 56px 24px; gap: 4px; align-items: center; margin-bottom: 3px; }
-  #sectionPop .sp-val span { color: var(--dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 9px; }
+  #sectionPop .sp-row input[type="number"] { width: 72px; }
+  #sectionPop .sp-row button { padding: 2px 10px; font-size: 12px; }
+  #sectionPop .sp-vals { border-top: 1px solid var(--line); margin-top: 8px; padding-top: 8px; }
+  #sectionPop .sp-val { display: grid; grid-template-columns: minmax(0, 1fr) 64px 26px; gap: 6px; align-items: center; margin-bottom: 5px; }
+  #sectionPop .sp-val span { color: var(--dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 10px; }
   #sectionPop .sp-val input { width: 100%; }
-  #sectionPop .sp-val button { width: 100%; padding: 0; font-size: 11px; line-height: 16px; }
-  #sectionPop .sp-add { display: grid; grid-template-columns: minmax(0, 1fr) 56px 24px; gap: 4px; margin-top: 5px; }
+  #sectionPop .sp-val button { width: 100%; padding: 0; font-size: 12px; line-height: 20px; }
+  #sectionPop .sp-add { display: grid; grid-template-columns: minmax(0, 1fr) 64px 26px; gap: 6px; margin-top: 8px; }
   #sectionPop .sp-add select, #sectionPop .sp-add input { width: 100%; }
-  #sectionPop .sp-add button { width: 100%; padding: 0; font-size: 12px; line-height: 16px; }
-  #sectionPop .sp-del { margin-top: 6px; }
+  #sectionPop .sp-add button { width: 100%; padding: 0; font-size: 12px; line-height: 20px; }
+  #sectionPop .sp-del { margin-top: 10px; }
   @media (max-width: 900px) {
     #timeline .tl-body { flex-direction: column; }
   }

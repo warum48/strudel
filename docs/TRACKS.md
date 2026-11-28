@@ -72,6 +72,7 @@ Style notes: `docs/breakcore/README.en.md`.
 | `05-dissonant-hang.js` | 128 | 128 | 19 | 50 | play | Chemical-Brothers-style acid big beat in C minor: 909 kit + Apache/Amen/chops, 303 bass and lead, pulse echo, stabs, drone, siren/riser. Riffs alternate hang (db/gb) and return to c. |
 | `06-dissonant-hang-v2.js` | 128 | 128 | 19 | 51 | play | V2: different breaks behind a TEMPORARY `breakSel` audition switch (think / movement / eeloil / neworleans / squib / breaks125 / apache / amen). New minimal top riff — fewer notes, rhythmic repeats, b2/tritone/maj7 accents; the original dense riff returns only for the mid ACID BREAK. |
 | `07-dissonant-hang-v3.js` | 128 | 128 | 19 | 51 | play | V3: same temporary break switch, default break `movement`. Three riff stages — minimal intro, continuous driving 16th line for the body, original dense riff only on the mid ACID BREAK. |
+| `08-dissonant-hang-v4.js` | 128 | 128 | 20 | 52 | play | V4 from the v3 dump (HOLD, breakSel=4, sparser ACID_MAIN). Independent selectors: `bassStage` / `acidStage` / `soloStage` drive BASS_*, ACID_* and SOLO_* separately. Semantic phrase names (ACID_HANG/BREAK/MAIN, SOLO_HANG…SCREAM). Adds an MLK spoken-voice lane on STOP / ACID BREAK / FINAL DROP / OUTRO (slices 9/10/13/14, not the applause). |
 
 Style notes: `docs/bigbeat/README.en.md` → `06-practice.en.md` → `07-variants.en.md`.
 
